@@ -1,4 +1,4 @@
-// app/dashboard/page.js
+```jsx
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -32,10 +32,18 @@ const PROXIED_YAHOO_SEARCH = (q) => `https://api.allorigins.win/raw?url=${encode
 const FINNHUB_TOKEN = "cns0a0pr01qj9b42289gcns0a0pr01qj9b4228a0";
 const FINNHUB_QUOTE = (symbol) => `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${FINNHUB_TOKEN}`;
 const COINGECKO_MARKETS = (ids) => `${COINGECKO_API}/coins/markets?vs_currency=usd&ids=${encodeURIComponent(ids)}&price_change_percentage=24h`;
+const EXCHANGE_RATE_API = "https://open.er-api.com/v6/latest/USD";
 
 const isBrowser = typeof window !== "undefined";
 const toNum = (v) => { const n = Number(String(v).replace(/,/g, '').replace(/\s/g,'')); return isNaN(n) ? 0 : n; };
 
+/**
+ * Memformat mata uang dengan benar dan realtime berdasarkan nilai tukar USD/IDR.
+ * * @param {number} value Nilai angka dasar yang ingin dihitung
+ * @param {boolean} valueIsUSD Benar jika basis angka adalah USD. Salah jika IDR.
+ * @param {string} displaySymbol Simbol target keluaran ('$' atau 'Rp')
+ * @param {number} usdIdr Nilai tukar 1 USD terhadap IDR (Misal: 16250)
+ */
 function formatCurrency(value, valueIsUSD, displaySymbol, usdIdr) {
   if (value === null || typeof value === 'undefined' || isNaN(Number(value))) {
     return displaySymbol === '$' ? '$0.00' : 'Rp 0';
@@ -43,6 +51,8 @@ function formatCurrency(value, valueIsUSD, displaySymbol, usdIdr) {
 
   let displayValue;
   if (displaySymbol === '$') {
+    // Menampilkan ke USD ($)
+    // Jika value aslinya sudah USD, tampilkan apa adanya. Jika IDR, maka bagi dengan rate usdIdr
     displayValue = valueIsUSD ? value : value / usdIdr;
     const options = {
       style: 'currency',
@@ -56,6 +66,8 @@ function formatCurrency(value, valueIsUSD, displaySymbol, usdIdr) {
     }
     return new Intl.NumberFormat('en-US', options).format(displayValue);
   } else { 
+    // Menampilkan ke IDR (Rp)
+    // Jika value aslinya USD, maka kalikan dengan rate usdIdr. Jika IDR, tampilkan langsung
     displayValue = valueIsUSD ? value * usdIdr : value;
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -67,6 +79,10 @@ function formatCurrency(value, valueIsUSD, displaySymbol, usdIdr) {
 }
 
 function formatCurrencyShort(value, valueIsUSD, displaySymbol, usdIdr) {
+  if (value === null || typeof value === 'undefined' || isNaN(Number(value))) {
+    return displaySymbol === '$' ? '$0.00' : 'Rp 0';
+  }
+
   let displayValue;
   if (displaySymbol === '$') {
     displayValue = valueIsUSD ? value : value / usdIdr;
@@ -125,7 +141,10 @@ export default function PortfolioDashboard() {
   const [transactions, setTransactions] = useState(() => isBrowser ? JSON.parse(localStorage.getItem(`pf_transactions_${STORAGE_VERSION}`) || "[]") : []);
   const [financialSummaries, setFinancialSummaries] = useState({ realizedUSD: 0, tradingBalance: 0, totalDeposits: 0, totalWithdrawals: 0, });
   const [displaySymbol, setDisplaySymbol] = useState(() => isBrowser ? (localStorage.getItem(`pf_display_sym_${STORAGE_VERSION}`) || "Rp") : "Rp");
-  const [usdIdr] = useState(16400); 
+  
+  // Nilai tukar USD/IDR state (Default jika gagal memuat: 16350)
+  const [usdIdr, setUsdIdr] = useState(() => isBrowser ? toNum(localStorage.getItem(`pf_usd_idr_${STORAGE_VERSION}`) || "16350") : 16350); 
+  
   const [watchedAssetIds, setWatchedAssetIds] = useState(() => isBrowser ? JSON.parse(localStorage.getItem(`pf_watched_assets_${STORAGE_VERSION}`) || '["tether", "bitcoin"]') : ['tether', 'bitcoin']);
   const [watchedAssetData, setWatchedAssetData] = useState({});
   const [priceHistory, setPriceHistory] = useState(() => isBrowser ? JSON.parse(localStorage.getItem(`pf_price_history_${STORAGE_VERSION}`) || "{}") : {});
@@ -154,6 +173,44 @@ export default function PortfolioDashboard() {
   const importInputRef = useRef(null);
   const prevAssetsRef = useRef();
   
+  // Realtime USD/IDR fetcher dari Open Exchange Rate API
+  useEffect(() => {
+    const fetchUsdIdrRate = async () => {
+      try {
+        const response = await fetch(EXCHANGE_RATE_API);
+        if (!response.ok) throw new Error("Gagal mengambil data dari API utama.");
+        const data = await response.json();
+        if (data && data.rates && data.rates.IDR) {
+          const freshRate = Number(data.rates.IDR);
+          setUsdIdr(freshRate);
+          if (isBrowser) {
+            localStorage.setItem(`pf_usd_idr_${STORAGE_VERSION}`, String(freshRate));
+          }
+        }
+      } catch (error) {
+        console.warn("Mencoba fallback CoinGecko untuk USD-IDR rate karena:", error);
+        // Fallback: Menggunakan CoinGecko simple price (USDT ke IDR) jika ExchangeRate-API gagal
+        try {
+          const fbResponse = await fetch(`${COINGECKO_API}/simple/price?ids=tether&vs_currencies=idr`);
+          const fbData = await fbResponse.json();
+          if (fbData && fbData.tether && fbData.tether.idr) {
+            const freshRate = Number(fbData.tether.idr);
+            setUsdIdr(freshRate);
+            if (isBrowser) {
+              localStorage.setItem(`pf_usd_idr_${STORAGE_VERSION}`, String(freshRate));
+            }
+          }
+        } catch (fbError) {
+          console.error("Semua API nilai tukar gagal dimuat.", fbError);
+        }
+      }
+    };
+
+    fetchUsdIdrRate();
+    const interval = setInterval(fetchUsdIdrRate, 60000); // Update setiap 1 menit
+    return () => clearInterval(interval);
+  }, []);
+
   const recalculateStateFromTransactions = (txs) => {
     let newAssets = {}; let realizedUSD = 0; let tradingBalance = 0; let totalDeposits = 0; let totalWithdrawals = 0;
     const sortedTxs = [...txs].sort((a, b) => a.date - b.date);
@@ -520,11 +577,21 @@ export default function PortfolioDashboard() {
             <div className="flex items-center gap-3"><UserAvatar /></div>
             <div className="flex items-center gap-3">
                 <button onClick={() => setAddAssetModalOpen(true)} className="text-gray-400 hover:text-white"><SearchIcon /></button>
-                <div className="flex items-center gap-2"><span className="text-xs font-semibold text-gray-400">IDR</span><div role="switch" aria-checked={displaySymbol === "$"} onClick={() => setDisplaySymbol(prev => prev === "Rp" ? "$" : "Rp")} className={`relative w-12 h-6 rounded-full p-1 cursor-pointer transition ${displaySymbol === "$" ? 'bg-emerald-600' : 'bg-zinc-700'}`}><div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${displaySymbol === "$" ? 'translate-x-6' : 'translate-x-0'}`}></div></div><span className="text-xs font-semibold text-gray-400">USD</span></div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-gray-400">IDR</span>
+                  <div role="switch" aria-checked={displaySymbol === "$"} onClick={() => setDisplaySymbol(prev => prev === "Rp" ? "$" : "Rp")} className={`relative w-12 h-6 rounded-full p-1 cursor-pointer transition ${displaySymbol === "$" ? 'bg-emerald-600' : 'bg-zinc-700'}`}>
+                    <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${displaySymbol === "$" ? 'translate-x-6' : 'translate-x-0'}`}></div>
+                  </div>
+                  <span className="text-xs font-semibold text-gray-400">USD</span>
+                </div>
                 <button onClick={() => setManagePortfolioOpen(true)} className="text-gray-400 hover:text-white"><MoreVerticalIcon /></button>
             </div>
         </header>
         <main>
+          {/* Realtime Rate Banner */}
+          <div className="px-4 py-1 text-right text-[10px] text-gray-500">
+             Realtime Rate: 1 USD = {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 2 }).format(usdIdr)}
+          </div>
           <section className="p-4">
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 <div onClick={() => setIsEquityModalOpen(true)} className="glass-card p-3 sm:p-4 shadow-lg flex flex-col justify-between cursor-pointer hover:border-white/20 transition-all overflow-hidden">
@@ -547,7 +614,7 @@ export default function PortfolioDashboard() {
                             </span>
                         </div>
                     </div>
-                    <div className="h-16 -mb-4 -mx-4 mt-auto pt-2"><AreaChart data={equitySeries} simplified={true}/></div>
+                    <div className="h-16 -mb-4 -mx-4 mt-auto pt-2"><AreaChart data={equitySeries} simplified={true} displaySymbol={displaySymbol} /></div>
                 </div>
                 <div onClick={() => setIsAllocationModalOpen(true)} className="glass-card p-3 sm:p-4 shadow-lg flex flex-col justify-center cursor-pointer hover:border-white/20 transition-all">
                     <div className="grid grid-cols-2 text-center gap-1">
@@ -1138,3 +1205,4 @@ const AssetTableView = ({ rows, displaySymbol, usdIdr, onRowClick }) => {
     );
 }
 
+```
