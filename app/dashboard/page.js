@@ -20,14 +20,13 @@ const AvgLossIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="
 const SearchIcon = (props) => (<svg {...props} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" ><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>);
 const StarIcon = ({ isFilled, ...props }) => (<svg {...props} width="20" height="20" viewBox="0 0 24 24" fill={isFilled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>);
 
-// Sector Allocation Icons (Clean & Professional SVG)
+// Sector Allocation Icons
 const WalletIcon = ({className}) => (<svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"></path><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"></path><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z"></path></svg>);
 const TrendingUpIcon = ({className}) => (<svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>);
 const BuildingIcon = ({className}) => (<svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><path d="M9 22v-4h6v4"></path><path d="M8 6h.01"></path><path d="M16 6h.01"></path><path d="M12 6h.01"></path><path d="M12 10h.01"></path><path d="M12 14h.01"></path><path d="M16 10h.01"></path><path d="M16 14h.01"></path><path d="M8 10h.01"></path><path d="M8 14h.01"></path></svg>);
-// Professional Crypto Icon (Ethereum Style)
 const CryptoIcon = ({className}) => (<svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 19 9 12 22 5 9 12 2"></polygon><polyline points="5 9 12 13 19 9"></polyline><line x1="12" y1="2" x2="12" y2="22"></line></svg>);
 
-/* ===================== Config & Robust Proxy API ===================== */
+/* ===================== Config & Proxy API ===================== */
 const COINGECKO_API = "https://api.coingecko.com/api/v3";
 const YAHOO_SEARCH_API = (q) => `https://api.allorigins.win/get?url=${encodeURIComponent(`https://query2.finance.yahoo.com/v1/finance/search?q=${q}`)}`;
 const YAHOO_SPARK_API = (symbols) => `https://api.allorigins.win/get?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v7/finance/spark?symbols=${symbols.join(',')}`)}`;
@@ -36,20 +35,18 @@ const COINGECKO_MARKETS = (ids) => `${COINGECKO_API}/coins/markets?vs_currency=u
 const isBrowser = typeof window !== "undefined";
 const toNum = (v) => { const n = Number(String(v).replace(/,/g, '').replace(/\s/g,'')); return isNaN(n) ? 0 : n; };
 
-
-// Format Normal: Full (Rp 18.000 / Rp 1.500.000) TAPI singkatan (B/T) untuk Miliar/Triliun biar gak pecah layout
+// Aturan 1: Format Global LENGKAP kecuali jika >= 1 Miliar (B/T)
 function formatCurrency(value, valueIsUSD, displaySymbol, usdIdr) {
   if (value === null || typeof value === 'undefined' || isNaN(Number(value))) { return displaySymbol === '$' ? '$0.00' : 'Rp 0'; }
   let displayValue = valueIsUSD ? value : (displaySymbol === '$' ? value / usdIdr : value);
-  if (!valueIsUSD && displaySymbol !== '$') displayValue = value; // is IDR
-  if (valueIsUSD && displaySymbol !== '$') displayValue = value * usdIdr; // USD to IDR
+  if (!valueIsUSD && displaySymbol !== '$') displayValue = value; 
+  if (valueIsUSD && displaySymbol !== '$') displayValue = value * usdIdr; 
 
   const absNum = Math.abs(displayValue);
   const isRupiah = displaySymbol !== '$';
   const sign = displayValue < 0 ? '-' : '';
   const prefix = isRupiah ? 'Rp ' : '$';
 
-  // Aturan Global: Jika menyentuh miliaran/triliunan, otomatis disingkat
   if (absNum >= 1e12) {
       const numStr = (absNum / 1e12).toFixed(2);
       return `${sign}${prefix}${isRupiah ? numStr.replace('.', ',') : numStr} T`;
@@ -58,7 +55,7 @@ function formatCurrency(value, valueIsUSD, displaySymbol, usdIdr) {
       return `${sign}${prefix}${isRupiah ? numStr.replace('.', ',') : numStr} B`;
   }
 
-  // Di bawah 1 miliar, tulis dengan LENGKAP format standar (contoh: Rp 18.000, Rp 1.500.000)
+  // Jika di bawah 1 Miliar, tulis full
   if (isRupiah) {
       return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(displayValue);
   } else {
@@ -68,12 +65,11 @@ function formatCurrency(value, valueIsUSD, displaySymbol, usdIdr) {
   }
 }
 
-// Helper perantara supaya tidak perlu ubah variabel JSX diseluruh file
 function formatCurrencyShort(value, valueIsUSD, displaySymbol, usdIdr) {
   return formatCurrency(value, valueIsUSD, displaySymbol, usdIdr);
 }
 
-// Format Super Ringkas (K, M, B, T) - Khusus untuk card "Cash vs Invested" agar muat sempurna
+// Aturan 2: Format Compact (K, M, B, T) untuk spesifik section jika >= 1 Juta
 function formatCurrencyCompact(value, valueIsUSD, displaySymbol, usdIdr) {
   if (value === null || typeof value === 'undefined' || isNaN(Number(value))) return displaySymbol === '$' ? '$0.00' : 'Rp 0';
   let displayValue = valueIsUSD ? value : (displaySymbol === '$' ? value / usdIdr : value);
@@ -87,16 +83,16 @@ function formatCurrencyCompact(value, valueIsUSD, displaySymbol, usdIdr) {
 
   const formatNum = (num, divisor) => {
       let str = (num / divisor).toFixed(2);
-      if (str.endsWith('.00')) str = str.slice(0, -3); // Bersihkan ".00" jika angka pas bulat
+      if (str.endsWith('.00')) str = str.slice(0, -3); 
       return isRupiah ? str.replace('.', ',') : str;
   };
 
   if (absNum >= 1e12) return `${sign}${prefix}${formatNum(absNum, 1e12)} T`;
   if (absNum >= 1e9)  return `${sign}${prefix}${formatNum(absNum, 1e9)} B`;
   if (absNum >= 1e6)  return `${sign}${prefix}${formatNum(absNum, 1e6)} M`;
-  if (absNum >= 1e4)  return `${sign}${prefix}${formatNum(absNum, 1e3)} K`; // Untuk angka > 10.000 gunakan K
   
-  return formatCurrency(value, valueIsUSD, displaySymbol, usdIdr); // Fallback ke normal
+  // Jika masih di bawah 1 juta, ikuti format full
+  return formatCurrency(value, valueIsUSD, displaySymbol, usdIdr); 
 }
 
 function formatQty(v) {
@@ -123,18 +119,18 @@ const BottomSheet = ({ isOpen, onClose, children }) => {
 
 /* ===================== Main Component ===================== */
 export default function PortfolioDashboard() {
-  const STORAGE_VERSION = "v35"; 
+  const STORAGE_VERSION = "v36"; 
   const [assets, setAssets] = useState(() => isBrowser ? JSON.parse(localStorage.getItem(`pf_assets_${STORAGE_VERSION}`) || "[]").map(ensureNumericAsset) : []);
   const [transactions, setTransactions] = useState(() => isBrowser ? JSON.parse(localStorage.getItem(`pf_transactions_${STORAGE_VERSION}`) || "[]") : []);
   const [financialSummaries, setFinancialSummaries] = useState({ realizedUSD: 0, tradingBalance: 0, totalDeposits: 0, totalWithdrawals: 0, });
   const [displaySymbol, setDisplaySymbol] = useState(() => isBrowser ? (localStorage.getItem(`pf_display_sym_${STORAGE_VERSION}`) || "Rp") : "Rp");
   
   const [usdIdr, setUsdIdr] = useState(() => isBrowser ? Number(localStorage.getItem(`pf_usd_idr_rate_${STORAGE_VERSION}`) || 16200) : 16200);
-
   const [profilePic, setProfilePic] = useState(() => isBrowser ? localStorage.getItem(`pf_profile_pic_${STORAGE_VERSION}`) || null : null);
 
+  // Initial Fetch USD/IDR Rate on Mount
   useEffect(() => {
-      const fetchRate = async () => {
+      const fetchInitialRate = async () => {
           try {
               const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=idr');
               const data = await res.json();
@@ -142,12 +138,11 @@ export default function PortfolioDashboard() {
                   setUsdIdr(data.tether.idr);
                   if (isBrowser) localStorage.setItem(`pf_usd_idr_rate_${STORAGE_VERSION}`, data.tether.idr.toString());
               }
-          } catch (e) { console.error("Failed to fetch IDR rate", e); }
+          } catch (e) { console.error("Initial IDR rate fetch failed", e); }
       };
-      fetchRate();
+      fetchInitialRate();
   }, []);
   
-  // Pinned assets default Nasdaq-100 & BTC
   const defaultWatched = [
       { id: 'QQQ', symbol: 'NASDAQ', name: 'Nasdaq 100 (QQQ)', type: 'stock', image: 'https://s3-symbol-logo.tradingview.com/indices/nasdaq-100.svg' },
       { id: 'bitcoin', symbol: 'BTC', name: 'Bitcoin', type: 'crypto', image: 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png' }
@@ -219,9 +214,19 @@ export default function PortfolioDashboard() {
   useEffect(() => { if (isBrowser) localStorage.setItem(`pf_price_history_${STORAGE_VERSION}`, JSON.stringify(priceHistory)); }, [priceHistory]);
   useEffect(() => { if (isBrowser) localStorage.setItem(`pf_asset_display_as_${STORAGE_VERSION}`, assetDisplayAs); }, [assetDisplayAs]);
 
-  // Data Polling (Harga Realtime)
+  // Data Polling: Saham, Crypto, dan USDT/IDR (Tether) secara realtime (tiap 20 detik)
   useEffect(() => {
     const pollPrices = async () => {
+      // 1. Fetch Realtime IDR via Tether (USDT)
+      try {
+          const resIdr = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=idr');
+          const dataIdr = await resIdr.json();
+          if (dataIdr?.tether?.idr) {
+              setUsdIdr(dataIdr.tether.idr);
+              if (isBrowser) localStorage.setItem(`pf_usd_idr_rate_${STORAGE_VERSION}`, dataIdr.tether.idr.toString());
+          }
+      } catch (e) { console.error("Polling IDR rate failed", e); }
+
       if (assets.length === 0 && watchedAssets.length === 0) return;
 
       const stockSymbols = [...new Set(assets.filter(a => a.type === "stock").map(a => a.symbol).filter(Boolean))];
@@ -513,6 +518,7 @@ export default function PortfolioDashboard() {
   }, [derivedData.rows, assetSortBy]);
 
 
+  // Update Realtime: Grafik Growth Chart kini menggunakan Data Waktu Sekarang dari state
   const equitySeries = useMemo(() => {
     const sortedTx = [...transactions].sort((a, b) => a.date - b.date);
     if (sortedTx.length === 0) return [{ t: Date.now() - 86400000, v: 0 }, { t: Date.now(), v: 0 }];
@@ -542,8 +548,9 @@ export default function PortfolioDashboard() {
         points.push({ t: tx.date, v: currentCash + (holdingsValueUSD * usdIdr) });
     }
     if (points.length === 0) return [{ t: Date.now() - 86400000, v: 0 }, { t: Date.now(), v: derivedData.totalEquity }];
+    // Inject node harga Realtime terkini ke ujung garis chart!
     return [{ t: points[0].t - 86400000, v: 0 }, ...points, {t: Date.now(), v: derivedData.totalEquity}];
-  }, [transactions, assets, usdIdr, derivedData.totalEquity]);
+  }, [transactions, assets, usdIdr, derivedData.totalEquity]); // Terhubung dengan aset & waktu yang bergerak dinamis
 
   const handleWatchedAssetClick = (data) => {
     const assetStub = {
@@ -594,13 +601,13 @@ export default function PortfolioDashboard() {
         <main>
           <section className="p-4">
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                <div onClick={() => setIsEquityModalOpen(true)} className="glass-card p-3 sm:p-4 shadow-lg flex flex-col justify-between cursor-pointer hover:border-white/20 transition-all overflow-hidden">
-                    <div className="min-w-0">
+                <div onClick={() => setIsEquityModalOpen(true)} className="glass-card p-3 sm:p-4 shadow-lg flex flex-col justify-between cursor-pointer hover:border-white/20 transition-all overflow-hidden relative group">
+                    <div className="min-w-0 z-10">
                         <p className="text-gray-400 text-[10px] sm:text-xs">Total Equity</p>
                         <p className="text-xl sm:text-2xl md:text-3xl font-bold text-white truncate w-full">{formatCurrency(derivedData.totalEquity, false, displaySymbol, usdIdr)}</p>
                         <p className="text-[11px] sm:text-xs text-gray-400 mt-1 truncate w-full">{displaySymbol === 'Rp' ? formatCurrency(derivedData.totalEquity, false, '$', usdIdr) : formatCurrency(derivedData.totalEquity, false, 'Rp', usdIdr)}</p>
                     </div>
-                     <div className="text-[10px] sm:text-xs mt-2 space-y-1 text-gray-400 border-t border-white/10 pt-2 min-w-0">
+                     <div className="text-[10px] sm:text-xs mt-2 space-y-1 text-gray-400 border-t border-white/10 pt-2 min-w-0 z-10">
                         <div className="flex justify-between w-full">
                             <span className="truncate pr-1">Unrealized P&L</span>
                             <span className={`font-semibold shrink-0 ${derivedData.totals.unrealizedPnlUSD >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
@@ -614,10 +621,10 @@ export default function PortfolioDashboard() {
                             </span>
                         </div>
                     </div>
-                    <div className="h-16 -mb-4 -mx-4 mt-auto pt-2"><AreaChart data={equitySeries} simplified={true}/></div>
+                    {/* Real-time broker style chart preview */}
+                    <div className="h-20 -mb-4 -mx-4 mt-auto pt-2 opacity-80 group-hover:opacity-100 transition-opacity"><AreaChart data={equitySeries} simplified={true} displaySymbol={displaySymbol}/></div>
                 </div>
                 
-                {/* CARD KHUSUS: Menggunakan formatCurrencyCompact (K, M, B, T) secara intensif agar ringkas */}
                 <div onClick={() => setIsAllocationModalOpen(true)} className="glass-card p-3 sm:p-4 shadow-lg flex flex-col justify-center cursor-pointer hover:border-white/20 transition-all min-w-0">
                     <div className="grid grid-cols-2 text-center gap-1 w-full">
                         <div className="flex flex-col items-center overflow-hidden w-full">
@@ -660,7 +667,7 @@ export default function PortfolioDashboard() {
                     </div>
                 </div>
                 <div className="flex flex-col gap-2 min-w-0">
-                    {/* Kartu Pin */}
+                    {/* Kartu Pin Default Sesuai Request */}
                     {watchedAssets.map(w => {
                         const data = watchedAssetData[w.id] || { price_usd: 0, change_24h: 0 };
                         const change = data.change_24h || 0;
@@ -752,7 +759,7 @@ export default function PortfolioDashboard() {
         <AssetDetailModal isOpen={isAssetDetailModalOpen} onClose={() => setAssetDetailModalOpen(false)} asset={selectedAssetForDetail} onBuy={handleBuy} onSell={handleSell} onDelete={handleDeleteAsset} usdIdr={usdIdr} displaySymbol={displaySymbol} />
         <Modal title="Add New Asset" isOpen={isAddAssetModalOpen} onClose={() => setAddAssetModalOpen(false)} size="lg"><AddAssetForm {...{searchMode, setSearchMode, query, setQuery, suggestions, setSelectedSuggestion, isSearching, addAssetWithInitial, addNonLiquidAsset, nlName, setNlName, nlQty, setNlQty, nlPrice, setNlPrice, nlPriceCcy, setNlPriceCcy, nlPurchaseDate, setNlPurchaseDate, nlYoy, setNlYoy, nlDesc, setNlDesc, displaySymbol, handleSetWatchedAsset, watchedAssets}} /></Modal>
         <Modal title={`${balanceModalMode} Balance`} isOpen={isBalanceModalOpen} onClose={() => setBalanceModalOpen(false)} size="lg"><BalanceManager onConfirm={balanceModalMode === 'Add' ? handleAddBalance : handleWithdraw} /></Modal>
-        <Modal title="Portfolio Growth" isOpen={isEquityModalOpen} onClose={() => setIsEquityModalOpen(false)}><EquityGrowthView equitySeries={equitySeries} displaySymbol={displaySymbol} usdIdr={usdIdr} totalEquity={derivedData.totalEquity} /></Modal>
+        <Modal title="Portfolio Growth" isOpen={isEquityModalOpen} onClose={() => setIsEquityModalOpen(false)} size="3xl"><EquityGrowthView equitySeries={equitySeries} displaySymbol={displaySymbol} usdIdr={usdIdr} totalEquity={derivedData.totalEquity} /></Modal>
         <Modal title="Portfolio Allocation" isOpen={isAllocationModalOpen} onClose={() => setIsAllocationModalOpen(false)}><PortfolioAllocation data={derivedData.rows} tradingBalance={financialSummaries.tradingBalance} displaySymbol={displaySymbol} usdIdr={usdIdr}/></Modal>
         <Modal title="Transaction History" isOpen={isHistoryModalOpen} onClose={() => setIsHistoryModalOpen(false)}><HistoryView transactions={transactions} usdIdr={usdIdr} displaySymbol={displaySymbol} onDeleteTransaction={handleDeleteTransaction} /></Modal>
         <Modal title="Trade Performance" isOpen={isPerformanceModalOpen} onClose={() => setIsPerformanceModalOpen(false)} size="2xl">
@@ -776,7 +783,7 @@ export default function PortfolioDashboard() {
   );
 }
 
-/* ===================== Charts ===================== */
+/* ===================== Charts (Enhanced Broker-Style) ===================== */
 const Sparkline = ({ data = [], color = '#10B981' }) => {
   const uniqueId = useMemo(() => `sparkline-gradient-${Math.random().toString(36).substr(2, 9)}`, []);
 
@@ -809,6 +816,7 @@ const Sparkline = ({ data = [], color = '#10B981' }) => {
   );
 };
 
+// Grafik Growth yang sangat mirip Broker Interaktif
 const AreaChart = ({ data: chartData, simplified = false, displaySymbol, range, setRange, showTimeframes = true }) => {
   const [hoverData, setHoverData] = useState(null);
   const svgRef = useRef(null);
@@ -833,7 +841,7 @@ const AreaChart = ({ data: chartData, simplified = false, displaySymbol, range, 
       return filteredData;
   }, [filteredData, startTime, now]);
 
-  const height = simplified ? 80 : 220;
+  const height = simplified ? 80 : 250;
   const width = 700;
   const padding = { top: simplified ? 5 : 20, bottom: simplified ? 5 : 40, left: 0, right: simplified ? 0 : 80 };
   
@@ -842,6 +850,7 @@ const AreaChart = ({ data: chartData, simplified = false, displaySymbol, range, 
   const xScale = (t) => padding.left + ((t - timeStart) / (timeEnd - timeStart || 1)) * (width - padding.left - padding.right);
   const yScale = (v) => padding.top + (1 - (v - minVal) / valRange) * (height - padding.top - padding.bottom);
 
+  // SVG Mulus dan Rapi ala Broker
   const createSmoothPath = (points, x, y) => {
     if (points.length < 2) return "";
     if (points.length === 2) return `M ${x(points[0].t)},${y(points[0].v)} L ${x(points[1].t)},${y(points[1].v)}`;
@@ -858,25 +867,53 @@ const AreaChart = ({ data: chartData, simplified = false, displaySymbol, range, 
   const path = createSmoothPath(data, xScale, yScale);
   const areaPath = `${path} L ${xScale(timeEnd)},${height - padding.bottom} L ${xScale(timeStart)},${height - padding.bottom} Z`;
   
+  const lastPoint = data[data.length - 1];
+  const lastX = xScale(lastPoint.t);
+  const lastY = yScale(lastPoint.v);
+
   const handleMouseMove = (event) => {
     if (simplified || !svgRef.current || data.length < 2) return;
     const svg = svgRef.current; const rect = svg.getBoundingClientRect(); const x = event.clientX - rect.left;
-    const time = timeStart + ((x - padding.left) / (width - padding.left - padding.right)) * (timeEnd - timeStart);
+    const boundedX = Math.max(padding.left, Math.min(x, width - padding.right)); // Cegah ke pinggir banget
+    const time = timeStart + ((boundedX - padding.left) / (width - padding.left - padding.right)) * (timeEnd - timeStart);
     let closestPoint = data.reduce((prev, curr) => Math.abs(curr.t - time) < Math.abs(prev.t - time) ? curr : prev);
     if (closestPoint) setHoverData({ point: closestPoint, x: xScale(closestPoint.t), y: yScale(closestPoint.v) });
   };
 
   return (
     <div>
-      <div className="relative">
-        <svg ref={svgRef} width="100%" height={height} viewBox={`0 0 ${width} ${height}`} onMouseMove={handleMouseMove} onMouseLeave={() => setHoverData(null)}>
-          <defs><linearGradient id="areaGradient2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="#10B981" stopOpacity={0.3} /><stop offset="100%" stopColor="#10B981" stopOpacity={0.05} /></linearGradient></defs>
-          <path d={areaPath} fill="url(#areaGradient2)" style={{ transition: 'd 0.5s ease' }} />
-          <path d={path} fill="none" stroke="#10B981" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" style={{ transition: 'd 0.5s ease' }} />
+      <div className="relative group">
+        <svg ref={svgRef} width="100%" height={height} viewBox={`0 0 ${width} ${height}`} onMouseMove={handleMouseMove} onMouseLeave={() => setHoverData(null)} className="cursor-crosshair">
+          <defs>
+              <linearGradient id="areaGradientBroker" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stopColor="#10B981" stopOpacity={0.4} />
+                  <stop offset="100%" stopColor="#10B981" stopOpacity={0.0} />
+              </linearGradient>
+              <filter id="glow">
+                  <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                  <feMerge>
+                      <feMergeNode in="coloredBlur"/>
+                      <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+              </filter>
+          </defs>
+          
+          <path d={areaPath} fill="url(#areaGradientBroker)" style={{ transition: 'd 0.3s ease' }} />
+          <path d={path} fill="none" stroke="#10B981" strokeWidth={simplified ? "1.5" : "2.5"} strokeLinejoin="round" strokeLinecap="round" style={{ transition: 'd 0.3s ease' }} filter={!simplified ? "url(#glow)" : ""} />
+          
+          {/* Garis Horizontal Realtime / Last Price Tracker */}
+          {!simplified && (
+             <line x1={0} x2={width - padding.right} y1={lastY} y2={lastY} stroke="#10B981" strokeWidth="1" strokeDasharray="4 4" opacity="0.4" className="transition-all duration-300" />
+          )}
+          
+          {/* Pulsing Dot pada harga terakhir untuk efek "Live" */}
+          <circle cx={lastX} cy={lastY} r={simplified ? "2" : "4"} fill="#10B981" className="animate-pulse" />
+
           {!simplified && (
             <>
               {Array.from({length: 5}, (_, i) => minVal + (valRange / 4) * i).map((v, idx) => {
                   let strLabel = '';
+                  // Tetap gunakan format ringkas untuk Grid Sumbu Y agar rapih (contoh: 1,5M)
                   if(displaySymbol === 'Rp') {
                       if(v >= 1e12) strLabel = `Rp ${(v/1e12).toFixed(1)}T`;
                       else if(v >= 1e9) strLabel = `Rp ${(v/1e9).toFixed(1)}B`;
@@ -892,18 +929,30 @@ const AreaChart = ({ data: chartData, simplified = false, displaySymbol, range, 
                   }
                   return (
                   <g key={idx}>
-                      <line x1={padding.left} x2={width - padding.right} y1={yScale(v)} y2={yScale(v)} stroke="rgba(255,255,255,0.08)" strokeDasharray="2,2" />
-                      <text x={width - padding.right + 6} y={yScale(v) + 4} fontSize="11" fill="#6B7280">{strLabel}</text>
+                      <text x={width - padding.right + 6} y={yScale(v) + 4} fontSize="10" fill="#6B7280" className="font-semibold">{strLabel}</text>
                   </g>
               )})}
-              {Array.from({length: 5}, (_, i) => {const t = timeStart + (i / 4) * (timeEnd - timeStart); return {t, label: new Date(t).toLocaleDateString('id-ID', {day: 'numeric', month: 'short'})}}).map((item, idx) => (<text key={idx} x={xScale(item.t)} y={height - padding.bottom + 15} textAnchor="middle" fontSize="11" fill="#6B7280">{item.label}</text>))}
-              {hoverData && (<g><line y1={padding.top} y2={height - padding.bottom} x1={hoverData.x} x2={hoverData.x} stroke="#9CA3AF" strokeWidth="1" strokeDasharray="3,3" /><circle cx={hoverData.x} cy={hoverData.y} r="4" fill="#10B981" stroke="white" strokeWidth="2" /></g>)}
+              {Array.from({length: 5}, (_, i) => {const t = timeStart + (i / 4) * (timeEnd - timeStart); return {t, label: new Date(t).toLocaleDateString('id-ID', {day: 'numeric', month: 'short'})}}).map((item, idx) => (<text key={idx} x={xScale(item.t)} y={height - padding.bottom + 20} textAnchor="middle" fontSize="10" fill="#6B7280">{item.label}</text>))}
+              
+              {/* Interactive Hover Crosshair */}
+              {hoverData && (
+                  <g>
+                      <line y1={padding.top} y2={height - padding.bottom} x1={hoverData.x} x2={hoverData.x} stroke="#9CA3AF" strokeWidth="1" strokeDasharray="3 3" opacity="0.6"/>
+                      <circle cx={hoverData.x} cy={hoverData.y} r="5" fill="#10B981" stroke="white" strokeWidth="2" filter="url(#glow)"/>
+                  </g>
+              )}
             </>
           )}
         </svg>
-        {hoverData && (<div className="absolute p-2 rounded-lg bg-zinc-800 text-white text-xs pointer-events-none" style={{ left: `${hoverData.x / width * 100}%`, top: `${padding.top-10}px`, transform: `translateX(-50%)` }}><div>{new Date(hoverData.point.t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</div><div className="font-bold">{formatCurrency(hoverData.point.v, false, displaySymbol, 1)}</div></div>)}
+        {/* Floating Tooltip Ala Broker */}
+        {hoverData && !simplified && (
+            <div className="absolute p-3 rounded-xl bg-zinc-800/95 backdrop-blur shadow-2xl border border-white/10 text-white text-xs pointer-events-none transform -translate-x-1/2 -translate-y-full transition-transform" style={{ left: `${(hoverData.x / width) * 100}%`, top: `${hoverData.y - 15}px`, minWidth: '130px', zIndex: 10 }}>
+                <div className="text-gray-400 font-medium mb-1">{new Date(hoverData.point.t).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour:'2-digit', minute:'2-digit' })}</div>
+                <div className="font-bold text-lg text-emerald-400">{formatCurrency(hoverData.point.v, false, displaySymbol, 1)}</div>
+            </div>
+        )}
       </div>
-      {showTimeframes && <div className="flex justify-center gap-2 mt-2">{['1W', '1M', '3M', 'YTD', '1Y', 'All'].map(r => (<button key={r} onClick={() => setRange(r)} className={`px-3 py-1 text-xs rounded-full ${range === r ? 'bg-zinc-700 text-white' : 'text-gray-400'}`}>{r}</button>))}</div>}
+      {showTimeframes && <div className="flex justify-center gap-2 mt-4">{['1W', '1M', '3M', 'YTD', '1Y', 'All'].map(r => (<button key={r} onClick={() => setRange(r)} className={`px-4 py-1 text-[11px] font-semibold rounded-full transition-all ${range === r ? 'bg-emerald-600 text-white shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-zinc-800 text-gray-400 hover:bg-zinc-700'}`}>{r}</button>))}</div>}
     </div>
   );
 };
@@ -1120,7 +1169,7 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
                     })} 
                 </svg> 
                 <div className="absolute flex flex-col items-center justify-center pointer-events-none">
-                    <div className="text-lg sm:text-xl font-bold text-white max-w-[120px] truncate">{formatCurrencyShort(totalValueDisplay, false, displaySymbol, 1)}</div>
+                    <div className="text-lg sm:text-xl font-bold text-white max-w-[120px] text-center truncate">{formatCurrencyCompact(totalValueDisplay, false, displaySymbol, 1)}</div>
                     <div className="text-xs sm:text-sm text-gray-400">{data.length} {activeTab === 'Asset' ? 'Items' : 'Sectors'}</div>
                 </div> 
             </div> 
@@ -1136,7 +1185,7 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="font-semibold text-white truncate w-full">{d.name}</div>
-                                    <div className="text-[10px] sm:text-xs text-gray-400 truncate w-full">{formatCurrency(valueDisplay, false, displaySymbol, 1)}</div>
+                                    <div className="text-[10px] sm:text-xs text-gray-400 truncate w-full">{formatCurrencyCompact(valueDisplay, false, displaySymbol, 1)}</div>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2 w-1/2 shrink-0">
@@ -1207,4 +1256,3 @@ const AssetTableView = ({ rows, displaySymbol, usdIdr, onRowClick }) => {
         </div>
     );
 }
-
