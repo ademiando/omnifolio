@@ -399,13 +399,19 @@ export default function App() {
     <div className="h-[100dvh] w-full bg-black flex flex-col font-sans selection:bg-transparent overflow-hidden">
       <div className="w-full max-w-md mx-auto h-full flex flex-col relative">
         
-        {/* Navigasi Toggle */}
-        <div className="flex justify-center pt-5 pb-3 w-full px-4 shrink-0">
-          <div className="flex bg-[#1c1d22] rounded-full p-1 border border-gray-800 w-full shadow-sm">
-            <button onClick={() => setActiveTab("scientific")} className={`flex-1 py-2.5 text-sm font-medium rounded-full transition-all ${activeTab === "scientific" ? "bg-[#32343d] text-white shadow" : "text-gray-500 hover:text-gray-300"}`}>
+        {/* Navigasi Toggle - Sekarang Dikecilkan & Pas di Tengah */}
+        <div className="flex justify-center pt-5 pb-3 w-full shrink-0">
+          <div className="flex bg-[#1c1d22] rounded-full p-1 border border-gray-800 shadow-sm">
+            <button 
+              onClick={() => setActiveTab("scientific")} 
+              className={`px-5 py-2 text-[13px] sm:text-sm font-medium rounded-full transition-all ${activeTab === "scientific" ? "bg-[#32343d] text-white shadow" : "text-gray-500 hover:text-gray-300"}`}
+            >
               Calculator
             </button>
-            <button onClick={() => setActiveTab("trading")} className={`flex-1 py-2.5 text-sm font-medium rounded-full transition-all ${activeTab === "trading" ? "bg-[#32343d] text-white shadow" : "text-gray-500 hover:text-gray-300"}`}>
+            <button 
+              onClick={() => setActiveTab("trading")} 
+              className={`px-5 py-2 text-[13px] sm:text-sm font-medium rounded-full transition-all ${activeTab === "trading" ? "bg-[#32343d] text-white shadow" : "text-gray-500 hover:text-gray-300"}`}
+            >
               Trading Plan
             </button>
           </div>
