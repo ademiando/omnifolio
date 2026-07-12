@@ -1,5 +1,5 @@
 // app/dashboard/page.js
-react
+
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
