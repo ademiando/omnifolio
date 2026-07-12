@@ -3,11 +3,11 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
-/* ===================== Icons ===================== */
-const UserAvatar = () => (<svg width="28" height="28" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#374151"></circle><path d="M12 14c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4zm0-2c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z" fill="#9CA3AF"></path></svg>);
+/* ===================== Icons (Modern & Professional) ===================== */
+const HamburgerIcon = () => (<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>);
+const UserAvatar = () => (<svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#374151"></circle><path d="M12 14c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4zm0-2c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z" fill="#9CA3AF"></path></svg>);
 const MoreVerticalIcon = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>);
 const ArrowRightIconSimple = () => (<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"></polyline></svg>);
-const BackArrowIcon = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>);
 const TrashIcon = ({className}) => (<svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path></svg>);
 const ArrowUpIcon = ({className}) => <svg className={className} width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor"><path fillRule="evenodd" d="M8 12a.5.5 0 0 0 .5-.5V5.707l2.146 2.147a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 1 0 .708.708L7.5 5.707V11.5a.5.5 0 0 0 .5.5z"/></svg>;
 const ArrowDownIcon = ({className}) => <svg className={className} width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor"><path fillRule="evenodd" d="M8 4a.5.5 0 0 1 .5.5v5.793l2.146-2.147a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 1 1 .708-.708L7.5 10.293V4.5A.5.5 0 0 1 8 4z"/></svg>;
@@ -17,80 +17,53 @@ const ExitFullscreenIcon = ({ className }) => (<svg className={className} width=
 const PencilIcon = (props) => (<svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>);
 const AvgProfitIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20V16"/></svg>;
 const AvgLossIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4v10"/><path d="M18 4v16"/><path d="M6 4v8"/></svg>;
-const EquityIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18"/><path d="M7 16V8l4 4 4-4v8"/></svg>;
-const CryptoIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M8.5 14.5h7M8.5 9.5h7M12 17.5v-11"/></svg>;
-const CashIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><circle cx="12" cy="12" r="4"></circle></svg>;
-const NonLiquidIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
 const SearchIcon = (props) => (<svg {...props} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" ><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>);
 const StarIcon = ({ isFilled, ...props }) => (<svg {...props} width="20" height="20" viewBox="0 0 24 24" fill={isFilled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>);
 
-/* ===================== Config & Helpers ===================== */
-const COINGECKO_API = "https://api.coingecko.com/api/v3";
-const YAHOO_FINANCE_SEARCH_URL = (q) => `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}`;
-const PROXIED_YAHOO_SEARCH = (q) => `https://api.allorigins.win/raw?url=${encodeURIComponent(YAHOO_FINANCE_SEARCH_URL(q))}`;
+// Sector Allocation Icons (Clean & Professional SVG)
+const WalletIcon = ({className}) => (<svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"></path><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"></path><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z"></path></svg>);
+const TrendingUpIcon = ({className}) => (<svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>);
+const BitcoinIcon = ({className}) => (<svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L8 11"></path><path d="M9 7h4a2 2 0 1 1 0 4h-2"></path><path d="M10 3v4"></path><path d="M14 3v4"></path><path d="M10 17v4"></path><path d="M14 17v4"></path><circle cx="12" cy="12" r="10"></circle></svg>);
+const BuildingIcon = ({className}) => (<svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><path d="M9 22v-4h6v4"></path><path d="M8 6h.01"></path><path d="M16 6h.01"></path><path d="M12 6h.01"></path><path d="M12 10h.01"></path><path d="M12 14h.01"></path><path d="M16 10h.01"></path><path d="M16 14h.01"></path><path d="M8 10h.01"></path><path d="M8 14h.01"></path></svg>);
 
-const FINNHUB_TOKEN = "cns0a0pr01qj9b42289gcns0a0pr01qj9b4228a0";
-const FINNHUB_QUOTE = (symbol) => `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${FINNHUB_TOKEN}`;
+
+/* ===================== Config & Robust Proxy API ===================== */
+const COINGECKO_API = "https://api.coingecko.com/api/v3";
+// Kita pakai raw allorigins jika content json bisa diakses, menghindari limitasi CORS browser modern.
+const YAHOO_SEARCH_API = (q) => `https://api.allorigins.win/get?url=${encodeURIComponent(`https://query2.finance.yahoo.com/v1/finance/search?q=${q}`)}`;
+const YAHOO_SPARK_API = (symbols) => `https://api.allorigins.win/get?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v7/finance/spark?symbols=${symbols.join(',')}`)}`;
 const COINGECKO_MARKETS = (ids) => `${COINGECKO_API}/coins/markets?vs_currency=usd&ids=${encodeURIComponent(ids)}&price_change_percentage=24h`;
 
 const isBrowser = typeof window !== "undefined";
 const toNum = (v) => { const n = Number(String(v).replace(/,/g, '').replace(/\s/g,'')); return isNaN(n) ? 0 : n; };
 
+// Formatting Uang supaya Rapih di Mobile
 function formatCurrency(value, valueIsUSD, displaySymbol, usdIdr) {
-  if (value === null || typeof value === 'undefined' || isNaN(Number(value))) {
-    return displaySymbol === '$' ? '$0.00' : 'Rp 0';
-  }
-
+  if (value === null || typeof value === 'undefined' || isNaN(Number(value))) { return displaySymbol === '$' ? '$0.00' : 'Rp 0'; }
   let displayValue;
   if (displaySymbol === '$') {
     displayValue = valueIsUSD ? value : value / usdIdr;
-    const options = {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    };
-    if (Math.abs(displayValue) > 0 && Math.abs(displayValue) < 1) {
-      options.minimumFractionDigits = 8;
-      options.maximumFractionDigits = 8;
-    }
+    const options = { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 };
+    if (Math.abs(displayValue) > 0 && Math.abs(displayValue) < 1) { options.minimumFractionDigits = 8; options.maximumFractionDigits = 8; }
     return new Intl.NumberFormat('en-US', options).format(displayValue);
   } else { 
     displayValue = valueIsUSD ? value * usdIdr : value;
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(displayValue);
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(displayValue);
   }
 }
 
 function formatCurrencyShort(value, valueIsUSD, displaySymbol, usdIdr) {
-  let displayValue;
+  if (value === null || typeof value === 'undefined' || isNaN(Number(value))) return '0';
+  let displayValue = valueIsUSD ? value : (displaySymbol === '$' ? value / usdIdr : value);
+  if (!valueIsUSD && displaySymbol !== '$') displayValue = value; // is IDR
+  if (valueIsUSD && displaySymbol !== '$') displayValue = value * usdIdr; // USD to IDR
+  
   if (displaySymbol === '$') {
-    displayValue = valueIsUSD ? value : value / usdIdr;
-     return new Intl.NumberFormat('en-US', {
-      notation: 'compact',
-      compactDisplay: 'short',
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(displayValue);
+     return new Intl.NumberFormat('en-US', { notation: 'compact', compactDisplay: 'short', style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(displayValue);
   } else { 
-    displayValue = valueIsUSD ? value * usdIdr : value;
-     return new Intl.NumberFormat('id-ID', {
-      notation: 'compact',
-      compactDisplay: 'short',
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(displayValue);
+     return new Intl.NumberFormat('id-ID', { notation: 'compact', compactDisplay: 'short', style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(displayValue);
   }
 }
-
 
 function formatQty(v) {
   const n = Number(v || 0);
@@ -106,27 +79,46 @@ function ensureNumericAsset(a) {
 /* ===================== UI Helpers ===================== */
 const Modal = ({ children, isOpen, onClose, title, size = "2xl" }) => {
   if (!isOpen) return null;
-  const sizeClasses = {
-      'lg': 'max-w-lg',
-      '2xl': 'max-w-2xl',
-      '3xl': 'max-w-3xl',
-  };
-  return (<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}><div className={`glass-card w-full ${sizeClasses[size]}`} onClick={e => e.stopPropagation()}><div className="flex justify-between items-center p-4 border-b border-white/10"><h2 className="text-lg font-semibold text-white">{title}</h2><button onClick={onClose} className="text-gray-400 hover:text-white text-2xl">&times;</button></div><div className="p-4">{children}</div></div></div>);
+  const sizeClasses = { 'lg': 'max-w-lg', '2xl': 'max-w-2xl', '3xl': 'max-w-3xl' };
+  return (<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 transition-opacity" onClick={onClose}><div className={`glass-card w-full ${sizeClasses[size]} max-h-[95vh] flex flex-col transform transition-transform duration-300 scale-100`} onClick={e => e.stopPropagation()}><div className="flex justify-between items-center p-4 border-b border-white/10 shrink-0"><h2 className="text-lg font-semibold text-white">{title}</h2><button onClick={onClose} className="text-gray-400 hover:text-white text-2xl px-2 py-1">&times;</button></div><div className="p-4 overflow-y-auto">{children}</div></div></div>);
 };
 const BottomSheet = ({ isOpen, onClose, children }) => {
   if (!isOpen) return null;
-  return (<div className="fixed inset-0 bg-black/60 z-40" onClick={onClose}><div className={`fixed bottom-0 left-0 right-0 glass-card rounded-t-2xl shadow-lg transition-transform duration-300 ${isOpen ? 'translate-y-0' : 'translate-y-full'}`} onClick={e => e.stopPropagation()}><div className="w-10 h-1 bg-zinc-700 rounded-full mx-auto my-3"></div>{children}</div></div>);
+  return (<div className="fixed inset-0 bg-black/60 z-40 transition-opacity" onClick={onClose}><div className={`fixed bottom-0 left-0 right-0 glass-card rounded-t-2xl shadow-lg transition-transform duration-300 ${isOpen ? 'translate-y-0' : 'translate-y-full'}`} onClick={e => e.stopPropagation()}><div className="w-10 h-1 bg-zinc-700 rounded-full mx-auto my-3"></div>{children}</div></div>);
 };
 
 /* ===================== Main Component ===================== */
 export default function PortfolioDashboard() {
-  const STORAGE_VERSION = "v26"; 
+  const STORAGE_VERSION = "v35"; 
   const [assets, setAssets] = useState(() => isBrowser ? JSON.parse(localStorage.getItem(`pf_assets_${STORAGE_VERSION}`) || "[]").map(ensureNumericAsset) : []);
   const [transactions, setTransactions] = useState(() => isBrowser ? JSON.parse(localStorage.getItem(`pf_transactions_${STORAGE_VERSION}`) || "[]") : []);
   const [financialSummaries, setFinancialSummaries] = useState({ realizedUSD: 0, tradingBalance: 0, totalDeposits: 0, totalWithdrawals: 0, });
   const [displaySymbol, setDisplaySymbol] = useState(() => isBrowser ? (localStorage.getItem(`pf_display_sym_${STORAGE_VERSION}`) || "Rp") : "Rp");
-  const [usdIdr] = useState(16400); 
-  const [watchedAssetIds, setWatchedAssetIds] = useState(() => isBrowser ? JSON.parse(localStorage.getItem(`pf_watched_assets_${STORAGE_VERSION}`) || '["tether", "bitcoin"]') : ['tether', 'bitcoin']);
+  
+  // Realtime USDT to IDR Rate
+  const [usdIdr, setUsdIdr] = useState(() => isBrowser ? Number(localStorage.getItem(`pf_usd_idr_rate_${STORAGE_VERSION}`) || 16200) : 16200);
+
+  useEffect(() => {
+      // Mengambil kurs riil IDR berdasarkan harga USDT di pasaran kripto (Coingecko)
+      const fetchRate = async () => {
+          try {
+              const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=idr');
+              const data = await res.json();
+              if (data && data.tether && data.tether.idr) {
+                  setUsdIdr(data.tether.idr);
+                  if (isBrowser) localStorage.setItem(`pf_usd_idr_rate_${STORAGE_VERSION}`, data.tether.idr.toString());
+              }
+          } catch (e) { console.error("Failed to fetch IDR rate", e); }
+      };
+      fetchRate();
+  }, []);
+  
+  // Pinned assets default S&P 500 & Nasdaq - Menggunakan Proxy SPY & QQQ untuk Keandalan 100% Yahoo Finance
+  const defaultWatched = [
+      { id: 'SPY', symbol: 'S&P 500', name: 'S&P 500 Index (SPY)', type: 'stock', image: 'https://s3-symbol-logo.tradingview.com/indices/sp-500.svg' },
+      { id: 'QQQ', symbol: 'NASDAQ', name: 'Nasdaq (QQQ)', type: 'stock', image: 'https://s3-symbol-logo.tradingview.com/indices/nasdaq-100.svg' }
+  ];
+  const [watchedAssets, setWatchedAssets] = useState(() => isBrowser ? JSON.parse(localStorage.getItem(`pf_watched_assets_${STORAGE_VERSION}`)) || defaultWatched : defaultWatched);
   const [watchedAssetData, setWatchedAssetData] = useState({});
   const [priceHistory, setPriceHistory] = useState(() => isBrowser ? JSON.parse(localStorage.getItem(`pf_price_history_${STORAGE_VERSION}`) || "{}") : {});
   const [priceFlashes, setPriceFlashes] = useState({});
@@ -136,6 +128,7 @@ export default function PortfolioDashboard() {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [selectedSuggestion, setSelectedSuggestion] = useState(null);
+  const [isSearching, setIsSearching] = useState(false); // Indikator Loading Pencarian
   const [isManagePortfolioOpen, setManagePortfolioOpen] = useState(false);
   const [isBalanceModalOpen, setBalanceModalOpen] = useState(false);
   const [balanceModalMode, setBalanceModalMode] = useState('Add');
@@ -146,11 +139,11 @@ export default function PortfolioDashboard() {
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isPerformanceModalOpen, setIsPerformanceModalOpen] = useState(false);
   const [isAssetOptionsOpen, setIsAssetOptionsOpen] = useState(false);
-  const [assetSortBy, setAssetSortBy] = useState('default'); // 'default', 'allocation', 'purchaseDate'
+  const [assetSortBy, setAssetSortBy] = useState('default');
   const [assetDisplayAs, setAssetDisplayAs] = useState(() => isBrowser ? (localStorage.getItem(`pf_asset_display_as_${STORAGE_VERSION}`) || 'card') : 'card');
 
-
-  const [nlName, setNlName] = useState(""), [nlQty, setNlQty] = useState(""), [nlPrice, setNlPrice] = useState(""), [nlPriceCcy, setNlPriceCcy] = useState("IDR"), [nlPurchaseDate, setNlPurchaseDate] = useState(""), [nlYoy, setNlYoy] = useState("5"), [nlDesc, setNlDesc] = useState("");
+  // Angka 5 dihapus dari nlYoy default
+  const [nlName, setNlName] = useState(""), [nlQty, setNlQty] = useState(""), [nlPrice, setNlPrice] = useState(""), [nlPriceCcy, setNlPriceCcy] = useState("IDR"), [nlPurchaseDate, setNlPurchaseDate] = useState(""), [nlYoy, setNlYoy] = useState(""), [nlDesc, setNlDesc] = useState("");
   const importInputRef = useRef(null);
   const prevAssetsRef = useRef();
   
@@ -185,21 +178,18 @@ export default function PortfolioDashboard() {
   useEffect(() => { 
     if (isBrowser) {
         localStorage.setItem(`pf_assets_${STORAGE_VERSION}`, JSON.stringify(assets));
-        prevAssetsRef.current = assets.reduce((acc, asset) => {
-            acc[asset.id] = asset;
-            return acc;
-        }, {});
+        prevAssetsRef.current = assets.reduce((acc, asset) => { acc[asset.id] = asset; return acc; }, {});
     }
   }, [assets]);
   useEffect(() => { if (isBrowser) localStorage.setItem(`pf_display_sym_${STORAGE_VERSION}`, displaySymbol); }, [displaySymbol]);
-  useEffect(() => { if (isBrowser) localStorage.setItem(`pf_watched_assets_${STORAGE_VERSION}`, JSON.stringify(watchedAssetIds)); }, [watchedAssetIds]);
+  useEffect(() => { if (isBrowser) localStorage.setItem(`pf_watched_assets_${STORAGE_VERSION}`, JSON.stringify(watchedAssets)); }, [watchedAssets]);
   useEffect(() => { if (isBrowser) localStorage.setItem(`pf_price_history_${STORAGE_VERSION}`, JSON.stringify(priceHistory)); }, [priceHistory]);
   useEffect(() => { if (isBrowser) localStorage.setItem(`pf_asset_display_as_${STORAGE_VERSION}`, assetDisplayAs); }, [assetDisplayAs]);
 
-
+  // Data Polling (Harga Realtime)
   useEffect(() => {
     const pollPrices = async () => {
-      if (assets.length === 0 && watchedAssetIds.length === 0) return;
+      if (assets.length === 0 && watchedAssets.length === 0) return;
 
       const stockSymbols = [...new Set(assets.filter(a => a.type === "stock").map(a => a.symbol).filter(Boolean))];
       const portfolioCryptoIds = [...new Set(assets.filter(a => a.type === "crypto" && a.coingeckoId).map(a => a.coingeckoId))];
@@ -207,29 +197,60 @@ export default function PortfolioDashboard() {
       const newPrices = {};
       const newFlashes = {};
       const newHistory = {...priceHistory};
+      const newWatchedData = {...watchedAssetData};
 
-      for (const symbol of stockSymbols) {
+      // 1. Fetch Stocks (Saham Global & Indo) dengan Robust Proxy
+      const watchedStocks = watchedAssets.filter(a => a.type === 'stock');
+      const allStockSymbols = [...new Set([...stockSymbols, ...watchedStocks.map(s => s.id || s.symbol)])];
+      
+      if (allStockSymbols.length > 0) {
         try {
-          const res = await fetch(FINNHUB_QUOTE(symbol));
-          const data = await res.json();
-          if (data && data.c > 0) {
-            const priceInUSD = symbol.endsWith('.JK') ? data.c / usdIdr : data.c;
-            newPrices[symbol] = { price: priceInUSD, change: data.d ?? 0, pctChange: data.dp ?? 0 };
-          }
-        } catch (e) { console.error(`Failed to fetch price for ${symbol}`, e); }
+            const res = await fetch(YAHOO_SPARK_API(allStockSymbols));
+            const wrapper = await res.json();
+            const data = JSON.parse(wrapper.contents); 
+            const spark = data?.spark?.result || [];
+            
+            spark.forEach(item => {
+                const sym = item.symbol;
+                const meta = item.response[0]?.meta;
+                if(meta && meta.regularMarketPrice) {
+                    const priceInUSD = sym.endsWith('.JK') ? meta.regularMarketPrice / usdIdr : meta.regularMarketPrice;
+                    const prevCloseUSD = sym.endsWith('.JK') ? (meta.previousClose || meta.regularMarketPrice) / usdIdr : (meta.previousClose || meta.regularMarketPrice);
+                    const changeUSD = priceInUSD - prevCloseUSD;
+                    const pctChange = prevCloseUSD ? (changeUSD / prevCloseUSD) * 100 : 0;
+                    
+                    // Update Harga Aset di Portofolio
+                    const assetObj = assets.find(a => a.symbol === sym || a.id === sym);
+                    if (assetObj) {
+                        newPrices[assetObj.symbol] = { price: priceInUSD, change: changeUSD, pctChange: pctChange };
+                    }
+                    
+                    // Update Harga Aset yang di Pin (S&P 500, Nasdaq, dll)
+                    const watchedStock = watchedStocks.find(s => s.id === sym || s.symbol === sym);
+                    if(watchedStock) {
+                        newWatchedData[watchedStock.id] = {
+                            id: watchedStock.id, price_usd: priceInUSD, change_24h: pctChange,
+                            name: watchedStock.name, symbol: watchedStock.symbol, type: 'stock', image: watchedStock.image
+                        };
+                    }
+                }
+            });
+        } catch (e) { console.error("Failed to fetch stock prices", e); }
       }
       
-      const allCryptoIds = [...new Set([...portfolioCryptoIds, ...watchedAssetIds])];
+      // 2. Fetch Cryptos dengan Coingecko
+      const watchedCryptos = watchedAssets.filter(a => a.type === 'crypto');
+      const allCryptoIds = [...new Set([...portfolioCryptoIds, ...watchedCryptos.map(c => c.id)])];
+      
       if (allCryptoIds.length > 0) {
         try {
             const res = await fetch(COINGECKO_MARKETS(allCryptoIds.join(',')));
             const data = await res.json();
-            const newWatchedData = {};
-
+            
             data.forEach(item => {
-                if (watchedAssetIds.includes(item.id)) {
+                if (watchedCryptos.some(w => w.id === item.id)) {
                      newWatchedData[item.id] = {
-                        id: item.id, price_usd: item.current_price,
+                        id: item.id, price_usd: item.current_price, type: 'crypto',
                         change_24h: item.price_change_percentage_24h,
                         name: item.name, symbol: item.symbol.toUpperCase(), image: item.image,
                     };
@@ -241,74 +262,81 @@ export default function PortfolioDashboard() {
                     }
                 }
             });
-            setWatchedAssetData(newWatchedData);
         } catch (e) { console.error("Failed to fetch crypto prices", e); }
       }
       
+      setWatchedAssetData(newWatchedData);
+
+      // Hitung Flash & History
       if (Object.keys(newPrices).length > 0) {
         setAssets(prev => prev.map(a => {
             if (newPrices[a.symbol]) {
                 const newPriceData = newPrices[a.symbol];
                 const prevAsset = prevAssetsRef.current?.[a.id];
-
                 if (prevAsset && newPriceData.price !== prevAsset.lastPriceUSD) {
                     newFlashes[a.id] = newPriceData.price > prevAsset.lastPriceUSD ? 'up' : 'down';
                 }
-
                 const history = (newHistory[a.id] || []).slice(-29);
                 history.push(newPriceData.price);
                 newHistory[a.id] = history;
-
-                return { 
-                    ...a, 
-                    lastPriceUSD: newPriceData.price,
-                    change24hUSD: newPriceData.change,
-                    change24hPct: newPriceData.pctChange
-                };
+                return { ...a, lastPriceUSD: newPriceData.price, change24hUSD: newPriceData.change, change24hPct: newPriceData.pctChange };
             }
             return a;
         }));
         
         setPriceHistory(newHistory);
-        
         if (Object.keys(newFlashes).length > 0) {
             setPriceFlashes(newFlashes);
             Object.keys(newFlashes).forEach(assetId => {
-                setTimeout(() => {
-                    setPriceFlashes(prev => {
-                        const next = {...prev};
-                        delete next[assetId];
-                        return next;
-                    });
-                }, 700);
+                setTimeout(() => { setPriceFlashes(prev => { const next = {...prev}; delete next[assetId]; return next; }); }, 700);
             });
         }
       }
     };
 
     pollPrices();
-    const id = setInterval(pollPrices, 25000);
+    // Refresh tiap 20 detik biar tidak kena limit API gratis Coingecko/Yahoo
+    const id = setInterval(pollPrices, 20000); 
     return () => clearInterval(id);
-  }, [assets.length, usdIdr, watchedAssetIds]);
+  }, [assets.length, usdIdr, watchedAssets]);
 
+  // Fungsi Pencarian (Search API) Terjamin + Indikator Loading
   const searchTimeoutRef = useRef(null);
   useEffect(() => {
-    if (!query || query.trim().length < 2) { setSuggestions([]); return; }
+    if (!query || query.trim().length < 2) { setSuggestions([]); setIsSearching(false); return; }
+    setIsSearching(true);
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    
     searchTimeoutRef.current = setTimeout(async () => {
       try {
         const q = query.trim();
-        const url = searchMode === 'crypto' ? `${COINGECKO_API}/search?query=${encodeURIComponent(q)}` : PROXIED_YAHOO_SEARCH(q);
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('Search API failed');
-        const j = await res.json();
         if (searchMode === 'crypto') {
-          setSuggestions((j.coins || []).slice(0, 10).map(c => ({ symbol: c.symbol.toUpperCase(), display: `${c.name} (${c.symbol.toUpperCase()})`, id: c.id, image: c.thumb, source: "coingecko", type: "crypto" })));
+          const res = await fetch(`${COINGECKO_API}/search?query=${encodeURIComponent(q)}`);
+          if (!res.ok) throw new Error('Search API failed');
+          const j = await res.json();
+          setSuggestions((j.coins || []).slice(0, 10).map(c => ({ 
+              symbol: c.symbol.toUpperCase(), display: `${c.name} (${c.symbol.toUpperCase()})`, id: c.id, 
+              image: c.thumb, source: "coingecko", type: "crypto" 
+          })));
         } else {
-          setSuggestions((j.quotes || []).filter(it => it.shortname || it.longname).map(it => ({ symbol: it.symbol.toUpperCase(), display: `${it.shortname || it.longname} (${it.symbol.toUpperCase()})`, exchange: it.exchange, source: "yahoo", type: "stock" })).slice(0, 10));
+          // Yahoo Search via Proxy
+          const res = await fetch(YAHOO_SEARCH_API(q));
+          if (!res.ok) throw new Error('Search API failed');
+          const wrapper = await res.json();
+          const j = JSON.parse(wrapper.contents);
+          
+          setSuggestions((j.quotes || []).filter(it => it.shortname || it.longname).map(it => ({ 
+              symbol: it.symbol.toUpperCase(), 
+              display: `${it.shortname || it.longname} (${it.symbol.toUpperCase()})`, 
+              exchange: it.exchange, 
+              id: it.symbol.toUpperCase(), 
+              source: "yahoo", 
+              type: "stock", 
+              image: `https://ui-avatars.com/api/?name=${it.symbol}&background=random&color=fff&rounded=true&bold=true` 
+          })).slice(0, 10));
         }
-      } catch (e) { console.error("Search failed:", e); setSuggestions([]); }
-    }, 400);
+      } catch (e) { console.error("Search failed:", e); setSuggestions([]); } finally { setIsSearching(false); }
+    }, 600); 
     return () => clearTimeout(searchTimeoutRef.current);
   }, [query, searchMode]);
 
@@ -340,14 +368,18 @@ export default function PortfolioDashboard() {
     setAssetDetailModalOpen(false);
   };
   
-  const handleDeleteTransaction = (txId) => { if (confirm("Delete this transaction permanently?")) setTransactions(prev => prev.filter(tx => tx.id !== txId)); };
+  const handleDeleteTransaction = (txId) => { 
+      if (confirm("Delete this transaction permanently?")) {
+          setTransactions(prev => prev.filter(tx => tx.id !== txId)); 
+      }
+  };
 
   const addAssetWithInitial = (qty, price) => {
     qty = toNum(qty); price = toNum(price); let p = selectedSuggestion;
-    if (!p) { const t = query.split("(")[0].trim(); if (!t) return; p = { symbol: t.toUpperCase(), display: t.toUpperCase(), type: searchMode, image: null }; }
+    if (!p) { const t = query.split("(")[0].trim(); if (!t) return; p = { symbol: t.toUpperCase(), display: t.toUpperCase(), type: searchMode, image: null, id: t.toUpperCase() }; }
     if (qty <= 0 || price <= 0) return;
     const priceUSD = (displaySymbol === "Rp") ? price / usdIdr : price;
-    const newStub = { id: `${p.type}:${p.symbol||p.id}`, type: p.type, symbol: p.symbol, name: p.display, image: p.image, coingeckoId: p.type === 'crypto' ? p.id : undefined };
+    const newStub = { id: p.id, type: p.type, symbol: p.symbol, name: p.display, image: p.image, coingeckoId: p.type === 'crypto' ? p.id : undefined };
     if (handleBuy(newStub, qty, priceUSD)) { setAddAssetModalOpen(false); setQuery(''); setSelectedSuggestion(null); setSuggestions([]); }
   };
 
@@ -355,6 +387,7 @@ export default function PortfolioDashboard() {
     const name = nlName.trim(), qty = toNum(nlQty), priceIn = toNum(nlPrice);
     if (!name || qty <= 0 || priceIn <= 0) { alert("Name, quantity, and price must be filled."); return; }
     const priceUSD = nlPriceCcy === 'IDR' ? priceIn / usdIdr : priceIn;
+    // Fallback Image building if needed, though icon is handled by Allocation 
     const newAssetStub = { id: `nonliquid:${name.replace(/\s/g,'_')}`, type: 'nonliquid', symbol: name.slice(0,8).toUpperCase(), name, purchaseDate: nlPurchaseDate ? new Date(nlPurchaseDate).getTime() : Date.now(), nonLiquidYoy: toNum(nlYoy), description: nlDesc };
     if (handleBuy(newAssetStub, qty, priceUSD)) { setAddAssetModalOpen(false); setNlName(''); setNlQty(''); setNlPrice(''); setNlPurchaseDate(''); setNlDesc(''); }
   };
@@ -404,11 +437,11 @@ export default function PortfolioDashboard() {
     reader.readAsText(file); setManagePortfolioOpen(false);
   };
 
-  const handleSetWatchedAsset = (cryptoId) => {
-    setWatchedAssetIds(prev => {
-        if (prev.includes(cryptoId)) return prev.filter(id => id !== cryptoId);
-        if (prev.length >= 2) { const newWatched = [...prev]; newWatched.shift(); newWatched.push(cryptoId); return newWatched; }
-        return [...prev, cryptoId];
+  const handleSetWatchedAsset = (assetData) => {
+    setWatchedAssets(prev => {
+        if (prev.some(a => a.id === assetData.id)) return prev.filter(a => a.id !== assetData.id);
+        if (prev.length >= 2) { const newWatched = [...prev]; newWatched.shift(); newWatched.push(assetData); return newWatched; }
+        return [...prev, assetData];
     });
   };
 
@@ -438,12 +471,8 @@ export default function PortfolioDashboard() {
 
   const sortedAssets = useMemo(() => {
     const assetsToSort = [...derivedData.rows];
-    if (assetSortBy === 'allocation') {
-        return assetsToSort.sort((a,b) => b.marketValueUSD - a.marketValueUSD);
-    }
-    if (assetSortBy === 'purchaseDate') {
-        return assetsToSort.sort((a,b) => a.purchaseDate - b.purchaseDate);
-    }
+    if (assetSortBy === 'allocation') { return assetsToSort.sort((a,b) => b.marketValueUSD - a.marketValueUSD); }
+    if (assetSortBy === 'purchaseDate') { return assetsToSort.sort((a,b) => a.purchaseDate - b.purchaseDate); }
     return assetsToSort; // default
   }, [derivedData.rows, assetSortBy]);
 
@@ -485,12 +514,12 @@ export default function PortfolioDashboard() {
         id: `watched:${data.id}`,
         symbol: data.symbol,
         name: data.name,
-        type: 'crypto',
-        coingeckoId: data.id,
-        lastPriceUSD: data.price_usd,
-        change24hUSD: data.price_usd * (data.change_24h / 100),
-        change24hPct: data.change_24h,
-        shares: 0, // Key indicator that it's not owned
+        type: data.type || 'stock',
+        coingeckoId: data.type === 'crypto' ? data.id : undefined,
+        lastPriceUSD: data.price_usd || 0,
+        change24hUSD: (data.price_usd || 0) * ((data.change_24h || 0) / 100),
+        change24hPct: data.change_24h || 0,
+        shares: 0,
     };
     setSelectedAssetForDetail(assetStub);
     setAssetDetailModalOpen(true);
@@ -499,16 +528,8 @@ export default function PortfolioDashboard() {
   return (
     <div className="bg-black text-gray-300 min-h-screen font-sans main-background">
       <style>{`
-        body, .main-background {
-          background-color: #000000;
-        }
-        .glass-card {
-          background: rgba(28, 28, 32, 0.6);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border-radius: 12px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+        body, .main-background { background-color: #000000; }
+        .glass-card { background: rgba(28, 28, 32, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); }
         @keyframes flash-green { 0% { background-color: rgba(16, 185, 129, 0.5); } 100% { background-color: transparent; } }
         @keyframes flash-red { 0% { background-color: rgba(239, 68, 68, 0.5); } 100% { background-color: transparent; } }
         .flash-up { animation: flash-green 0.7s ease-out; }
@@ -517,8 +538,11 @@ export default function PortfolioDashboard() {
       `}</style>
       <div className="max-w-4xl mx-auto">
         <header className="p-4 flex justify-between items-center sticky top-0 bg-black/50 backdrop-blur-sm z-10">
-            <div className="flex items-center gap-3"><UserAvatar /></div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
+                <button className="text-gray-400 hover:text-white lg:hidden"><HamburgerIcon /></button>
+                <UserAvatar />
+            </div>
+            <div className="flex items-center gap-4 sm:gap-6">
                 <button onClick={() => setAddAssetModalOpen(true)} className="text-gray-400 hover:text-white"><SearchIcon /></button>
                 <div className="flex items-center gap-2"><span className="text-xs font-semibold text-gray-400">IDR</span><div role="switch" aria-checked={displaySymbol === "$"} onClick={() => setDisplaySymbol(prev => prev === "Rp" ? "$" : "Rp")} className={`relative w-12 h-6 rounded-full p-1 cursor-pointer transition ${displaySymbol === "$" ? 'bg-emerald-600' : 'bg-zinc-700'}`}><div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${displaySymbol === "$" ? 'translate-x-6' : 'translate-x-0'}`}></div></div><span className="text-xs font-semibold text-gray-400">USD</span></div>
                 <button onClick={() => setManagePortfolioOpen(true)} className="text-gray-400 hover:text-white"><MoreVerticalIcon /></button>
@@ -528,77 +552,91 @@ export default function PortfolioDashboard() {
           <section className="p-4">
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 <div onClick={() => setIsEquityModalOpen(true)} className="glass-card p-3 sm:p-4 shadow-lg flex flex-col justify-between cursor-pointer hover:border-white/20 transition-all overflow-hidden">
-                    <div>
+                    <div className="min-w-0">
                         <p className="text-gray-400 text-[10px] sm:text-xs">Total Equity</p>
-                        <p className="text-xl sm:text-3xl font-bold text-white">{formatCurrency(derivedData.totalEquity, false, displaySymbol, usdIdr)}</p>
-                        <p className="text-xs text-gray-400 mt-1">{displaySymbol === 'Rp' ? formatCurrency(derivedData.totalEquity, false, '$', usdIdr) : formatCurrency(derivedData.totalEquity, false, 'Rp', usdIdr)}</p>
+                        <p className="text-xl sm:text-2xl md:text-3xl font-bold text-white truncate w-full">{formatCurrency(derivedData.totalEquity, false, displaySymbol, usdIdr)}</p>
+                        <p className="text-[11px] sm:text-xs text-gray-400 mt-1 truncate w-full">{displaySymbol === 'Rp' ? formatCurrency(derivedData.totalEquity, false, '$', usdIdr) : formatCurrency(derivedData.totalEquity, false, 'Rp', usdIdr)}</p>
                     </div>
-                     <div className="text-[10px] sm:text-xs mt-2 space-y-1 text-gray-400 border-t border-white/10 pt-2">
-                        <div className="flex justify-between">
-                            <span>Unrealized P&L</span>
-                            <span className={`font-semibold ${derivedData.totals.unrealizedPnlUSD >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                {formatCurrency(derivedData.totals.unrealizedPnlUSD, true, displaySymbol, usdIdr)}
+                     <div className="text-[10px] sm:text-xs mt-2 space-y-1 text-gray-400 border-t border-white/10 pt-2 min-w-0">
+                        <div className="flex justify-between w-full">
+                            <span className="truncate pr-1">Unrealized P&L</span>
+                            <span className={`font-semibold shrink-0 ${derivedData.totals.unrealizedPnlUSD >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                {formatCurrencyShort(derivedData.totals.unrealizedPnlUSD, true, displaySymbol, usdIdr)}
                             </span>
                         </div>
-                        <div className="flex justify-between">
+                        <div className="flex justify-between w-full">
                             <span>&nbsp;</span>
-                            <span className={`font-semibold text-right block ${derivedData.totals.unrealizedPnlUSD >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            <span className={`font-semibold text-right block shrink-0 ${derivedData.totals.unrealizedPnlUSD >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                                 {derivedData.totals.unrealizedPnlUSD >= 0 ? '+' : ''}{derivedData.totals.unrealizedPnlPct.toFixed(2)}%
                             </span>
                         </div>
                     </div>
                     <div className="h-16 -mb-4 -mx-4 mt-auto pt-2"><AreaChart data={equitySeries} simplified={true}/></div>
                 </div>
-                <div onClick={() => setIsAllocationModalOpen(true)} className="glass-card p-3 sm:p-4 shadow-lg flex flex-col justify-center cursor-pointer hover:border-white/20 transition-all">
-                    <div className="grid grid-cols-2 text-center gap-1">
-                        <p className="text-gray-400 text-[11px] sm:text-xs">Cash</p>
-                        <p className="text-gray-400 text-[11px] sm:text-xs">Invested</p>
-                        <p className="font-semibold text-sm sm:text-base -mt-1">{formatCurrencyShort(tradingBalance, false, displaySymbol, usdIdr)}</p>
-                        <p className="font-semibold text-sm sm:text-base -mt-1">{formatCurrencyShort(derivedData.totals.marketValueUSD, true, displaySymbol, usdIdr)}</p>
+                <div onClick={() => setIsAllocationModalOpen(true)} className="glass-card p-3 sm:p-4 shadow-lg flex flex-col justify-center cursor-pointer hover:border-white/20 transition-all min-w-0">
+                    <div className="grid grid-cols-2 text-center gap-1 w-full">
+                        <div className="flex flex-col items-center overflow-hidden w-full">
+                            <p className="text-gray-400 text-[11px] sm:text-xs">Cash</p>
+                            <p className="font-semibold text-sm sm:text-base -mt-1 truncate w-full">{formatCurrencyShort(tradingBalance, false, displaySymbol, usdIdr)}</p>
+                        </div>
+                        <div className="flex flex-col items-center overflow-hidden w-full">
+                            <p className="text-gray-400 text-[11px] sm:text-xs">Invested</p>
+                            <p className="font-semibold text-sm sm:text-base -mt-1 truncate w-full">{formatCurrencyShort(derivedData.totals.marketValueUSD, true, displaySymbol, usdIdr)}</p>
+                        </div>
                     </div>
                     <div className="relative w-full h-4 bg-black/20 rounded-full my-2 flex text-[10px] font-bold text-white items-center">
-                        <div className="bg-sky-500 h-full flex items-center justify-center rounded-l-full" style={{ width: `${derivedData.cashPct}%` }}>
+                        <div className="bg-sky-500 h-full flex items-center justify-center rounded-l-full overflow-hidden" style={{ width: `${derivedData.cashPct}%` }}>
                             {derivedData.cashPct > 15 && `${derivedData.cashPct.toFixed(0)}%`}
                         </div>
-                        <div className="bg-teal-500 h-full flex items-center justify-center rounded-r-full" style={{ width: `${derivedData.investedPct}%` }}>
+                        <div className="bg-teal-500 h-full flex items-center justify-center rounded-r-full overflow-hidden" style={{ width: `${derivedData.investedPct}%` }}>
                             {derivedData.investedPct > 15 && `${derivedData.investedPct.toFixed(0)}%`}
                         </div>
                     </div>
-                    <div className="text-[10px] sm:text-xs mt-2 space-y-1 text-gray-400 border-t border-white/10 pt-2">
-                        <div className="flex justify-between">
-                            <span>Net Deposit</span>
-                            <span className="font-medium text-gray-300">{formatCurrency(derivedData.netDeposit, false, displaySymbol, usdIdr)}</span>
+                    <div className="text-[10px] sm:text-xs mt-2 space-y-1 text-gray-400 border-t border-white/10 pt-2 min-w-0">
+                        <div className="flex justify-between w-full gap-1">
+                            <span className="truncate shrink-0">Net Deposit</span>
+                            <span className="font-medium text-gray-300 truncate text-right">{formatCurrencyShort(derivedData.netDeposit, false, displaySymbol, usdIdr)}</span>
                         </div>
-                        <div className="flex justify-between">
-                            <span>Total G/L</span>
-                            <span className={`font-semibold ${derivedData.totalPnlUSD >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                {formatCurrency(derivedData.totalPnlUSD, true, displaySymbol, usdIdr)}
+                        <div className="flex justify-between w-full gap-1">
+                            <span className="truncate shrink-0">Total G/L</span>
+                            <span className={`font-semibold truncate text-right ${derivedData.totalPnlUSD >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                {formatCurrencyShort(derivedData.totalPnlUSD, true, displaySymbol, usdIdr)}
                             </span>
                         </div>
                     </div>
                 </div>
-                <div onClick={() => setIsHistoryModalOpen(true)} className="glass-card p-3 sm:p-4 shadow-lg cursor-pointer hover:border-white/20 transition-all">
+                <div onClick={() => setIsHistoryModalOpen(true)} className="glass-card p-3 sm:p-4 shadow-lg cursor-pointer hover:border-white/20 transition-all min-w-0">
                      <p className="text-gray-400 text-[10px] sm:text-xs mb-2">Summary</p>
-                    <div className="text-[11px] sm:text-xs space-y-2">
-                        <div className="flex justify-between items-center"><span className="text-gray-400">Deposit</span><span className="font-medium">{formatCurrency(totalDeposits, false, displaySymbol, usdIdr)}</span></div>
-                        <div className="flex justify-between items-center"><span className="text-gray-400">Withdraw</span><span className="font-medium">{formatCurrency(totalWithdrawals, false, displaySymbol, usdIdr)}</span></div>
-                        <div className="flex justify-between items-center border-t border-white/10 pt-2 mt-2"><span className="text-gray-400">Realized P&L</span><span className={`font-semibold ${realizedUSD >= 0 ? 'text-[#20c997]' : 'text-red-400'}`}>{realizedUSD >= 0 ? '+' : ''}{formatCurrency(realizedUSD, true, displaySymbol, usdIdr)}</span></div>
+                    <div className="text-[11px] sm:text-xs space-y-2 min-w-0">
+                        <div className="flex justify-between items-center gap-1 w-full"><span className="text-gray-400 shrink-0">Deposit</span><span className="font-medium truncate text-right">{formatCurrencyShort(totalDeposits, false, displaySymbol, usdIdr)}</span></div>
+                        <div className="flex justify-between items-center gap-1 w-full"><span className="text-gray-400 shrink-0">Withdraw</span><span className="font-medium truncate text-right">{formatCurrencyShort(totalWithdrawals, false, displaySymbol, usdIdr)}</span></div>
+                        <div className="flex justify-between items-center gap-1 w-full border-t border-white/10 pt-2 mt-2"><span className="text-gray-400 shrink-0">Realized P&L</span><span className={`font-semibold truncate text-right ${realizedUSD >= 0 ? 'text-[#20c997]' : 'text-red-400'}`}>{realizedUSD >= 0 ? '+' : ''}{formatCurrencyShort(realizedUSD, true, displaySymbol, usdIdr)}</span></div>
                     </div>
                 </div>
-                <div className="flex flex-col gap-2">
-                    {watchedAssetIds.map(id => {
-                        const data = watchedAssetData[id];
-                        if (!data) return <div key={id} className="flex-1 glass-card p-2 animate-pulse"></div>;
+                <div className="flex flex-col gap-2 min-w-0">
+                    {/* Kartu Pin */}
+                    {watchedAssets.map(w => {
+                        const data = watchedAssetData[w.id] || { price_usd: 0, change_24h: 0 };
                         const change = data.change_24h || 0;
+                        const currentPrice = data.price_usd || 0;
                         return (
-                            <div key={id} onClick={() => handleWatchedAssetClick(data)} className="flex-1 glass-card p-2 flex items-center justify-between cursor-pointer hover:border-white/20 transition-all">
-                                <div className="flex items-center gap-2">
-                                    <img src={data.image} alt={data.name} className="w-6 h-6"/>
-                                    <div><p className="text-xs font-semibold text-white">{data.symbol}</p><p className="text-[10px] text-gray-400">{data.name}</p></div>
+                            <div key={w.id} onClick={() => handleWatchedAssetClick({...w, ...data})} className="flex-1 glass-card p-2 flex items-center justify-between cursor-pointer hover:border-white/20 transition-all overflow-hidden min-w-0">
+                                <div className="flex items-center gap-2 min-w-0 pr-2">
+                                    <img src={w.image} alt={w.name} className="w-6 h-6 rounded-full bg-zinc-800 object-cover shrink-0"/>
+                                    <div className="min-w-0">
+                                        <p className="text-[11px] sm:text-xs font-semibold text-white truncate max-w-[70px] sm:max-w-[100px]">{w.symbol}</p>
+                                        <p className="text-[9px] text-gray-400 truncate max-w-[70px] sm:max-w-[100px]">{w.name.replace(/\(.*?\)/,'').trim()}</p>
+                                    </div>
                                 </div>
-                                <div className="text-right">
-                                    <p className="text-xs font-semibold text-white tabular-nums">{formatCurrency(data.price_usd, true, displaySymbol, usdIdr)}</p>
-                                    <p className={`text-xs font-semibold tabular-nums ${change >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{change.toFixed(2)}%</p>
+                                <div className="text-right shrink-0">
+                                    {currentPrice > 0 ? (
+                                        <>
+                                            <p className="text-[11px] sm:text-xs font-semibold text-white tabular-nums truncate max-w-[75px]">{formatCurrencyShort(currentPrice, true, displaySymbol, usdIdr)}</p>
+                                            <p className={`text-[10px] sm:text-xs font-semibold tabular-nums truncate ${change >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{change > 0 ? '+' : ''}{change.toFixed(2)}%</p>
+                                        </>
+                                    ) : (
+                                        <div className="w-10 h-3 bg-zinc-700/50 rounded animate-pulse"></div>
+                                    )}
                                 </div>
                             </div>
                         )
@@ -615,7 +653,7 @@ export default function PortfolioDashboard() {
             </div>
           </section>
           
-          <div className="p-2 space-y-2">
+          <div className="p-2 space-y-2 pb-10">
              {assetDisplayAs === 'card' ? (
                 sortedAssets.map(r => {
                     const pnlColor = r.pnlUSD >= 0 ? 'text-emerald-400' : 'text-red-400';
@@ -623,35 +661,35 @@ export default function PortfolioDashboard() {
                     const flashClass = priceFlashes[r.id] === 'up' ? 'flash-up' : priceFlashes[r.id] === 'down' ? 'flash-down' : '';
 
                     return (
-                        <div key={r.id} className="glass-card p-3 cursor-pointer hover:border-white/20 transition-all" onClick={() => { setSelectedAssetForDetail(r); setAssetDetailModalOpen(true); }}>
-                            <div className="flex justify-between items-center mb-3">
-                                <div>
-                                    <h3 className="text-lg font-bold text-white">{r.symbol}</h3>
-                                    <p className="text-xs text-gray-400 truncate max-w-[120px]">{r.name}</p>
+                        <div key={r.id} className="glass-card p-3 sm:p-4 cursor-pointer hover:border-white/20 transition-all min-w-0" onClick={() => { setSelectedAssetForDetail(r); setAssetDetailModalOpen(true); }}>
+                            <div className="flex justify-between items-center mb-3 min-w-0">
+                                <div className="min-w-0 flex-1 pr-2">
+                                    <h3 className="text-base sm:text-lg font-bold text-white truncate">{r.symbol}</h3>
+                                    <p className="text-[10px] sm:text-xs text-gray-400 truncate w-full">{r.name}</p>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-20 h-8">
+                                <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+                                    <div className="hidden sm:block w-20 h-8">
                                         <Sparkline data={priceHistory[r.id] || []} color={r.change24hPct >= 0 ? '#10B981' : '#EF4444'} />
                                     </div>
-                                    <div className={`text-right p-1 rounded-md ${flashClass}`}>
-                                        <p className="text-base font-semibold text-white tabular-nums">{formatCurrency(r.lastPriceUSD, true, displaySymbol, usdIdr)}</p>
-                                        <p className={`text-xs font-semibold tabular-nums ${changeColor}`}>
-                                            {r.change24hUSD >= 0 ? '+' : ''}{formatCurrency(r.change24hUSD, true, displaySymbol, usdIdr)} ({r.change24hPct?.toFixed(2) ?? '0.00'}%)
+                                    <div className={`text-right p-1 rounded-md ${flashClass} shrink-0`}>
+                                        <p className="text-sm sm:text-base font-semibold text-white tabular-nums truncate max-w-[80px] sm:max-w-full">{formatCurrency(r.lastPriceUSD, true, displaySymbol, usdIdr)}</p>
+                                        <p className={`text-[10px] sm:text-xs font-semibold tabular-nums truncate max-w-[80px] sm:max-w-full ${changeColor}`}>
+                                            {r.change24hUSD >= 0 ? '+' : ''}{formatCurrencyShort(r.change24hUSD, true, displaySymbol, usdIdr)} ({r.change24hPct?.toFixed(2) ?? '0.00'}%)
                                         </p>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4 text-xs pt-3 border-t border-white/10">
-                                <div className="space-y-1">
-                                    <div className="flex justify-between items-center"><span className="text-gray-400">Qty</span><span className="font-medium text-gray-200">{formatQty(r.shares)}</span></div>
-                                    <div className="flex justify-between items-center"><span className="text-gray-400">Invested</span><span className="font-medium text-gray-200">{formatCurrency(r.investedUSD, true, displaySymbol, usdIdr)}</span></div>
-                                    <div className="flex justify-between items-center"><span className="text-gray-400">Avg Price</span><span className="font-medium text-gray-200">{formatCurrency(r.avgPrice, true, displaySymbol, usdIdr)}</span></div>
+                            <div className="grid grid-cols-2 gap-2 sm:gap-4 text-[10px] sm:text-xs pt-3 border-t border-white/10 min-w-0">
+                                <div className="space-y-1 min-w-0">
+                                    <div className="flex justify-between items-center gap-1"><span className="text-gray-400 shrink-0">Qty</span><span className="font-medium text-gray-200 truncate">{formatQty(r.shares)}</span></div>
+                                    <div className="flex justify-between items-center gap-1"><span className="text-gray-400 shrink-0">Invested</span><span className="font-medium text-gray-200 truncate">{formatCurrencyShort(r.investedUSD, true, displaySymbol, usdIdr)}</span></div>
+                                    <div className="flex justify-between items-center gap-1"><span className="text-gray-400 shrink-0">Avg Price</span><span className="font-medium text-gray-200 truncate">{formatCurrencyShort(r.avgPrice, true, displaySymbol, usdIdr)}</span></div>
                                 </div>
-                                <div className="space-y-1 text-right">
-                                    <div className="flex justify-between items-center"><span className="text-gray-400">Gain P&L</span><span className={`font-semibold ${pnlColor}`}>{r.pnlUSD >= 0 ? '+' : ''}{formatCurrency(r.pnlUSD, true, displaySymbol, usdIdr)} ({r.pnlPct.toFixed(1)}%)</span></div>
-                                    <div className="flex justify-between items-center"><span className="text-gray-400">Market</span><span className="font-semibold text-gray-200">{formatCurrency(r.marketValueUSD, true, displaySymbol, usdIdr)}</span></div>
-                                    <div className="flex justify-between items-center"><span className="text-gray-400">Current Price</span><span className="font-semibold text-gray-200">{formatCurrency(r.lastPriceUSD, true, displaySymbol, usdIdr)}</span></div>
+                                <div className="space-y-1 text-right min-w-0">
+                                    <div className="flex justify-between items-center gap-1"><span className="text-gray-400 shrink-0">Gain P&L</span><span className={`font-semibold truncate ${pnlColor}`}>{r.pnlUSD >= 0 ? '+' : ''}{formatCurrencyShort(r.pnlUSD, true, displaySymbol, usdIdr)} ({r.pnlPct.toFixed(1)}%)</span></div>
+                                    <div className="flex justify-between items-center gap-1"><span className="text-gray-400 shrink-0">Market</span><span className="font-semibold text-gray-200 truncate">{formatCurrencyShort(r.marketValueUSD, true, displaySymbol, usdIdr)}</span></div>
+                                    <div className="flex justify-between items-center gap-1"><span className="text-gray-400 shrink-0">Current</span><span className="font-semibold text-gray-200 truncate">{formatCurrencyShort(r.lastPriceUSD, true, displaySymbol, usdIdr)}</span></div>
                                 </div>
                             </div>
                         </div>
@@ -666,7 +704,7 @@ export default function PortfolioDashboard() {
 
         </main>
         <AssetDetailModal isOpen={isAssetDetailModalOpen} onClose={() => setAssetDetailModalOpen(false)} asset={selectedAssetForDetail} onBuy={handleBuy} onSell={handleSell} onDelete={handleDeleteAsset} usdIdr={usdIdr} displaySymbol={displaySymbol} />
-        <Modal title="Add New Asset" isOpen={isAddAssetModalOpen} onClose={() => setAddAssetModalOpen(false)} size="lg"><AddAssetForm {...{searchMode, setSearchMode, query, setQuery, suggestions, setSelectedSuggestion, addAssetWithInitial, addNonLiquidAsset, nlName, setNlName, nlQty, setNlQty, nlPrice, setNlPrice, nlPriceCcy, setNlPriceCcy, nlPurchaseDate, setNlPurchaseDate, nlYoy, setNlYoy, nlDesc, setNlDesc, displaySymbol, handleSetWatchedAsset, watchedAssetIds}} /></Modal>
+        <Modal title="Add New Asset" isOpen={isAddAssetModalOpen} onClose={() => setAddAssetModalOpen(false)} size="lg"><AddAssetForm {...{searchMode, setSearchMode, query, setQuery, suggestions, setSelectedSuggestion, isSearching, addAssetWithInitial, addNonLiquidAsset, nlName, setNlName, nlQty, setNlQty, nlPrice, setNlPrice, nlPriceCcy, setNlPriceCcy, nlPurchaseDate, setNlPurchaseDate, nlYoy, setNlYoy, nlDesc, setNlDesc, displaySymbol, handleSetWatchedAsset, watchedAssets}} /></Modal>
         <Modal title={`${balanceModalMode} Balance`} isOpen={isBalanceModalOpen} onClose={() => setBalanceModalOpen(false)} size="lg"><BalanceManager onConfirm={balanceModalMode === 'Add' ? handleAddBalance : handleWithdraw} /></Modal>
         <Modal title="Portfolio Growth" isOpen={isEquityModalOpen} onClose={() => setIsEquityModalOpen(false)}><EquityGrowthView equitySeries={equitySeries} displaySymbol={displaySymbol} usdIdr={usdIdr} totalEquity={derivedData.totalEquity} /></Modal>
         <Modal title="Portfolio Allocation" isOpen={isAllocationModalOpen} onClose={() => setIsAllocationModalOpen(false)}><PortfolioAllocation data={derivedData.rows} tradingBalance={financialSummaries.tradingBalance} displaySymbol={displaySymbol} usdIdr={usdIdr}/></Modal>
@@ -719,7 +757,7 @@ const Sparkline = ({ data = [], color = '#10B981' }) => {
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
-      <polyline fill="none" stroke={color} strokeWidth="1.5" points={points} />
+      <polyline fill="none" stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" points={points} />
       <polygon fill={`url(#${uniqueId})`} points={areaPoints} />
     </svg>
   );
@@ -758,14 +796,19 @@ const AreaChart = ({ data: chartData, simplified = false, displaySymbol, range, 
   const xScale = (t) => padding.left + ((t - timeStart) / (timeEnd - timeStart || 1)) * (width - padding.left - padding.right);
   const yScale = (v) => padding.top + (1 - (v - minVal) / valRange) * (height - padding.top - padding.bottom);
 
+  // Mulus presisi tinggi - Cubic Bezier
   const createSmoothPath = (points, x, y) => {
-    if (points.length < 2) return ""; let path = `M ${x(points[0].t)},${y(points[0].v)}`;
+    if (points.length < 2) return "";
+    if (points.length === 2) return `M ${x(points[0].t)},${y(points[0].v)} L ${x(points[1].t)},${y(points[1].v)}`;
+    
+    let path = `M ${x(points[0].t)},${y(points[0].v)}`;
     for (let i = 0; i < points.length - 1; i++) {
-        const x_mid = (x(points[i].t) + x(points[i + 1].t)) / 2; const y_mid = (y(points[i].v) + y(points[i + 1].v)) / 2;
-        const cp_x1 = (x_mid + x(points[i].t)) / 2; const cp_x2 = (x_mid + x(points[i + 1].t)) / 2;
-        path += ` Q ${cp_x1},${y(points[i].v)},${x_mid},${y_mid}`;
-        path += ` Q ${cp_x2},${y(points[i + 1].v)},${x(points[i + 1].t)},${y(points[i + 1].v)}`;
-    } return path;
+        const x0 = x(points[i].t); const y0 = y(points[i].v);
+        const x1 = x(points[i + 1].t); const y1 = y(points[i + 1].v);
+        const xc = (x0 + x1) / 2;
+        path += ` C ${xc},${y0} ${xc},${y1} ${x1},${y1}`;
+    } 
+    return path;
   };
   const path = createSmoothPath(data, xScale, yScale);
   const areaPath = `${path} L ${xScale(timeEnd)},${height - padding.bottom} L ${xScale(timeStart)},${height - padding.bottom} Z`;
@@ -783,7 +826,8 @@ const AreaChart = ({ data: chartData, simplified = false, displaySymbol, range, 
       <div className="relative">
         <svg ref={svgRef} width="100%" height={height} viewBox={`0 0 ${width} ${height}`} onMouseMove={handleMouseMove} onMouseLeave={() => setHoverData(null)}>
           <defs><linearGradient id="areaGradient2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="#10B981" stopOpacity={0.3} /><stop offset="100%" stopColor="#10B981" stopOpacity={0.05} /></linearGradient></defs>
-          <path d={areaPath} fill="url(#areaGradient2)" /><path d={path} fill="none" stroke="#10B981" strokeWidth="2" />
+          <path d={areaPath} fill="url(#areaGradient2)" style={{ transition: 'd 0.5s ease' }} />
+          <path d={path} fill="none" stroke="#10B981" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" style={{ transition: 'd 0.5s ease' }} />
           {!simplified && (
             <>
               {Array.from({length: 5}, (_, i) => minVal + (valRange / 4) * i).map((v, idx) => (<g key={idx}><line x1={padding.left} x2={width - padding.right} y1={yScale(v)} y2={yScale(v)} stroke="rgba(255,255,255,0.08)" strokeDasharray="2,2" /><text x={width - padding.right + 6} y={yScale(v) + 4} fontSize="11" fill="#6B7280">{`${displaySymbol === 'Rp' ? 'Rp' : '$'}${Math.round(v/1000)}k`}</text></g>))}
@@ -820,7 +864,7 @@ const EquityGrowthView = ({ equitySeries, displaySymbol, usdIdr, totalEquity }) 
             return { date: dateLabel, equity: item.endEquity, pnl, pnlPct, rawDate: item.endDate }
         }).sort((a,b) => b.rawDate - a.rawDate);
     }, [equitySeries, returnPeriod]);
-    return ( <div className="p-1"> <div><p className="text-sm text-gray-400">Total Equity</p><p className="text-3xl font-bold text-white mb-1">{formatCurrency(totalEquity, false, displaySymbol, usdIdr)}</p></div> <div className="mt-6"><AreaChart data={equitySeries} displaySymbol={displaySymbol} range={chartRange} setRange={setChartRange} /></div> <div className="mt-8 max-h-64 overflow-y-auto"> <div className="flex justify-between items-center mb-4 sticky top-0 bg-zinc-900/80 backdrop-blur-sm py-2"><h3 className="text-base font-semibold text-white">Total Equity Return</h3><div className="flex items-center gap-2 text-sm">{['Daily', 'Monthly', 'Yearly'].map(p => (<button key={p} onClick={() => setReturnPeriod(p)} className={`px-3 py-1 rounded-full text-xs ${returnPeriod === p ? 'bg-zinc-700 text-white' : 'text-gray-400'}`}>{p}</button>))}</div></div> <table className="w-full text-sm"> <thead className="text-left text-gray-500 text-xs"><tr><th className="p-2 font-normal">Date</th><th className="p-2 font-normal text-right">Equity</th><th className="p-2 font-normal text-right">P&L</th></tr></thead> <tbody>{equityReturnData.map((item, index) => (<tr key={index} className="border-t border-white/10"><td className="p-2 text-white">{item.date}</td><td className="p-2 text-white text-right">{formatCurrency(item.equity, false, displaySymbol, usdIdr)}</td><td className={`p-2 text-right ${item.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{item.pnl >= 0 ? '+' : ''}{formatCurrency(item.pnl, false, displaySymbol, usdIdr)} ({item.pnlPct.toFixed(2)}%)</td></tr>))}</tbody> </table> </div> </div> );
+    return ( <div className="p-1"> <div><p className="text-sm text-gray-400">Total Equity</p><p className="text-2xl sm:text-3xl font-bold text-white mb-1 truncate w-full">{formatCurrency(totalEquity, false, displaySymbol, usdIdr)}</p></div> <div className="mt-6"><AreaChart data={equitySeries} displaySymbol={displaySymbol} range={chartRange} setRange={setChartRange} /></div> <div className="mt-8 max-h-64 overflow-y-auto"> <div className="flex justify-between items-center mb-4 sticky top-0 bg-zinc-900/80 backdrop-blur-sm py-2"><h3 className="text-base font-semibold text-white">Total Equity Return</h3><div className="flex items-center gap-2 text-sm">{['Daily', 'Monthly', 'Yearly'].map(p => (<button key={p} onClick={() => setReturnPeriod(p)} className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs ${returnPeriod === p ? 'bg-zinc-700 text-white' : 'text-gray-400'}`}>{p}</button>))}</div></div> <table className="w-full text-xs sm:text-sm"> <thead className="text-left text-gray-500 text-xs"><tr><th className="p-2 font-normal">Date</th><th className="p-2 font-normal text-right">Equity</th><th className="p-2 font-normal text-right">P&L</th></tr></thead> <tbody>{equityReturnData.map((item, index) => (<tr key={index} className="border-t border-white/10"><td className="p-2 text-white">{item.date}</td><td className="p-2 text-white text-right tabular-nums">{formatCurrencyShort(item.equity, false, displaySymbol, usdIdr)}</td><td className={`p-2 text-right tabular-nums ${item.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{item.pnl >= 0 ? '+' : ''}{formatCurrencyShort(item.pnl, false, displaySymbol, usdIdr)} <br className="sm:hidden" />({item.pnlPct.toFixed(2)}%)</td></tr>))}</tbody> </table> </div> </div> );
 };
 const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr }) => {
     const [chartRange, setChartRange] = useState("All");
@@ -829,21 +873,32 @@ const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr }) => {
     const sells = useMemo(() => transactions.filter(tx => tx.type === 'sell' || tx.type === 'delete'), [transactions]); const realizedGainOnly = useMemo(() => sells.filter(tx => tx.realized > 0).reduce((sum, tx) => sum + tx.realized, 0), [sells]); const realizedLossOnly = useMemo(() => sells.filter(tx => tx.realized < 0).reduce((sum, tx) => sum + tx.realized, 0), [sells]);
     const topGainers = useMemo(() => { const gainers = {}; sells.forEach(tx => { if (!gainers[tx.symbol]) gainers[tx.symbol] = { trades: 0, pnl: 0, cost: 0 }; gainers[tx.symbol].trades++; gainers[tx.symbol].pnl += tx.realized; gainers[tx.symbol].cost += tx.costOfSold || 0; }); return Object.entries(gainers).map(([symbol, data]) => ({ symbol, ...data, pnlPct: data.cost > 0 ? (data.pnl / data.cost) * 100 : 0 })).sort((a, b) => b.pnl - a.pnl).slice(0, 5); }, [sells]);
     if (!stats) return <div className="p-4 text-center text-gray-500">No trade data available.</div>;
-    return ( <div className="p-4 space-y-6"> <div className="glass-card p-4"> <div className="flex items-center justify-between"> <div><p className="text-sm text-gray-400">Win Rate</p><p className="text-3xl font-bold text-white mt-1">{stats.winRate.toFixed(2)}%</p></div> <div className="relative w-24 h-24"><svg className="w-full h-full transform -rotate-90"><circle cx="50%" cy="50%" r="45%" stroke="rgba(255,255,255,0.1)" strokeWidth="8" fill="transparent" /><circle cx="50%" cy="50%" r="45%" stroke="#10B981" strokeWidth="8" fill="transparent" strokeDasharray={`${Math.PI * 2 * 45 * (stats.winRate / 100)}, ${Math.PI * 2 * 45}`} strokeLinecap="round"/></svg><div className="absolute inset-0 flex flex-col items-center justify-center text-xs text-center"><div className="font-semibold">{stats.trades}</div><div className="text-gray-400">Trades</div><div className="mt-1 flex gap-2"><div><span className="text-emerald-400">{stats.wins}</span> W</div><div><span className="text-red-400">{stats.losses}</span> L</div></div></div></div> </div> </div> <div className="grid grid-cols-2 gap-4"> <div className="glass-card p-3"><p className="text-sm text-gray-400 flex items-center gap-1"><ArrowUpIcon className="text-emerald-400"/>Max Profit</p><p className="text-base font-semibold text-white mt-1">{formatCurrency(stats.maxProfit, true, displaySymbol, usdIdr)}</p><p className="text-sm text-emerald-400">+{maxProfitPct.toFixed(2)}%</p></div> <div className="glass-card p-3"><p className="text-sm text-gray-400 flex items-center gap-1"><ArrowDownIcon className="text-red-400"/>Max Loss</p><p className="text-base font-semibold text-white mt-1">{formatCurrency(stats.maxLoss, true, displaySymbol, usdIdr)}</p><p className="text-sm text-red-400">{maxLossPct.toFixed(2)}%</p></div> <div className="glass-card p-3"><p className="text-sm text-gray-400 flex items-center gap-1"><AvgProfitIcon className="text-gray-400 w-4 h-4"/>Avg. Profit</p><p className="text-base font-semibold text-white mt-1">{formatCurrency(stats.avgProfit, true, displaySymbol, usdIdr)}</p></div> <div className="glass-card p-3"><p className="text-sm text-gray-400 flex items-center gap-1"><AvgLossIcon className="text-gray-400 w-4 h-4"/>Avg. Loss</p><p className="text-base font-semibold text-white mt-1">{formatCurrency(stats.avgLoss, true, displaySymbol, usdIdr)}</p></div> </div> <div className="glass-card p-4"> <h3 className="font-semibold text-white flex items-center gap-1">Total Realized Gain <InfoIcon className="text-gray-400 w-3 h-3" /></h3> <p className={`text-2xl font-bold mt-1 ${stats.totalRealizedGain >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{stats.totalRealizedGain >= 0 ? '+' : ''}{formatCurrency(stats.totalRealizedGain, true, displaySymbol, usdIdr)}</p> <div className="h-48 mt-2"><AreaChart data={realizedGainSeries} displaySymbol={displaySymbol} range={chartRange} setRange={setChartRange} showTimeframes={false}/></div> <div className="mt-2 text-xs text-gray-400 border-t border-white/10 pt-2 space-y-1"> <div className="flex justify-between"><span>Realized Gain</span> <span className="text-emerald-400 font-semibold">{formatCurrency(realizedGainOnly, true, displaySymbol, usdIdr)}</span></div> <div className="flex justify-between"><span>Realized Loss</span> <span className="text-red-400 font-semibold">{formatCurrency(realizedLossOnly, true, displaySymbol, usdIdr)}</span></div> </div> </div> <div className="glass-card p-4"> <h3 className="font-semibold text-white mb-2">Top Gainer ({displaySymbol})</h3> <table className="w-full text-sm"> <thead className="text-gray-400 text-xs font-light"><tr><th className="text-left font-normal py-1">Code</th><th className="text-center font-normal py-1">Trades</th><th className="text-right font-normal py-1">P&L</th></tr></thead> <tbody>{topGainers.map(g => (<tr key={g.symbol} className="border-t border-white/10"><td className="py-2 flex items-center gap-2"><div className="w-6 h-6 rounded-full bg-zinc-700 flex items-center justify-center font-bold text-white text-xs">{g.symbol.charAt(0)}</div>{g.symbol}</td><td className="text-center py-2">{g.trades}</td><td className={`text-right py-2 font-semibold ${g.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{g.pnl >= 0 ? '+' : ''}{formatCurrency(g.pnl, true, displaySymbol, usdIdr)} ({g.pnlPct.toFixed(2)}%)</td></tr>))}</tbody> </table> </div> </div> );
+    return ( <div className="p-4 space-y-6"> <div className="glass-card p-4"> <div className="flex items-center justify-between"> <div><p className="text-sm text-gray-400">Win Rate</p><p className="text-3xl font-bold text-white mt-1">{stats.winRate.toFixed(2)}%</p></div> <div className="relative w-24 h-24"><svg className="w-full h-full transform -rotate-90"><circle cx="50%" cy="50%" r="45%" stroke="rgba(255,255,255,0.1)" strokeWidth="8" fill="transparent" /><circle cx="50%" cy="50%" r="45%" stroke="#10B981" strokeWidth="8" fill="transparent" strokeDasharray={`${Math.PI * 2 * 45 * (stats.winRate / 100)}, ${Math.PI * 2 * 45}`} strokeLinecap="round"/></svg><div className="absolute inset-0 flex flex-col items-center justify-center text-xs text-center"><div className="font-semibold">{stats.trades}</div><div className="text-gray-400">Trades</div><div className="mt-1 flex gap-2"><div><span className="text-emerald-400">{stats.wins}</span> W</div><div><span className="text-red-400">{stats.losses}</span> L</div></div></div></div> </div> </div> <div className="grid grid-cols-2 gap-4"> <div className="glass-card p-3 min-w-0"><p className="text-sm text-gray-400 flex items-center gap-1"><ArrowUpIcon className="text-emerald-400 shrink-0"/>Max Profit</p><p className="text-base font-semibold text-white mt-1 truncate">{formatCurrencyShort(stats.maxProfit, true, displaySymbol, usdIdr)}</p><p className="text-[10px] sm:text-sm text-emerald-400">+{maxProfitPct.toFixed(2)}%</p></div> <div className="glass-card p-3 min-w-0"><p className="text-sm text-gray-400 flex items-center gap-1"><ArrowDownIcon className="text-red-400 shrink-0"/>Max Loss</p><p className="text-base font-semibold text-white mt-1 truncate">{formatCurrencyShort(stats.maxLoss, true, displaySymbol, usdIdr)}</p><p className="text-[10px] sm:text-sm text-red-400">{maxLossPct.toFixed(2)}%</p></div> <div className="glass-card p-3 min-w-0"><p className="text-sm text-gray-400 flex items-center gap-1"><AvgProfitIcon className="text-gray-400 w-4 h-4 shrink-0"/>Avg. Profit</p><p className="text-base font-semibold text-white mt-1 truncate">{formatCurrencyShort(stats.avgProfit, true, displaySymbol, usdIdr)}</p></div> <div className="glass-card p-3 min-w-0"><p className="text-sm text-gray-400 flex items-center gap-1"><AvgLossIcon className="text-gray-400 w-4 h-4 shrink-0"/>Avg. Loss</p><p className="text-base font-semibold text-white mt-1 truncate">{formatCurrencyShort(stats.avgLoss, true, displaySymbol, usdIdr)}</p></div> </div> <div className="glass-card p-4 min-w-0"> <h3 className="font-semibold text-white flex items-center gap-1">Total Realized Gain <InfoIcon className="text-gray-400 w-3 h-3" /></h3> <p className={`text-xl sm:text-2xl font-bold mt-1 truncate ${stats.totalRealizedGain >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{stats.totalRealizedGain >= 0 ? '+' : ''}{formatCurrency(stats.totalRealizedGain, true, displaySymbol, usdIdr)}</p> <div className="h-48 mt-2"><AreaChart data={realizedGainSeries} displaySymbol={displaySymbol} range={chartRange} setRange={setChartRange} showTimeframes={false}/></div> <div className="mt-2 text-[10px] sm:text-xs text-gray-400 border-t border-white/10 pt-2 space-y-1 min-w-0"> <div className="flex justify-between gap-1 w-full"><span className="shrink-0">Realized Gain</span> <span className="text-emerald-400 font-semibold truncate text-right">{formatCurrencyShort(realizedGainOnly, true, displaySymbol, usdIdr)}</span></div> <div className="flex justify-between gap-1 w-full"><span className="shrink-0">Realized Loss</span> <span className="text-red-400 font-semibold truncate text-right">{formatCurrencyShort(realizedLossOnly, true, displaySymbol, usdIdr)}</span></div> </div> </div> <div className="glass-card p-4"> <h3 className="font-semibold text-white mb-2">Top Gainer ({displaySymbol})</h3> <table className="w-full text-xs sm:text-sm"> <thead className="text-gray-400 text-xs font-light"><tr><th className="text-left font-normal py-1">Code</th><th className="text-center font-normal py-1">Trades</th><th className="text-right font-normal py-1">P&L</th></tr></thead> <tbody>{topGainers.map(g => (<tr key={g.symbol} className="border-t border-white/10"><td className="py-2 flex items-center gap-2 truncate max-w-[80px] sm:max-w-full"><div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-zinc-700 flex items-center justify-center font-bold text-white text-[10px] sm:text-xs shrink-0">{g.symbol.charAt(0)}</div><span className="truncate">{g.symbol}</span></td><td className="text-center py-2">{g.trades}</td><td className={`text-right py-2 font-semibold tabular-nums ${g.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{g.pnl >= 0 ? '+' : ''}{formatCurrencyShort(g.pnl, true, displaySymbol, usdIdr)} <br className="sm:hidden" />({g.pnlPct.toFixed(2)}%)</td></tr>))}</tbody> </table> </div> </div> );
 };
-const HistoryView = ({ transactions, usdIdr, displaySymbol, onDeleteTransaction }) => ( <div className="p-1 max-h-[70vh] overflow-y-auto"> <table className="w-full text-sm"> <thead className="text-left text-gray-500 text-xs sticky top-0 bg-zinc-900/80 backdrop-blur-sm"> <tr><th className="p-3">Time</th><th className="p-3">Type</th><th className="p-3">Detail</th><th className="p-3 text-right">Nominal</th><th className="p-3 text-right">Action</th></tr> </thead> <tbody> {[...transactions].sort((a,b) => b.date - a.date).map(tx => ( <tr key={tx.id} className="border-t border-white/10"> <td className="p-3 text-gray-400 text-xs">{new Date(tx.date).toLocaleString()}</td> <td className="p-3 capitalize font-semibold">{tx.type}</td> <td className="p-3 text-xs">{tx.type === 'buy' || tx.type === 'sell' || tx.type === 'delete' ? (<><div><strong>{tx.symbol}</strong></div><div>{formatQty(tx.qty)} @ {formatCurrency(tx.pricePerUnit, true, displaySymbol, usdIdr)}</div></>) : (<span>-</span>)}</td> <td className="p-3 text-right">{formatCurrency(tx.type === 'deposit' || tx.type === 'withdraw' ? tx.amount : (tx.cost || tx.proceeds || 0) * usdIdr, false, 'Rp', usdIdr)}</td> <td className="p-3 text-right"><button onClick={() => onDeleteTransaction(tx.id)} className="text-red-500 hover:text-red-400"><TrashIcon className="w-4 h-4" /></button></td> </tr> ))} {transactions.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-gray-500">No history</td></tr>} </tbody> </table> </div> );
+const HistoryView = ({ transactions, usdIdr, displaySymbol, onDeleteTransaction }) => ( <div className="p-1 max-h-[70vh] overflow-y-auto"> <table className="w-full text-[10px] sm:text-sm"> <thead className="text-left text-gray-500 text-xs sticky top-0 bg-zinc-900/80 backdrop-blur-sm z-10"> <tr><th className="p-2 sm:p-3">Time</th><th className="p-2 sm:p-3">Type</th><th className="p-2 sm:p-3">Detail</th><th className="p-2 sm:p-3 text-right">Nominal</th><th className="p-2 sm:p-3 text-right">Aksi</th></tr> </thead> <tbody> {[...transactions].sort((a,b) => b.date - a.date).map(tx => ( <tr key={tx.id} className="border-t border-white/10 hover:bg-white/5 transition-colors"> <td className="p-2 sm:p-3 text-gray-400 text-[9px] sm:text-xs">{new Date(tx.date).toLocaleDateString()}<br/>{new Date(tx.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td> <td className="p-2 sm:p-3 capitalize font-semibold">{tx.type}</td> <td className="p-2 sm:p-3 text-[9px] sm:text-xs truncate max-w-[80px] sm:max-w-[150px]">{tx.type === 'buy' || tx.type === 'sell' || tx.type === 'delete' ? (<><div><strong className="truncate block">{tx.symbol}</strong></div><div className="truncate">{formatQty(tx.qty)} @ {formatCurrencyShort(tx.pricePerUnit, true, displaySymbol, usdIdr)}</div></>) : (<span>-</span>)}</td> <td className="p-2 sm:p-3 text-right tabular-nums">{formatCurrencyShort(tx.type === 'deposit' || tx.type === 'withdraw' ? tx.amount : (tx.cost || tx.proceeds || 0) * usdIdr, false, 'Rp', usdIdr)}</td> <td className="p-2 sm:p-3 text-right align-middle">
+      <button onClick={(e) => { e.stopPropagation(); onDeleteTransaction(tx.id); }} className="text-red-500 hover:text-red-400 bg-red-500/10 hover:bg-red-500/20 p-1.5 sm:p-2 rounded-md inline-flex items-center justify-center cursor-pointer relative z-20">
+          <TrashIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+      </button>
+  </td> </tr> ))} {transactions.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-gray-500">No history</td></tr>} </tbody> </table> </div> );
 const BalanceManager = ({ onConfirm }) => { const [amount, setAmount] = useState(''); return ( <form onSubmit={(e) => { e.preventDefault(); onConfirm(amount); }} className="space-y-4"> <div><label className="block text-sm font-medium mb-1 text-gray-400">Amount (dalam Rupiah)</label><input type="number" step="any" value={amount} onChange={e => setAmount(e.target.value)} autoFocus className="w-full bg-zinc-800 px-3 py-2 rounded border border-zinc-700 text-white" placeholder="e.g. 1000000" /></div> <button type="submit" className="w-full py-2.5 rounded font-semibold bg-emerald-600 text-white hover:bg-emerald-500">Confirm</button> </form> ); };
 const ManagePortfolioSheet = ({ onAddBalance, onWithdraw, onClearAll, onExport, onImport }) => ( <div className="p-4 text-white text-sm"> <h3 className="text-base font-semibold mb-4 px-2">Manage Portfolio</h3> <div className="space-y-1"> <button onClick={onAddBalance} className="w-full text-left p-2 rounded hover:bg-zinc-700/50 text-gray-300">Add Balance</button> <button onClick={onWithdraw} className="w-full text-left p-2 rounded hover:bg-zinc-700/50 text-gray-300">Withdraw</button> <div className="border-t border-zinc-700 my-2"></div> <button onClick={onExport} className="w-full text-left p-2 rounded hover:bg-zinc-700/50 text-gray-300">Export as CSV</button> <button onClick={onImport} className="w-full text-left p-2 rounded hover:bg-zinc-700/50 text-gray-300">Import from CSV</button> <div className="border-t border-zinc-700 my-2"></div> <button onClick={onClearAll} className="w-full text-left p-2 rounded hover:bg-red-700/20 text-red-400">Erase all data</button> </div> </div> );
-const AddAssetForm = ({ searchMode, setSearchMode, query, setQuery, suggestions, setSelectedSuggestion, addAssetWithInitial, addNonLiquidAsset, nlName, setNlName, nlQty, setNlQty, nlPrice, setNlPrice, nlPriceCcy, setNlPriceCcy, nlPurchaseDate, setNlPurchaseDate, nlYoy, setNlYoy, nlDesc, setNlDesc, displaySymbol, handleSetWatchedAsset, watchedAssetIds }) => {
+
+// Form untuk Menambahkan Aset - Animasi Loading Ditambahkan
+const AddAssetForm = ({ searchMode, setSearchMode, query, setQuery, suggestions, setSelectedSuggestion, isSearching, addAssetWithInitial, addNonLiquidAsset, nlName, setNlName, nlQty, setNlQty, nlPrice, setNlPrice, nlPriceCcy, setNlPriceCcy, nlPurchaseDate, setNlPurchaseDate, nlYoy, setNlYoy, nlDesc, setNlDesc, displaySymbol, handleSetWatchedAsset, watchedAssets }) => {
     const [shares, setShares] = useState(''); const [price, setPrice] = useState(''); const [total, setTotal] = useState('');
     const handleInputChange = (field, value) => { if (field === 'shares') { setShares(value); const num = toNum(price) * toNum(value); setTotal(num > 0 ? `${num}` : ''); } else if (field === 'price') { setPrice(value); const num = toNum(value) * toNum(shares); setTotal(num > 0 ? `${num}` : ''); } else if (field === 'total') { setTotal(value); const nTotal = toNum(value), nShares = toNum(shares); if (nShares > 0) setPrice(String(nTotal / nShares)); } };
-    return ( <div className="space-y-4"> <div className="flex border-b border-white/10">{[{ key: 'stock', label: 'Stock' }, { key:'crypto', label:'Crypto' }, { key:'nonliquid', label:'Non-Liquid' }].map(item => (<button key={item.key} onClick={() => setSearchMode(item.key)} className={`px-3 py-2 text-sm font-medium ${searchMode === item.key ? 'text-white border-b-2 border-emerald-400' : 'text-gray-400'}`}>{item.label}</button>))}</div> {searchMode !== 'nonliquid' ? ( <div className="space-y-4"> <div className="relative"><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search by code or name..." className="w-full rounded bg-zinc-800 px-3 py-2 text-sm outline-none border border-zinc-700 text-white" />{suggestions.length > 0 && <div className="absolute z-50 mt-1 w-full glass-card max-h-56 overflow-auto">{suggestions.map((s, i) => (<div key={i} className="w-full px-3 py-2 text-left hover:bg-white/10 flex items-center gap-3"><button className="flex-1 flex items-center gap-3 text-left" onClick={() => { setSelectedSuggestion(s); setQuery(s.display); setSuggestions([]); }}><img src={s.image} alt={s.symbol} className="w-6 h-6 rounded-full bg-zinc-700" onError={(e) => e.target.style.display='none'} /><div className="flex-1 overflow-hidden"><div className="font-medium text-gray-100 truncate">{s.display}</div><div className="text-xs text-gray-400">{s.exchange}</div></div></button>{s.type === 'crypto' && <button onClick={() => handleSetWatchedAsset(s.id)} className="text-yellow-500 hover:text-yellow-400"><StarIcon isFilled={watchedAssetIds.includes(s.id)} /></button>}</div>))}</div>}</div> <div className="grid grid-cols-1 md:grid-cols-2 gap-3"><div><label className="text-xs text-gray-400">Qty</label><input value={shares} onChange={e => handleInputChange('shares', e.target.value)} className="w-full mt-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" type="text" /></div><div><label className="text-xs text-gray-400">Price ({displaySymbol})</label><input value={price} onChange={e => handleInputChange('price', e.target.value)} className="w-full mt-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" type="text" /></div></div> <div><label className="text-xs text-gray-400">Total Value ({displaySymbol})</label><input value={total} onChange={e => handleInputChange('total', e.target.value)} className="w-full mt-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" type="text" /></div> <div className="flex justify-end"><button onClick={() => addAssetWithInitial(shares, price)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 rounded font-semibold">Add Position</button></div> </div> ) : ( <div className="space-y-4"> <div className="grid grid-cols-1 md:grid-cols-2 gap-3"><input value={nlName} onChange={e => setNlName(e.target.value)} placeholder="Asset Name (e.g. Property)" className="rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" /><input value={nlQty} onChange={e => setNlQty(e.target.value)} placeholder="Quantity" type="number" className="rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" /><input value={nlPrice} onChange={e => setNlPrice(e.target.value)} placeholder="Purchase Price" type="number" className="rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" /><select value={nlPriceCcy} onChange={e => setNlPriceCcy(e.target.value)} className="rounded bg-zinc-800 px-2 py-2 text-sm border border-zinc-700 text-white"><option value="IDR">IDR</option><option value="USD">USD</option></select><input type="date" value={nlPurchaseDate} onChange={e => setNlPurchaseDate(e.target.value)} className="rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" /><input value={nlYoy} onChange={e => setNlYoy(e.target.value)} placeholder="Est. Yearly Gain (%)" type="number" className="rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" /></div> <input value={nlDesc} onChange={e => setNlDesc(e.target.value)} placeholder="Description (optional)" className="w-full rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" /> <div className="flex justify-end"><button onClick={addNonLiquidAsset} className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 rounded font-semibold">Add Asset</button></div> </div> )} </div> );
+    return ( <div className="space-y-4"> <div className="flex border-b border-white/10">{[{ key: 'stock', label: 'Stock' }, { key:'crypto', label:'Crypto' }, { key:'nonliquid', label:'Non-Liquid' }].map(item => (<button key={item.key} onClick={() => setSearchMode(item.key)} className={`px-3 py-2 text-sm font-medium ${searchMode === item.key ? 'text-white border-b-2 border-emerald-400' : 'text-gray-400'}`}>{item.label}</button>))}</div> {searchMode !== 'nonliquid' ? ( <div className="space-y-4"> <div className="relative">
+      <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search by code or name..." className="w-full rounded bg-zinc-800 px-3 py-2 text-sm outline-none border border-zinc-700 text-white pr-10" />
+      {isSearching && <div className="absolute right-3 top-2.5 w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>}
+      {suggestions.length > 0 && <div className="absolute z-50 mt-1 w-full glass-card max-h-56 overflow-auto">{suggestions.map((s, i) => (<div key={i} className="w-full px-3 py-2 text-left hover:bg-white/10 flex items-center gap-3"><button className="flex-1 flex items-center gap-3 text-left overflow-hidden" onClick={() => { setSelectedSuggestion(s); setQuery(s.display); setSuggestions([]); }}><img src={s.image} alt={s.symbol} className="w-6 h-6 rounded-full bg-zinc-700 object-cover shrink-0" onError={(e) => e.target.style.display='none'} /><div className="flex-1 min-w-0"><div className="font-medium text-gray-100 truncate w-full">{s.display}</div><div className="text-xs text-gray-400">{s.exchange || s.source}</div></div></button>
+        <button onClick={() => handleSetWatchedAsset({ id: s.id, symbol: s.symbol, name: s.display, type: s.type, image: s.image })} className="text-yellow-500 hover:text-yellow-400 p-1 shrink-0"><StarIcon isFilled={watchedAssets.some(w => w.id === s.id)} /></button>
+    </div>))}</div>}</div> <div className="grid grid-cols-1 md:grid-cols-2 gap-3"><div><label className="text-xs text-gray-400">Qty</label><input value={shares} onChange={e => handleInputChange('shares', e.target.value)} className="w-full mt-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" type="text" /></div><div><label className="text-xs text-gray-400">Price ({displaySymbol})</label><input value={price} onChange={e => handleInputChange('price', e.target.value)} className="w-full mt-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" type="text" /></div></div> <div><label className="text-xs text-gray-400">Total Value ({displaySymbol})</label><input value={total} onChange={e => handleInputChange('total', e.target.value)} className="w-full mt-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" type="text" /></div> <div className="flex justify-end"><button onClick={() => addAssetWithInitial(shares, price)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 rounded font-semibold">Add Position</button></div> </div> ) : ( <div className="space-y-4"> <div className="grid grid-cols-1 md:grid-cols-2 gap-3"><input value={nlName} onChange={e => setNlName(e.target.value)} placeholder="Asset Name (e.g. Property)" className="rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" /><input value={nlQty} onChange={e => setNlQty(e.target.value)} placeholder="Quantity" type="number" className="rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" /><input value={nlPrice} onChange={e => setNlPrice(e.target.value)} placeholder="Purchase Price" type="number" className="rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" /><select value={nlPriceCcy} onChange={e => setNlPriceCcy(e.target.value)} className="rounded bg-zinc-800 px-2 py-2 text-sm border border-zinc-700 text-white"><option value="IDR">IDR</option><option value="USD">USD</option></select><input type="date" value={nlPurchaseDate} onChange={e => setNlPurchaseDate(e.target.value)} className="rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" /><input value={nlYoy} onChange={e => setNlYoy(e.target.value)} placeholder="Est. Yearly Gain (%)" type="number" className="rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" /></div> <input value={nlDesc} onChange={e => setNlDesc(e.target.value)} placeholder="Description (optional)" className="w-full rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" /> <div className="flex justify-end"><button onClick={addNonLiquidAsset} className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 rounded font-semibold">Add Asset</button></div> </div> )} </div> );
 };
+
 const AssetDetailModal = ({ isOpen, onClose, asset, onBuy, onSell, onDelete, usdIdr, displaySymbol }) => {
     if (!isOpen || !asset) return null;
-    
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={`${asset.symbol} - ${asset.name}`} size="3xl">
+        <Modal isOpen={isOpen} onClose={onClose} title={<div className="truncate max-w-[200px] sm:max-w-full">{`${asset.symbol} - ${asset.name}`}</div>} size="3xl">
             <div className="space-y-4">
                 <TradingViewWidget asset={asset} />
                 {asset.shares > 0 && (
@@ -855,6 +910,7 @@ const AssetDetailModal = ({ isOpen, onClose, asset, onBuy, onSell, onDelete, usd
         </Modal>
     );
 };
+
 const TradeForm = ({ asset, onBuy, onSell, onDelete, usdIdr, displaySymbol }) => {
     const [mode, setMode] = useState('buy'); const [shares, setShares] = useState(''); const [price, setPrice] = useState(''); const [total, setTotal] = useState('');
     useEffect(() => { if (asset) { const priceVal = displaySymbol === "Rp" ? asset.lastPriceUSD * usdIdr : asset.lastPriceUSD; setPrice(String(isFinite(priceVal) ? (displaySymbol === "$" ? priceVal.toFixed(8) : Math.round(priceVal)) : '')); setShares(''); setTotal(''); } }, [asset, usdIdr, displaySymbol, mode]);
@@ -863,27 +919,21 @@ const TradeForm = ({ asset, onBuy, onSell, onDelete, usdIdr, displaySymbol }) =>
     const doSubmit = () => { if (mode === 'buy') onBuy(asset, shares, priceUSD); else if (mode === 'sell') onSell(asset, shares, priceUSD); };
     return (<div className="space-y-3"> <div className="flex bg-zinc-800 rounded-full p-1"><button onClick={() => setMode('buy')} className={`w-1/2 py-1.5 text-xs font-semibold rounded-full ${mode === 'buy' ? 'bg-emerald-600 text-white' : 'text-gray-300'}`}>Buy</button><button onClick={() => setMode('sell')} className={`w-1/2 py-1.5 text-xs font-semibold rounded-full ${mode === 'sell' ? 'bg-red-600 text-white' : 'text-gray-300'}`}>Sell</button></div> <div className="grid grid-cols-1 sm:grid-cols-3 gap-2"><div><label className="text-xs text-gray-400">Qty</label><input type="text" value={shares} onChange={e=>handleInputChange('shares', e.target.value)} className="w-full text-sm mt-1 bg-zinc-800 px-2 py-1.5 rounded border border-zinc-700 text-white" /></div> <div><label className="text-xs text-gray-400">Price ({displaySymbol})</label><input type="text" value={price} onChange={e=>handleInputChange('price', e.target.value)} className="w-full text-sm mt-1 bg-zinc-800 px-2 py-1.5 rounded border border-zinc-700 text-white" /></div> <div><label className="text-xs text-gray-400">Total ({displaySymbol})</label><input type="text" value={total} onChange={e=>handleInputChange('total', e.target.value)} className="w-full text-sm mt-1 bg-zinc-800 px-2 py-1.5 rounded border border-zinc-700 text-white" /></div></div> <div className="flex gap-2"><button onClick={doSubmit} className={`flex-1 py-2 rounded font-semibold text-white text-sm ${mode === 'buy' ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-red-600 hover:bg-red-500'}`}>Confirm {mode.charAt(0).toUpperCase() + mode.slice(1)}</button><button onClick={() => onDelete(asset)} title="Delete (liquidate)" className="py-2 px-3 rounded bg-zinc-700 hover:bg-zinc-600 text-white flex items-center gap-2"><TrashIcon className="w-4 h-4 text-white" /></button></div> </div>);
 }
+
 const TradingViewWidget = ({ asset }) => {
   const containerRef = useRef(null);
   const widgetContainerRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
+    const handleFullscreenChange = () => { setIsFullscreen(!!document.fullscreenElement); };
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
   const handleToggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      widgetContainerRef.current?.requestFullscreen().catch(err => {
-        console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-      });
-    } else {
-      document.exitFullscreen();
-    }
+    if (!document.fullscreenElement) { widgetContainerRef.current?.requestFullscreen().catch(err => { console.error(`Error attempting to enable full-screen mode: ${err.message}`); });
+    } else { document.exitFullscreen(); }
   };
 
   useEffect(() => {
@@ -894,6 +944,9 @@ const TradingViewWidget = ({ asset }) => {
       if (asset.type === 'crypto') { return `BINANCE:${asset.symbol.toUpperCase()}USDT`; }
       if (asset.type === 'stock') {
         if (asset.symbol.endsWith('.JK')) { return `IDX:${asset.symbol.replace('.JK', '')}`; }
+        // Untuk S&P 500 dan Nasdaq via SPY/QQQ
+        if (asset.id === 'SPY' || asset.symbol === 'S&P 500') return `AMEX:SPY`;
+        if (asset.id === 'QQQ' || asset.symbol === 'NASDAQ') return `NASDAQ:QQQ`;
         return asset.symbol;
       }
       return asset.symbol;
@@ -903,32 +956,14 @@ const TradingViewWidget = ({ asset }) => {
         if (containerRef.current && typeof window.TradingView !== 'undefined' && asset) {
             containerRef.current.innerHTML = '';
             new window.TradingView.widget({
-                autosize: true,
-                symbol: formatSymbolForTV(asset),
-                interval: "240",
-                timezone: "Asia/Jakarta",
-                theme: "dark",
-                style: "1",
-                locale: "en",
-                enable_publishing: false,
-                allow_symbol_change: false,
-                hide_side_toolbar: false,
-                container_id: containerRef.current.id,
+                autosize: true, symbol: formatSymbolForTV(asset), interval: "240", timezone: "Asia/Jakarta", theme: "dark", style: "1", locale: "en", enable_publishing: false, allow_symbol_change: false, hide_side_toolbar: false, container_id: containerRef.current.id,
             });
         }
     };
 
     if (!script) {
-        script = document.createElement("script");
-        script.id = scriptId;
-        script.src = "https://s3.tradingview.com/tv.js";
-        script.type = "text/javascript";
-        script.async = true;
-        script.onload = createWidget;
-        document.head.appendChild(script);
-    } else {
-        createWidget();
-    }
+        script = document.createElement("script"); script.id = scriptId; script.src = "https://s3.tradingview.com/tv.js"; script.type = "text/javascript"; script.async = true; script.onload = createWidget; document.head.appendChild(script);
+    } else { createWidget(); }
   }, [asset]);
 
   if (!asset) return null;
@@ -943,6 +978,7 @@ const TradingViewWidget = ({ asset }) => {
     </div>
   );
 };
+
 const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbol, usdIdr }) => {
     const [activeTab, setActiveTab] = useState('Asset');
     const [hoveredSegment, setHoveredSegment] = useState(null);
@@ -951,12 +987,12 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
         const tradingBalanceUSD = tradingBalance / usdIdr;
         const colors = ["#10B981", "#60a5fa", "#F97316", "#8B5CF6", "#F59E0B", "#ec4899", "#ef4444"];
 
-        // --- Sector Data Calculation ---
+        // SVG Icons Asli untuk Alokasi yang Profesional
         const secDataMap = {
-            'Cash': { value: tradingBalanceUSD, color: '#38bdf8', icon: <CashIcon /> },
-            'Equity': { value: 0, color: '#10B981', icon: <EquityIcon /> }, 
-            'Crypto': { value: 0, color: '#60a5fa', icon: <CryptoIcon /> }, 
-            'Non-Liquid': { value: 0, color: '#F97316', icon: <NonLiquidIcon /> }
+            'Cash': { value: tradingBalanceUSD, color: '#38bdf8', icon: <WalletIcon className="w-5 h-5 text-sky-400" /> },
+            'Equity': { value: 0, color: '#10B981', icon: <TrendingUpIcon className="w-5 h-5 text-emerald-400" /> }, 
+            'Crypto': { value: 0, color: '#60a5fa', icon: <BitcoinIcon className="w-5 h-5 text-blue-400" /> }, 
+            'Non-Liquid': { value: 0, color: '#F97316', icon: <BuildingIcon className="w-5 h-5 text-orange-400" /> }
         }; 
         fullAssetData.forEach(asset => { 
             if (asset.type === 'stock') secDataMap['Equity'].value += asset.marketValueUSD; 
@@ -965,7 +1001,6 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
         }); 
         const finalSectorData = Object.entries(secDataMap).map(([name, data]) => ({ name, ...data })).filter(d => d.value > 0.01);
 
-        // --- Equity Data Calculation with Grouping ---
         const allAssets = [
             ...fullAssetData.map(d => ({ name: d.symbol, value: d.marketValueUSD, image: d.image, type: d.type })),
             { name: 'Cash', value: tradingBalanceUSD, image: null, type: 'cash' }
@@ -984,16 +1019,13 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
         finalEquityData = finalEquityData.map((d, i) => {
             let icon, color;
             if (d.type === 'cash') {
-                icon = <CashIcon />;
+                icon = <WalletIcon className="w-5 h-5 text-sky-400" />;
                 color = '#38bdf8';
             } else if (d.type === 'other') {
-                icon = <MoreVerticalIcon />;
+                icon = <MoreVerticalIcon className="w-5 h-5 text-gray-400" />;
                 color = '#64748b';
-            } else if (d.type === 'stock') {
-                icon = <EquityIcon />;
-                color = colors[i % colors.length];
             } else {
-                icon = d.image ? <img src={d.image} alt={d.name} className="w-full h-full rounded-full object-cover"/> : <CryptoIcon />;
+                icon = <img src={d.image || `https://ui-avatars.com/api/?name=${d.name}&background=random&color=fff&rounded=true`} alt={d.name} className="w-full h-full rounded-full object-cover"/>;
                 color = colors[i % colors.length];
             }
             return { ...d, icon, color };
@@ -1020,14 +1052,14 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
                 <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90"> 
                     {data.map((d) => { 
                         const angle = totalValueUSD > 0 ? (d.value / totalValueUSD) * 360 : 0; 
-                        const segment = (<circle key={d.name} cx={size/2} cy={size/2} r={innerRadius} fill="transparent" stroke={d.color} strokeWidth={strokeWidth + (hoveredSegment === d.name ? 4 : 0)} strokeDasharray={`${(angle - 2) * Math.PI * innerRadius / 180} ${360 * Math.PI * innerRadius / 180}`} strokeDashoffset={-accumulatedAngle * Math.PI * innerRadius / 180} className="transition-all duration-300" onMouseOver={() => setHoveredSegment(d.name)} onMouseOut={() => setHoveredSegment(null)}/>); 
+                        const segment = (<circle key={d.name} cx={size/2} cy={size/2} r={innerRadius} fill="transparent" stroke={d.color} strokeWidth={strokeWidth + (hoveredSegment === d.name ? 4 : 0)} strokeDasharray={`${Math.max(0, (angle - 2)) * Math.PI * innerRadius / 180} ${360 * Math.PI * innerRadius / 180}`} strokeDashoffset={-accumulatedAngle * Math.PI * innerRadius / 180} className="transition-all duration-300" onMouseOver={() => setHoveredSegment(d.name)} onMouseOut={() => setHoveredSegment(null)}/>); 
                         accumulatedAngle += angle; 
                         return segment; 
                     })} 
                 </svg> 
                 <div className="absolute flex flex-col items-center justify-center pointer-events-none">
-                    <div className="text-xl font-bold text-white">{formatCurrencyShort(totalValueDisplay, false, displaySymbol, 1)}</div>
-                    <div className="text-sm text-gray-400">{data.length} {activeTab === 'Asset' ? 'Items' : 'Sectors'}</div>
+                    <div className="text-lg sm:text-xl font-bold text-white max-w-[120px] truncate">{formatCurrencyShort(totalValueDisplay, false, displaySymbol, 1)}</div>
+                    <div className="text-xs sm:text-sm text-gray-400">{data.length} {activeTab === 'Asset' ? 'Items' : 'Sectors'}</div>
                 </div> 
             </div> 
             <div className="space-y-3">{data.map((d) => { 
@@ -1035,21 +1067,21 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
                 const valueDisplay = d.value * (displaySymbol === "Rp" ? usdIdr : 1); 
                 return (
                     <div key={d.name} className={`p-2 rounded-lg transition-colors duration-300 ${hoveredSegment === d.name ? 'bg-black/20' : ''}`} onMouseOver={() => setHoveredSegment(d.name)} onMouseOut={() => setHoveredSegment(null)}>
-                        <div className="flex justify-between items-center text-sm">
-                            <div className="flex items-center gap-3 w-2/5">
-                                <div className="w-8 h-8 rounded-full bg-zinc-700 flex items-center justify-center font-bold text-white text-xs flex-shrink-0">
+                        <div className="flex justify-between items-center text-xs sm:text-sm min-w-0">
+                            <div className="flex items-center gap-2 sm:gap-3 w-1/2 min-w-0 pr-2">
+                                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-zinc-800/80 flex items-center justify-center font-bold text-white text-xs flex-shrink-0">
                                     {d.icon}
                                 </div>
-                                <div className="flex-1 truncate">
-                                    <div className="font-semibold text-white truncate">{d.name}</div>
-                                    <div className="text-xs text-gray-400">{formatCurrency(valueDisplay, false, displaySymbol, 1)}</div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="font-semibold text-white truncate w-full">{d.name}</div>
+                                    <div className="text-[10px] sm:text-xs text-gray-400 truncate w-full">{formatCurrency(valueDisplay, false, displaySymbol, 1)}</div>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2 w-3/5">
+                            <div className="flex items-center gap-2 w-1/2 shrink-0">
                                 <div className="w-full bg-zinc-700 rounded-full h-1.5 flex-grow">
                                     <div className="h-1.5 rounded-full" style={{ width: `${percentage}%`, backgroundColor: d.color }}></div>
                                 </div>
-                                <div className="text-white font-semibold text-xs w-12 text-right">{percentage.toFixed(1)}%</div>
+                                <div className="text-white font-semibold text-[10px] sm:text-xs w-10 sm:w-12 text-right">{percentage.toFixed(1)}%</div>
                             </div>
                         </div>
                     </div>); 
@@ -1087,24 +1119,12 @@ const AssetTableView = ({ rows, displaySymbol, usdIdr, onRowClick }) => {
     return (
         <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-                <thead className="text-xs text-gray-400 font-normal">
+                <thead className="text-[10px] sm:text-xs text-gray-400 font-normal">
                     <tr>
-                        <th scope="col" className="px-4 py-3">
-                            <div>Code</div>
-                            <div className="text-[10px] font-normal -mt-1">Qty</div>
-                        </th>
-                        <th scope="col" className="px-4 py-3 text-right">
-                            <div>Invested</div>
-                            <div className="text-[10px] font-normal -mt-1">Avg Price</div>
-                        </th>
-                        <th scope="col" className="px-4 py-3 text-right">
-                            <div>Market</div>
-                            <div className="text-[10px] font-normal -mt-1">Current Price</div>
-                        </th>
-                        <th scope="col" className="px-4 py-3 text-right">
-                            <div>Gain P&L</div>
-                            <div className="text-[10px] font-normal -mt-1">%</div>
-                        </th>
+                        <th scope="col" className="px-2 sm:px-4 py-2 sm:py-3"><div>Code</div><div className="text-[9px] sm:text-[10px] font-normal mt-0.5">Qty</div></th>
+                        <th scope="col" className="px-2 sm:px-4 py-2 sm:py-3 text-right"><div>Invested</div><div className="text-[9px] sm:text-[10px] font-normal mt-0.5">Avg Price</div></th>
+                        <th scope="col" className="px-2 sm:px-4 py-2 sm:py-3 text-right"><div>Market</div><div className="text-[9px] sm:text-[10px] font-normal mt-0.5">Current</div></th>
+                        <th scope="col" className="px-2 sm:px-4 py-2 sm:py-3 text-right"><div>Gain P&L</div><div className="text-[9px] sm:text-[10px] font-normal mt-0.5">%</div></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -1113,22 +1133,10 @@ const AssetTableView = ({ rows, displaySymbol, usdIdr, onRowClick }) => {
                         const pnlPrefix = r.pnlUSD > 0 ? '+' : '';
                         return (
                             <tr key={r.id} onClick={() => onRowClick(r)} className="border-b border-zinc-800 hover:bg-zinc-800/50 cursor-pointer">
-                                <td className="px-4 py-3 align-top">
-                                    <div className="font-medium text-white">{r.symbol}</div>
-                                    <div className="text-xs text-gray-400">{formatQty(r.shares)}</div>
-                                </td>
-                                <td className="px-4 py-3 text-right align-top tabular-nums">
-                                    <div className="font-medium text-white text-[11px]">{formatCurrency(r.investedUSD, true, displaySymbol, usdIdr)}</div>
-                                    <div className="text-[10px] text-gray-400">{formatCurrency(r.avgPrice, true, displaySymbol, usdIdr)}</div>
-                                </td>
-                                <td className="px-4 py-3 text-right align-top tabular-nums">
-                                    <div className="font-medium text-white text-[11px]">{formatCurrency(r.marketValueUSD, true, displaySymbol, usdIdr)}</div>
-                                    <div className="text-[10px] text-gray-400">{formatCurrency(r.lastPriceUSD, true, displaySymbol, usdIdr)}</div>
-                                </td>
-                                <td className="px-4 py-3 text-right align-top tabular-nums">
-                                    <div className={`font-medium ${pnlColor} text-[11px]`}>{pnlPrefix}{formatCurrency(r.pnlUSD, true, displaySymbol, usdIdr)}</div>
-                                    <div className={`text-[10px] ${pnlColor}`}>{pnlPrefix}{r.pnlPct.toFixed(2)}%</div>
-                                </td>
+                                <td className="px-2 sm:px-4 py-3 align-top min-w-0 max-w-[80px] sm:max-w-none"><div className="font-medium text-white truncate w-full text-[11px] sm:text-sm">{r.symbol}</div><div className="text-[10px] sm:text-xs text-gray-400 truncate">{formatQty(r.shares)}</div></td>
+                                <td className="px-2 sm:px-4 py-3 text-right align-top tabular-nums"><div className="font-medium text-white text-[10px] sm:text-xs truncate">{formatCurrencyShort(r.investedUSD, true, displaySymbol, usdIdr)}</div><div className="text-[9px] sm:text-[10px] text-gray-400 truncate">{formatCurrencyShort(r.avgPrice, true, displaySymbol, usdIdr)}</div></td>
+                                <td className="px-2 sm:px-4 py-3 text-right align-top tabular-nums"><div className="font-medium text-white text-[10px] sm:text-xs truncate">{formatCurrencyShort(r.marketValueUSD, true, displaySymbol, usdIdr)}</div><div className="text-[9px] sm:text-[10px] text-gray-400 truncate">{formatCurrencyShort(r.lastPriceUSD, true, displaySymbol, usdIdr)}</div></td>
+                                <td className="px-2 sm:px-4 py-3 text-right align-top tabular-nums"><div className={`font-medium ${pnlColor} text-[10px] sm:text-xs truncate`}>{pnlPrefix}{formatCurrencyShort(r.pnlUSD, true, displaySymbol, usdIdr)}</div><div className={`text-[9px] sm:text-[10px] ${pnlColor} truncate`}>{pnlPrefix}{r.pnlPct.toFixed(2)}%</div></td>
                             </tr>
                         )
                     })}
@@ -1137,3 +1145,5 @@ const AssetTableView = ({ rows, displaySymbol, usdIdr, onRowClick }) => {
         </div>
     );
 }
+
+
