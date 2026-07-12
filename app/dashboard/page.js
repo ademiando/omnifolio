@@ -1,4 +1,4 @@
-```react
+
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -1208,5 +1208,3 @@ const AssetTableView = ({ rows, displaySymbol, usdIdr, onRowClick }) => {
     );
 }
 
-
-```
