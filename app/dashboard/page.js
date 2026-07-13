@@ -421,7 +421,16 @@ export default function App() {
     qty = toNum(qty); priceUSD = toNum(priceUSD);
     if (qty <= 0 || priceUSD < 0) { alert("Quantity must be greater than zero and price cannot be negative."); return false; }
     const costUSD = qty * priceUSD;
-    if (costUSD * usdIdr > financialSummaries.tradingBalance) { alert("Insufficient trading balance."); return false; }
+    
+    if (costUSD * usdIdr > financialSummaries.tradingBalance) {
+        alert("Saldo tidak cukup! Mengarahkan ke menu pengisian saldo...");
+        setAddAssetModalOpen(false);
+        setAssetDetailModalOpen(false);
+        setBalanceModalMode('Add');
+        setBalanceModalOpen(true);
+        return false;
+    }
+    
     const assetId = assetStub.id || `${assetStub.type}:${assetStub.symbol}`;
     addTransaction({ id: `tx:${Date.now()}`, type: "buy", qty, pricePerUnit: priceUSD, cost: costUSD, date: assetStub.purchaseDate || Date.now(), symbol: assetStub.symbol, name: assetStub.name || assetStub.symbol, assetId, assetStub });
     if (isAssetDetailModalOpen) setAssetDetailModalOpen(false); return true;
@@ -484,10 +493,17 @@ export default function App() {
     }
   };
   
-  const handleAddBalance = (amount) => { addTransaction({ id: `tx:${Date.now()}`, type: "deposit", amount: toNum(amount), date: Date.now() }); setBalanceModalOpen(false); };
+  const handleAddBalance = (amount) => { 
+      const amountIDR = displaySymbol === '$' ? toNum(amount) * usdIdr : toNum(amount);
+      addTransaction({ id: `tx:${Date.now()}`, type: "deposit", amount: amountIDR, date: Date.now() }); 
+      setBalanceModalOpen(false); 
+  };
+  
   const handleWithdraw = (amount) => {
-    const amountIDR = toNum(amount); if (amountIDR > financialSummaries.tradingBalance) { alert("Withdrawal amount exceeds balance."); return; }
-    addTransaction({ id: `tx:${Date.now()}`, type: "withdraw", amount: amountIDR, date: Date.now() }); setBalanceModalOpen(false);
+    const amountIDR = displaySymbol === '$' ? toNum(amount) * usdIdr : toNum(amount);
+    if (amountIDR > financialSummaries.tradingBalance) { alert("Withdrawal amount exceeds balance."); return; }
+    addTransaction({ id: `tx:${Date.now()}`, type: "withdraw", amount: amountIDR, date: Date.now() }); 
+    setBalanceModalOpen(false);
   };
   
   const handleExport = () => {
@@ -594,9 +610,34 @@ export default function App() {
       const file = e.target.files[0];
       if (file) {
           const reader = new FileReader();
-          reader.onload = (e) => {
-              setProfilePic(e.target.result);
-              safeSetStorage(`pf_profile_pic_${STORAGE_VERSION}`, e.target.result);
+          reader.onload = (event) => {
+              const img = new Image();
+              img.onload = () => {
+                  const canvas = document.createElement('canvas');
+                  // Compress & Resize for robust LocalStorage storage
+                  const MAX_WIDTH = 400; 
+                  const MAX_HEIGHT = 400;
+                  let width = img.width;
+                  let height = img.height;
+
+                  if (width > height) {
+                      if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                  } else {
+                      if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                  }
+
+                  canvas.width = width;
+                  canvas.height = height;
+                  const ctx = canvas.getContext('2d');
+                  ctx.drawImage(img, 0, 0, width, height);
+
+                  // Convert to optimized JPEG (quality 0.8)
+                  const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                  
+                  setProfilePic(dataUrl);
+                  safeSetStorage(`pf_profile_pic_${STORAGE_VERSION}`, dataUrl);
+              };
+              img.src = event.target.result;
           };
           reader.readAsDataURL(file);
       }
@@ -957,7 +998,7 @@ export default function App() {
 
         <AssetDetailModal isOpen={isAssetDetailModalOpen} onClose={() => setAssetDetailModalOpen(false)} asset={selectedAssetForDetail} onBuy={handleBuy} onSell={handleSell} onDelete={handleDeleteAsset} usdIdr={usdIdr} displaySymbol={displaySymbol} />
         <Modal title="Add New Asset" isOpen={isAddAssetModalOpen} onClose={() => setAddAssetModalOpen(false)} size="lg"><AddAssetForm {...{searchMode, setSearchMode, query, setQuery, suggestions, setSelectedSuggestion, isSearching, addAssetWithInitial, addNonLiquidAsset, nlName, setNlName, nlQty, setNlQty, nlPrice, setNlPrice, nlPriceCcy, setNlPriceCcy, nlPurchaseDate, setNlPurchaseDate, nlCoupon, setNlCoupon, nlYoy, setNlYoy, nlDesc, setNlDesc, nlIncomeFreq, setNlIncomeFreq, displaySymbol, handleSetWatchedAsset, watchedAssets}} /></Modal>
-        <Modal title={`${balanceModalMode} Balance`} isOpen={isBalanceModalOpen} onClose={() => setBalanceModalOpen(false)} size="lg"><BalanceManager onConfirm={balanceModalMode === 'Add' ? handleAddBalance : handleWithdraw} /></Modal>
+        <Modal title={`${balanceModalMode} Balance`} isOpen={isBalanceModalOpen} onClose={() => setBalanceModalOpen(false)} size="lg"><BalanceManager onConfirm={balanceModalMode === 'Add' ? handleAddBalance : handleWithdraw} displaySymbol={displaySymbol} /></Modal>
         <Modal title="Portfolio Growth" isOpen={isEquityModalOpen} onClose={() => setIsEquityModalOpen(false)} size="3xl"><EquityGrowthView equitySeries={equitySeries} displaySymbol={displaySymbol} usdIdr={usdIdr} totalEquity={derivedData.totalEquity} /></Modal>
         <Modal title="Portfolio Allocation" isOpen={isAllocationModalOpen} onClose={() => setIsAllocationModalOpen(false)}><PortfolioAllocation data={derivedData.rows} tradingBalance={financialSummaries.tradingBalance} displaySymbol={displaySymbol} usdIdr={usdIdr}/></Modal>
         <Modal title="Transaction History" isOpen={isHistoryModalOpen} onClose={() => setIsHistoryModalOpen(false)}><HistoryView transactions={transactions} usdIdr={usdIdr} displaySymbol={displaySymbol} onDeleteTransaction={handleDeleteTransaction} /></Modal>
@@ -1186,7 +1227,22 @@ const HistoryView = ({ transactions, usdIdr, displaySymbol, onDeleteTransaction 
           <TrashIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
       </button>
   </td> </tr> ))} {transactions.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-gray-500">No history</td></tr>} </tbody> </table> </div> );
-const BalanceManager = ({ onConfirm }) => { const [amount, setAmount] = useState(''); return ( <form onSubmit={(e) => { e.preventDefault(); onConfirm(amount); }} className="space-y-4"> <div><label className="block text-sm font-medium mb-1 text-gray-400">Amount (dalam Rupiah)</label><input type="number" step="any" value={amount} onChange={e => setAmount(e.target.value)} autoFocus className="w-full bg-zinc-800 px-3 py-2 rounded border border-zinc-700 text-white" placeholder="e.g. 1000000" /></div> <button type="submit" className="w-full py-2.5 rounded font-semibold bg-emerald-600 text-white hover:bg-emerald-500">Confirm</button> </form> ); };
+
+const BalanceManager = ({ onConfirm, displaySymbol }) => { 
+    const [amount, setAmount] = useState(''); 
+    const currencyName = displaySymbol === '$' ? 'USD' : 'Rupiah';
+    
+    return ( 
+        <form onSubmit={(e) => { e.preventDefault(); onConfirm(amount); }} className="space-y-4"> 
+            <div>
+                <label className="block text-sm font-medium mb-1 text-gray-400">Amount (dalam {currencyName})</label>
+                <input type="number" step="any" value={amount} onChange={e => setAmount(e.target.value)} autoFocus className="w-full bg-zinc-800 px-3 py-2 rounded border border-zinc-700 text-white" placeholder={`e.g. ${displaySymbol === '$' ? '1000' : '1000000'}`} />
+            </div> 
+            <button type="submit" className="w-full py-2.5 rounded font-semibold bg-emerald-600 text-white hover:bg-emerald-500">Confirm</button> 
+        </form> 
+    ); 
+};
+
 const ManagePortfolioSheet = ({ onAddBalance, onWithdraw, onClearAll, onExport, onImport }) => ( <div className="p-4 text-white text-sm"> <h3 className="text-base font-semibold mb-4 px-2">Manage Portfolio</h3> <div className="space-y-1"> <button onClick={onAddBalance} className="w-full text-left p-2 rounded hover:bg-zinc-700/50 text-gray-300">Add Balance</button> <button onClick={onWithdraw} className="w-full text-left p-2 rounded hover:bg-zinc-700/50 text-gray-300">Withdraw</button> <div className="border-t border-zinc-700 my-2"></div> <button onClick={onExport} className="w-full text-left p-2 rounded hover:bg-zinc-700/50 text-gray-300">Export as CSV</button> <button onClick={onImport} className="w-full text-left p-2 rounded hover:bg-zinc-700/50 text-gray-300">Import from CSV/TSV</button> <div className="border-t border-zinc-700 my-2"></div> <button onClick={onClearAll} className="w-full text-left p-2 rounded hover:bg-red-700/20 text-red-400">Erase all data</button> </div> </div> );
 
 const AddAssetForm = ({ searchMode, setSearchMode, query, setQuery, suggestions, setSelectedSuggestion, isSearching, addAssetWithInitial, addNonLiquidAsset, nlName, setNlName, nlQty, setNlQty, nlPrice, setNlPrice, nlPriceCcy, setNlPriceCcy, nlPurchaseDate, setNlPurchaseDate, nlCoupon, setNlCoupon, nlYoy, setNlYoy, nlDesc, setNlDesc, nlIncomeFreq, setNlIncomeFreq, displaySymbol, handleSetWatchedAsset, watchedAssets }) => {
