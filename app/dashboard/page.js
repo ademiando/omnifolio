@@ -389,17 +389,17 @@ export default function App() {
   
   const handleBuy = (assetStub, qty, priceUSD) => {
     qty = toNum(qty); priceUSD = toNum(priceUSD);
-    if (qty <= 0 || priceUSD <= 0) { alert("Quantity and price must be greater than zero."); return false; }
+    if (qty <= 0 || priceUSD < 0) { alert("Quantity must be greater than zero and price cannot be negative."); return false; }
     const costUSD = qty * priceUSD;
     if (costUSD * usdIdr > financialSummaries.tradingBalance) { alert("Insufficient trading balance."); return false; }
     const assetId = assetStub.id || `${assetStub.type}:${assetStub.symbol}`;
-    addTransaction({ id: `tx:${Date.now()}`, type: "buy", qty, pricePerUnit: priceUSD, cost: costUSD, date: Date.now(), symbol: assetStub.symbol, name: assetStub.name || assetStub.symbol, assetId, assetStub });
+    addTransaction({ id: `tx:${Date.now()}`, type: "buy", qty, pricePerUnit: priceUSD, cost: costUSD, date: assetStub.purchaseDate || Date.now(), symbol: assetStub.symbol, name: assetStub.name || assetStub.symbol, assetId, assetStub });
     if (isAssetDetailModalOpen) setAssetDetailModalOpen(false); return true;
   };
 
   const handleSell = (asset, qty, priceUSD) => {
     qty = toNum(qty); priceUSD = toNum(priceUSD);
-    if (!asset || qty <= 0) { alert("Quantity must be > 0"); return false; }
+    if (!asset || qty <= 0 || priceUSD < 0) { alert("Quantity must be > 0 and price >= 0."); return false; }
     if (qty > asset.shares) { alert("Cannot sell more than you own."); return false; }
     const proceedsUSD = qty * priceUSD; const costOfSold = qty * asset.avgPrice; const realized = proceedsUSD - costOfSold;
     addTransaction({ id: `tx:${Date.now()}`, assetId: asset.id, type: "sell", qty, pricePerUnit: priceUSD, proceeds: proceedsUSD, costOfSold, realized, date: Date.now(), symbol: asset.symbol, name: asset.name });
@@ -422,7 +422,7 @@ export default function App() {
   const addAssetWithInitial = (qty, price) => {
     qty = toNum(qty); price = toNum(price); let p = selectedSuggestion;
     if (!p) { const t = query.split("(")[0].trim(); if (!t) return; p = { symbol: t.toUpperCase(), display: t.toUpperCase(), type: searchMode, image: null, id: t.toUpperCase() }; }
-    if (qty <= 0 || price <= 0) return;
+    if (qty <= 0 || price < 0) return;
     const priceUSD = (displaySymbol === "Rp") ? price / usdIdr : price;
     const newStub = { id: p.id, type: p.type, symbol: p.symbol, name: p.display, image: p.image, coingeckoId: p.type === 'crypto' ? p.id : undefined };
     if (handleBuy(newStub, qty, priceUSD)) { setAddAssetModalOpen(false); setQuery(''); setSelectedSuggestion(null); setSuggestions([]); }
@@ -430,9 +430,15 @@ export default function App() {
 
   const addNonLiquidAsset = () => {
     const name = nlName.trim(), qty = toNum(nlQty), priceIn = toNum(nlPrice);
-    if (!name || qty <= 0 || priceIn <= 0) { alert("Category, quantity, and price must be filled."); return; }
+    if (!name || qty <= 0) { alert("Category and quantity must be filled."); return; }
+    if (priceIn < 0) { alert("Purchase price cannot be negative."); return; }
+    
     const priceUSD = nlPriceCcy === 'IDR' ? priceIn / usdIdr : priceIn;
-    const newAssetStub = { id: `nonliquid:${name.replace(/\s/g,'_')}`, type: 'nonliquid', symbol: name.slice(0,8).toUpperCase(), name, purchaseDate: nlPurchaseDate ? new Date(nlPurchaseDate).getTime() : Date.now(), nonLiquidYoy: toNum(nlYoy), coupon: toNum(nlCoupon), description: nlDesc };
+    // Asumsikan kupon nominal diisi menggunakan mata uang yang sama dengan harga belinya
+    const couponNominal = toNum(nlCoupon);
+    const couponUSD = nlPriceCcy === 'IDR' ? couponNominal / usdIdr : couponNominal;
+
+    const newAssetStub = { id: `nonliquid:${name.replace(/\s/g,'_')}`, type: 'nonliquid', symbol: name.slice(0,8).toUpperCase(), name, purchaseDate: nlPurchaseDate ? new Date(nlPurchaseDate).getTime() : Date.now(), nonLiquidYoy: toNum(nlYoy), coupon: couponUSD, description: nlDesc };
     if (handleBuy(newAssetStub, qty, priceUSD)) { setAddAssetModalOpen(false); setNlName(''); setNlQty(''); setNlPrice(''); setNlPurchaseDate(''); setNlCoupon(''); setNlYoy(''); setNlDesc(''); }
   };
   
@@ -556,12 +562,33 @@ export default function App() {
   const { tradingBalance, realizedUSD, totalDeposits, totalWithdrawals } = financialSummaries;
   const derivedData = useMemo(() => {
     const rows = assets.map(a => {
-        const currentPrice = a.lastPriceUSD > 0 ? a.lastPriceUSD : a.avgPrice;
-        const marketValueUSD = a.shares * currentPrice;
-        const pnlUSD = marketValueUSD - a.investedUSD;
-        const pnlPct = a.investedUSD > 0 ? (pnlUSD / a.investedUSD) * 100 : 0;
-        return { ...a, marketValueUSD, pnlUSD, pnlPct, lastPriceUSD: currentPrice };
+        if (a.type === 'nonliquid') {
+            // Kalkulasi berapa tahun aset sudah dipegang sejak purchaseDate
+            const yearsElapsed = Math.max(0, (Date.now() - (a.purchaseDate || a.createdAt || Date.now())) / (1000 * 60 * 60 * 24 * 365.25));
+            
+            // Harga per-unit akan naik berdasarkan YoY Gain (%) secara simple interest
+            const initialPrice = a.avgPrice || 0;
+            const currentPrice = initialPrice * (1 + ((a.nonLiquidYoy || 0) / 100) * yearsElapsed);
+            const capitalValueUSD = a.shares * currentPrice;
+            
+            // Kupon / Yield dihitung sebagai nominal per unit * kuantitas * tahun yang telah berlalu
+            const accumulatedCouponUSD = (a.coupon || 0) * a.shares * yearsElapsed;
+            
+            // Market value adalah nilai apresiasi unit ditambah semua kupon/yield yang telah terakumulasi
+            const marketValueUSD = capitalValueUSD + accumulatedCouponUSD;
+            const pnlUSD = marketValueUSD - a.investedUSD;
+            const pnlPct = a.investedUSD > 0 ? (pnlUSD / a.investedUSD) * 100 : 0; // Tetap menghasilkan 0 agar tidak infinity/error jika beli di harga 0
+            
+            return { ...a, marketValueUSD, pnlUSD, pnlPct, lastPriceUSD: currentPrice, accumulatedCouponUSD };
+        } else {
+            const currentPrice = a.lastPriceUSD > 0 ? a.lastPriceUSD : a.avgPrice;
+            const marketValueUSD = a.shares * currentPrice;
+            const pnlUSD = marketValueUSD - a.investedUSD;
+            const pnlPct = a.investedUSD > 0 ? (pnlUSD / a.investedUSD) * 100 : 0;
+            return { ...a, marketValueUSD, pnlUSD, pnlPct, lastPriceUSD: currentPrice };
+        }
     });
+    
     const investedUSD = rows.reduce((s, r) => s + r.investedUSD, 0);
     const marketValueUSD = rows.reduce((s, r) => s + r.marketValueUSD, 0);
     const unrealizedPnlUSD = marketValueUSD - investedUSD;
@@ -1019,7 +1046,7 @@ const AreaChart = ({ data: chartData, simplified = false, displaySymbol, range, 
                   }
                   return (
                   <g key={idx}>
-                      <text x={width - padding.right + 6} y={yScale(v) + 4} fontSize="10" fill="#6B7280" className="font-semibold">{strLabel}</text>
+                      <text x={width - padding.right + 6} y={yScale(v) + 4} fontSize="10" fill="#6B7280" className="fontsemibold">{strLabel}</text>
                   </g>
               )})}
               {Array.from({length: 5}, (_, i) => {const t = timeStart + (i / 4) * (timeEnd - timeStart); return {t, label: new Date(t).toLocaleDateString('id-ID', {day: 'numeric', month: 'short'})}}).map((item, idx) => (<text key={idx} x={xScale(item.t)} y={height - padding.bottom + 20} textAnchor="middle" fontSize="10" fill="#6B7280">{item.label}</text>))}
@@ -1087,7 +1114,7 @@ const ManagePortfolioSheet = ({ onAddBalance, onWithdraw, onClearAll, onExport, 
 
 const AddAssetForm = ({ searchMode, setSearchMode, query, setQuery, suggestions, setSelectedSuggestion, isSearching, addAssetWithInitial, addNonLiquidAsset, nlName, setNlName, nlQty, setNlQty, nlPrice, setNlPrice, nlPriceCcy, setNlPriceCcy, nlPurchaseDate, setNlPurchaseDate, nlCoupon, setNlCoupon, nlYoy, setNlYoy, nlDesc, setNlDesc, displaySymbol, handleSetWatchedAsset, watchedAssets }) => {
     const [shares, setShares] = useState(''); const [price, setPrice] = useState(''); const [total, setTotal] = useState('');
-    const handleInputChange = (field, value) => { if (field === 'shares') { setShares(value); const num = toNum(price) * toNum(value); setTotal(num > 0 ? `${num}` : ''); } else if (field === 'price') { setPrice(value); const num = toNum(value) * toNum(shares); setTotal(num > 0 ? `${num}` : ''); } else if (field === 'total') { setTotal(value); const nTotal = toNum(value), nShares = toNum(shares); if (nShares > 0) setPrice(String(nTotal / nShares)); } };
+    const handleInputChange = (field, value) => { if (field === 'shares') { setShares(value); const num = toNum(price) * toNum(value); setTotal(num >= 0 ? `${num}` : ''); } else if (field === 'price') { setPrice(value); const num = toNum(value) * toNum(shares); setTotal(num >= 0 ? `${num}` : ''); } else if (field === 'total') { setTotal(value); const nTotal = toNum(value), nShares = toNum(shares); if (nShares > 0 && nTotal >= 0) setPrice(String((nTotal / nShares).toFixed(8))); } };
     return ( <div className="space-y-4"> <div className="flex border-b border-white/10">{[{ key: 'stock', label: 'Stock' }, { key:'crypto', label:'Crypto' }, { key:'nonliquid', label: 'Alternative Assets' }].map(item => (<button key={item.key} onClick={() => setSearchMode(item.key)} className={`px-3 py-2 text-sm font-medium ${searchMode === item.key ? 'text-white border-b-2 border-emerald-400' : 'text-gray-400'}`}>{item.label}</button>))}</div> {searchMode !== 'nonliquid' ? ( <div className="space-y-4"> <div className="relative">
       <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search by code or name..." className="w-full rounded bg-zinc-800 px-3 py-2 text-sm outline-none border border-zinc-700 text-white pr-10" />
       {isSearching && <div className="absolute right-3 top-2.5 w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>}
@@ -1100,14 +1127,14 @@ const AddAssetForm = ({ searchMode, setSearchMode, query, setQuery, suggestions,
                     <input value={nlName} onChange={e => setNlName(e.target.value)} placeholder="Category (Property, Bond, Dividend, Land)" className="rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" />
                     <input value={nlQty} onChange={e => setNlQty(e.target.value)} placeholder="Qty / Units" type="number" className="rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" />
                     <div className="flex gap-2">
-                        <input value={nlPrice} onChange={e => setNlPrice(e.target.value)} placeholder="Purchase Price" type="number" className="flex-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" />
+                        <input value={nlPrice} onChange={e => setNlPrice(e.target.value)} placeholder="Purchase Price (Can be 0)" type="number" className="flex-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" />
                         <select value={nlPriceCcy} onChange={e => setNlPriceCcy(e.target.value)} className="w-24 rounded bg-zinc-800 px-2 py-2 text-sm border border-zinc-700 text-white"><option value="IDR">IDR</option><option value="USD">USD</option></select>
                     </div>
                     <div className="flex flex-col justify-center">
                         <span className="text-[10px] text-gray-500 ml-1 mb-0.5">Purchase Date</span>
                         <input type="date" value={nlPurchaseDate} onChange={e => setNlPurchaseDate(e.target.value)} className="rounded bg-zinc-800 px-3 py-1.5 text-sm border border-zinc-700 text-white" />
                     </div>
-                    <input value={nlCoupon} onChange={e => setNlCoupon(e.target.value)} placeholder="Coupon / Yield (Annual %)" type="number" className="rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" />
+                    <input value={nlCoupon} onChange={e => setNlCoupon(e.target.value)} placeholder="Coupon / Yield (Annual Nominal)" type="number" className="rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" />
                     <input value={nlYoy} onChange={e => setNlYoy(e.target.value)} placeholder="YoY Gain (%)" type="number" className="rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" />
                 </div>
                 <input value={nlDesc} onChange={e => setNlDesc(e.target.value)} placeholder="Description (Optional)" className="w-full rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" />
@@ -1137,7 +1164,7 @@ const AssetDetailModal = ({ isOpen, onClose, asset, onBuy, onSell, onDelete, usd
 const TradeForm = ({ asset, onBuy, onSell, onDelete, usdIdr, displaySymbol }) => {
     const [mode, setMode] = useState('buy'); const [shares, setShares] = useState(''); const [price, setPrice] = useState(''); const [total, setTotal] = useState('');
     useEffect(() => { if (asset) { const priceVal = displaySymbol === "Rp" ? asset.lastPriceUSD * usdIdr : asset.lastPriceUSD; setPrice(String(isFinite(priceVal) ? (displaySymbol === "$" ? priceVal.toFixed(8) : Math.round(priceVal)) : '')); setShares(''); setTotal(''); } }, [asset, usdIdr, displaySymbol, mode]);
-    const handleInputChange = (field, value) => { if (field === 'shares') { setShares(value); const nPrice = toNum(price), nShares = toNum(value); setTotal(nPrice > 0 && nShares > 0 ? (nPrice * nShares).toString() : ''); } else if (field === 'price') { setPrice(value); const nPrice = toNum(value), nShares = toNum(shares); setTotal(nPrice > 0 && nShares > 0 ? (nPrice * nShares).toString() : ''); } else if (field === 'total') { setTotal(value); const nTotal = toNum(value), nShares = toNum(shares); if (nShares > 0 && nTotal > 0) setPrice(String((nTotal / nShares).toFixed(8))); } };
+    const handleInputChange = (field, value) => { if (field === 'shares') { setShares(value); const nPrice = toNum(price), nShares = toNum(value); setTotal(nPrice >= 0 && nShares >= 0 ? (nPrice * nShares).toString() : ''); } else if (field === 'price') { setPrice(value); const nPrice = toNum(value), nShares = toNum(shares); setTotal(nPrice >= 0 && nShares >= 0 ? (nPrice * nShares).toString() : ''); } else if (field === 'total') { setTotal(value); const nTotal = toNum(value), nShares = toNum(shares); if (nShares > 0 && nTotal >= 0) setPrice(String((nTotal / nShares).toFixed(8))); } };
     const priceUSD = (displaySymbol === 'Rp') ? toNum(price) / usdIdr : toNum(price);
     const doSubmit = () => { if (mode === 'buy') onBuy(asset, shares, priceUSD); else if (mode === 'sell') onSell(asset, shares, priceUSD); };
     return (<div className="space-y-3"> <div className="flex bg-zinc-800 rounded-full p-1"><button onClick={() => setMode('buy')} className={`w-1/2 py-1.5 text-xs font-semibold rounded-full ${mode === 'buy' ? 'bg-emerald-600 text-white' : 'text-gray-300'}`}>Buy</button><button onClick={() => setMode('sell')} className={`w-1/2 py-1.5 text-xs font-semibold rounded-full ${mode === 'sell' ? 'bg-red-600 text-white' : 'text-gray-300'}`}>Sell</button></div> <div className="grid grid-cols-1 sm:grid-cols-3 gap-2"><div><label className="text-xs text-gray-400">Qty</label><input type="text" value={shares} onChange={e=>handleInputChange('shares', e.target.value)} className="w-full text-sm mt-1 bg-zinc-800 px-2 py-1.5 rounded border border-zinc-700 text-white" /></div> <div><label className="text-xs text-gray-400">Price ({displaySymbol})</label><input type="text" value={price} onChange={e=>handleInputChange('price', e.target.value)} className="w-full text-sm mt-1 bg-zinc-800 px-2 py-1.5 rounded border border-zinc-700 text-white" /></div> <div><label className="text-xs text-gray-400">Total ({displaySymbol})</label><input type="text" value={total} onChange={e=>handleInputChange('total', e.target.value)} className="w-full text-sm mt-1 bg-zinc-800 px-2 py-1.5 rounded border border-zinc-700 text-white" /></div></div> <div className="flex gap-2"><button onClick={doSubmit} className={`flex-1 py-2 rounded font-semibold text-white text-sm ${mode === 'buy' ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-red-600 hover:bg-red-500'}`}>Confirm {mode.charAt(0).toUpperCase() + mode.slice(1)}</button><button onClick={() => onDelete(asset)} title="Delete (liquidate)" className="py-2 px-3 rounded bg-zinc-700 hover:bg-zinc-600 text-white flex items-center gap-2"><TrashIcon className="w-4 h-4 text-white" /></button></div> </div>);
