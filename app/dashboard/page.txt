@@ -1256,3 +1256,4 @@ const AssetTableView = ({ rows, displaySymbol, usdIdr, onRowClick }) => {
         </div>
     );
 }
+
