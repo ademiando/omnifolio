@@ -125,11 +125,31 @@ function ensureNumericAsset(a) {
 const Modal = ({ children, isOpen, onClose, title, size = "2xl" }) => {
   if (!isOpen) return null;
   const sizeClasses = { 'lg': 'max-w-lg', '2xl': 'max-w-2xl', '3xl': 'max-w-3xl' };
-  return (<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 transition-opacity" onClick={onClose}><div className={`glass-card w-full ${sizeClasses[size]} max-h-[95vh] flex flex-col transform transition-transform duration-300 scale-100`} onClick={e => e.stopPropagation()}><div className="flex justify-between items-center p-4 border-b border-white/10 shrink-0"><h2 className="text-lg font-semibold text-white">{title}</h2><button onClick={onClose} className="text-gray-400 hover:text-white text-2xl px-2 py-1">&times;</button></div><div className="p-4 overflow-y-auto">{children}</div></div></div>);
+  return (
+    <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 p-3 overflow-y-auto sm:p-4" onClick={onClose}>
+      <div className={`glass-card w-full ${sizeClasses[size]} max-h-[90vh] flex flex-col transform transition-all duration-300 scale-100 my-auto`} onClick={e => e.stopPropagation()}>
+        <div className="flex justify-between items-center p-4 border-b border-white/10 shrink-0">
+          <h2 className="text-base sm:text-lg font-semibold text-white truncate pr-4">{title}</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl px-2 py-1 select-none">&times;</button>
+        </div>
+        <div className="p-4 overflow-y-auto flex-1 min-h-0 text-sm scrollbar-thin">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
 };
+
 const BottomSheet = ({ isOpen, onClose, children }) => {
   if (!isOpen) return null;
-  return (<div className="fixed inset-0 bg-black/60 z-40 transition-opacity" onClick={onClose}><div className={`fixed bottom-0 left-0 right-0 glass-card rounded-t-2xl shadow-lg transition-transform duration-300 ${isOpen ? 'translate-y-0' : 'translate-y-full'}`} onClick={e => e.stopPropagation()}><div className="w-10 h-1 bg-zinc-700 rounded-full mx-auto my-3"></div>{children}</div></div>);
+  return (
+    <div className="fixed inset-0 bg-black/60 z-50 transition-opacity" onClick={onClose}>
+      <div className={`fixed bottom-0 left-0 right-0 glass-card rounded-t-2xl shadow-lg transition-transform duration-300 max-h-[85vh] overflow-y-auto ${isOpen ? 'translate-y-0' : 'translate-y-full'}`} onClick={e => e.stopPropagation()}>
+        <div className="w-10 h-1 bg-zinc-700 rounded-full mx-auto my-3"></div>
+        {children}
+      </div>
+    </div>
+  );
 };
 
 /* ===================== Main Component ===================== */
@@ -389,9 +409,9 @@ export default function App() {
   
   const handleBuy = (assetStub, qty, priceUSD) => {
     qty = toNum(qty); priceUSD = toNum(priceUSD);
-    if (qty <= 0 || priceUSD < 0) { alert("Quantity must be greater than zero and price cannot be negative."); return false; }
+    if (qty <= 0 || priceUSD < 0) { alert("Kuantitas harus lebih dari nol dan harga beli tidak boleh negatif."); return false; }
     const costUSD = qty * priceUSD;
-    if (costUSD * usdIdr > financialSummaries.tradingBalance) { alert("Insufficient trading balance."); return false; }
+    if (costUSD * usdIdr > financialSummaries.tradingBalance) { alert("Saldo tidak mencukupi."); return false; }
     const assetId = assetStub.id || `${assetStub.type}:${assetStub.symbol}`;
     addTransaction({ id: `tx:${Date.now()}`, type: "buy", qty, pricePerUnit: priceUSD, cost: costUSD, date: assetStub.purchaseDate || Date.now(), symbol: assetStub.symbol, name: assetStub.name || assetStub.symbol, assetId, assetStub });
     if (isAssetDetailModalOpen) setAssetDetailModalOpen(false); return true;
@@ -399,22 +419,22 @@ export default function App() {
 
   const handleSell = (asset, qty, priceUSD) => {
     qty = toNum(qty); priceUSD = toNum(priceUSD);
-    if (!asset || qty <= 0 || priceUSD < 0) { alert("Quantity must be > 0 and price >= 0."); return false; }
-    if (qty > asset.shares) { alert("Cannot sell more than you own."); return false; }
+    if (!asset || qty <= 0 || priceUSD < 0) { alert("Kuantitas harus > 0 dan harga >= 0."); return false; }
+    if (qty > asset.shares) { alert("Tidak dapat menjual melebihi jumlah kepemilikan Anda."); return false; }
     const proceedsUSD = qty * priceUSD; const costOfSold = qty * asset.avgPrice; const realized = proceedsUSD - costOfSold;
     addTransaction({ id: `tx:${Date.now()}`, assetId: asset.id, type: "sell", qty, pricePerUnit: priceUSD, proceeds: proceedsUSD, costOfSold, realized, date: Date.now(), symbol: asset.symbol, name: asset.name });
     if (isAssetDetailModalOpen) setAssetDetailModalOpen(false); return true;
   };
 
   const handleDeleteAsset = (asset) => {
-    if (!asset || !confirm(`Delete and liquidate ${asset.symbol} at market price?`)) return;
+    if (!asset || !confirm(`Hapus dan likuidasi ${asset.symbol} pada harga pasar saat ini?`)) return;
     const marketUSD = asset.shares * asset.lastPriceUSD; const realized = marketUSD - asset.investedUSD;
     addTransaction({ id: `tx:${Date.now()}`, assetId: asset.id, type: "delete", qty: asset.shares, pricePerUnit: asset.lastPriceUSD, proceeds: marketUSD, costOfSold: asset.investedUSD, realized, date: Date.now(), symbol: asset.symbol, name: asset.name, note: "liquidated" });
     setAssetDetailModalOpen(false);
   };
   
   const handleDeleteTransaction = (txId) => { 
-      if (confirm("Delete this transaction permanently?")) {
+      if (confirm("Hapus transaksi ini secara permanen?")) {
           setTransactions(prev => prev.filter(tx => tx.id !== txId)); 
       }
   };
@@ -430,8 +450,8 @@ export default function App() {
 
   const addNonLiquidAsset = () => {
     const name = nlName.trim(), qty = toNum(nlQty), priceIn = toNum(nlPrice);
-    if (!name || qty <= 0) { alert("Category and quantity must be filled."); return; }
-    if (priceIn < 0) { alert("Purchase price cannot be negative."); return; }
+    if (!name || qty <= 0) { alert("Nama kategori dan kuantitas harus diisi."); return; }
+    if (priceIn < 0) { alert("Harga beli tidak boleh negatif."); return; }
     
     const priceUSD = nlPriceCcy === 'IDR' ? priceIn / usdIdr : priceIn;
     // Asumsikan kupon nominal diisi menggunakan mata uang yang sama dengan harga belinya
@@ -444,12 +464,12 @@ export default function App() {
   
   const handleAddBalance = (amount) => { addTransaction({ id: `tx:${Date.now()}`, type: "deposit", amount: toNum(amount), date: Date.now() }); setBalanceModalOpen(false); };
   const handleWithdraw = (amount) => {
-    const amountIDR = toNum(amount); if (amountIDR > financialSummaries.tradingBalance) { alert("Withdrawal amount exceeds balance."); return; }
+    const amountIDR = toNum(amount); if (amountIDR > financialSummaries.tradingBalance) { alert("Jumlah penarikan melebihi saldo saat ini."); return; }
     addTransaction({ id: `tx:${Date.now()}`, type: "withdraw", amount: amountIDR, date: Date.now() }); setBalanceModalOpen(false);
   };
   
   const handleExport = () => {
-    if (transactions.length === 0) { alert("No transactions to export."); return; }
+    if (transactions.length === 0) { alert("Tidak ada transaksi untuk diekspor."); return; }
     const formatCsvCell = (cellData) => { const stringData = String(cellData ?? ''); if (stringData.includes(',') || stringData.includes('"') || stringData.includes('\n')) { return `"${stringData.replace(/"/g, '""')}"`; } return stringData; };
     const headers = ['id', 'date', 'type', 'symbol', 'name', 'qty', 'pricePerUnit', 'cost', 'proceeds', 'realized', 'amount', 'assetId', 'note', 'assetStub_id', 'assetStub_type', 'assetStub_symbol', 'assetStub_name', 'assetStub_image', 'assetStub_coingeckoId'];
     const headerRow = headers.join(',') + '\n';
@@ -560,24 +580,32 @@ export default function App() {
   };
 
   const { tradingBalance, realizedUSD, totalDeposits, totalWithdrawals } = financialSummaries;
+  
   const derivedData = useMemo(() => {
     const rows = assets.map(a => {
         if (a.type === 'nonliquid') {
-            // Kalkulasi berapa tahun aset sudah dipegang sejak purchaseDate
-            const yearsElapsed = Math.max(0, (Date.now() - (a.purchaseDate || a.createdAt || Date.now())) / (1000 * 60 * 60 * 24 * 365.25));
+            const purchaseTime = a.purchaseDate || a.createdAt || Date.now();
+            const nowTime = Date.now();
             
-            // Harga per-unit akan naik berdasarkan YoY Gain (%) secara simple interest
+            // 1. Kalkulasi YoY Gain berbasis Kalender Januari secara presisi
+            const purchaseYear = new Date(purchaseTime).getFullYear();
+            const currentYear = new Date(nowTime).getFullYear();
+            // Setiap berganti tahun kalender ke depan (mulai awal Januari), YoY Gain diaplikasikan penuh (1 kali per pergantian tahun)
+            const calendarYearsPassed = Math.max(0, currentYear - purchaseYear);
+            
+            // Mengapresiasi harga unit berdasarkan YoY Gain per tahun kalender
             const initialPrice = a.avgPrice || 0;
-            const currentPrice = initialPrice * (1 + ((a.nonLiquidYoy || 0) / 100) * yearsElapsed);
+            const currentPrice = initialPrice * (1 + ((a.nonLiquidYoy || 0) / 100) * calendarYearsPassed);
             const capitalValueUSD = a.shares * currentPrice;
             
-            // Kupon / Yield dihitung sebagai nominal per unit * kuantitas * tahun yang telah berlalu
-            const accumulatedCouponUSD = (a.coupon || 0) * a.shares * yearsElapsed;
+            // 2. Kalkulasi Kupon Nominal Tahunan berbasis fraksional waktu sesungguhnya
+            const yearsElapsedFraction = Math.max(0, (nowTime - purchaseTime) / (1000 * 60 * 60 * 24 * 365.25));
+            const accumulatedCouponUSD = (a.coupon || 0) * a.shares * yearsElapsedFraction;
             
-            // Market value adalah nilai apresiasi unit ditambah semua kupon/yield yang telah terakumulasi
+            // Total market value = Nilai pokok apresiasi + Kupon terakumulasi realtime
             const marketValueUSD = capitalValueUSD + accumulatedCouponUSD;
             const pnlUSD = marketValueUSD - a.investedUSD;
-            const pnlPct = a.investedUSD > 0 ? (pnlUSD / a.investedUSD) * 100 : 0; // Tetap menghasilkan 0 agar tidak infinity/error jika beli di harga 0
+            const pnlPct = a.investedUSD > 0 ? (pnlUSD / a.investedUSD) * 100 : 0;
             
             return { ...a, marketValueUSD, pnlUSD, pnlPct, lastPriceUSD: currentPrice, accumulatedCouponUSD };
         } else {
@@ -611,7 +639,7 @@ export default function App() {
     return assetsToSort;
   }, [derivedData.rows, assetSortBy]);
 
-
+  // Menghasilkan grafik perkembangan real equity dengan pemetaan harga realtime yang akurat
   const equitySeries = useMemo(() => {
     const sortedTx = [...transactions].sort((a, b) => a.date - b.date);
     if (sortedTx.length === 0) return [{ t: Date.now() - 86400000, v: 0 }, { t: Date.now(), v: 0 }];
@@ -641,7 +669,8 @@ export default function App() {
         points.push({ t: tx.date, v: currentCash + (holdingsValueUSD * usdIdr) });
     }
     if (points.length === 0) return [{ t: Date.now() - 86400000, v: 0 }, { t: Date.now(), v: derivedData.totalEquity }];
-    return [{ t: points[0].t - 86400000, v: 0 }, ...points, {t: Date.now(), v: derivedData.totalEquity}];
+    // Menambahkan titik realtime masa kini agar grafik terupdate sesuai harga pasar realtime sekarang
+    return [{ t: points[0].t - 86400000, v: 0 }, ...points, { t: Date.now(), v: derivedData.totalEquity }];
   }, [transactions, assets, usdIdr, derivedData.totalEquity]);
 
   const handleWatchedAssetClick = (data) => {
@@ -664,7 +693,7 @@ export default function App() {
     <div className="bg-black text-gray-300 min-h-screen font-sans main-background">
       <style>{`
         body, .main-background { background-color: #000000; }
-        .glass-card { background: rgba(28, 28, 32, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .glass-card { background: rgba(28, 28, 32, 0.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08); }
         @keyframes flash-green { 0% { background-color: rgba(16, 185, 129, 0.5); } 100% { background-color: transparent; } }
         @keyframes flash-red { 0% { background-color: rgba(239, 68, 68, 0.5); } 100% { background-color: transparent; } }
         .flash-up { animation: flash-green 0.7s ease-out; }
@@ -672,11 +701,11 @@ export default function App() {
         .tradingview-widget-container:fullscreen { background-color: #131722; }
       `}</style>
       <div className="max-w-4xl mx-auto">
-        <header className="p-4 flex justify-end items-center sticky top-0 bg-[#000000] z-10 w-full">
+        <header className="p-4 flex justify-end items-center sticky top-0 bg-[#000000]/90 backdrop-blur-md z-30 w-full border-b border-white/5">
             <div className="flex items-center gap-4 sm:gap-6">
-                <button onClick={() => setAddAssetModalOpen(true)} className="text-gray-400 hover:text-white"><SearchIcon /></button>
+                <button onClick={() => setAddAssetModalOpen(true)} className="text-gray-400 hover:text-white p-1"><SearchIcon /></button>
                 <div className="flex items-center gap-2"><span className="text-xs font-semibold text-gray-400">IDR</span><div role="switch" aria-checked={displaySymbol === "$"} onClick={() => setDisplaySymbol(prev => prev === "Rp" ? "$" : "Rp")} className={`relative w-12 h-6 rounded-full p-1 cursor-pointer transition ${displaySymbol === "$" ? 'bg-emerald-600' : 'bg-zinc-700'}`}><div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${displaySymbol === "$" ? 'translate-x-6' : 'translate-x-0'}`}></div></div><span className="text-xs font-semibold text-gray-400">USD</span></div>
-                <button onClick={() => setManagePortfolioOpen(true)} className="text-gray-400 hover:text-white"><MoreVerticalIcon /></button>
+                <button onClick={() => setManagePortfolioOpen(true)} className="text-gray-400 hover:text-white p-1"><MoreVerticalIcon /></button>
                 
                 <button onClick={() => setProfileMenuOpen(true)} className="flex items-center justify-center outline-none">
                     {profilePic ? (
@@ -698,7 +727,7 @@ export default function App() {
                     </div>
                      <div className="text-[10px] sm:text-xs mt-2 space-y-1 text-gray-400 border-t border-white/10 pt-2 min-w-0 z-10">
                         <div className="flex justify-between w-full">
-                            <span className="truncate pr-1">Unrealized P&L</span>
+                            <span className="truncate pr-1">Belum Direalisasi</span>
                             <span className={`font-semibold shrink-0 ${derivedData.totals.unrealizedPnlUSD >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                                 {formatCurrencyShort(derivedData.totals.unrealizedPnlUSD, true, displaySymbol, usdIdr)}
                             </span>
@@ -1046,7 +1075,7 @@ const AreaChart = ({ data: chartData, simplified = false, displaySymbol, range, 
                   }
                   return (
                   <g key={idx}>
-                      <text x={width - padding.right + 6} y={yScale(v) + 4} fontSize="10" fill="#6B7280" className="fontsemibold">{strLabel}</text>
+                      <text x={width - padding.right + 6} y={yScale(v) + 4} fontSize="10" fill="#6B7280" className="font-semibold">{strLabel}</text>
                   </g>
               )})}
               {Array.from({length: 5}, (_, i) => {const t = timeStart + (i / 4) * (timeEnd - timeStart); return {t, label: new Date(t).toLocaleDateString('id-ID', {day: 'numeric', month: 'short'})}}).map((item, idx) => (<text key={idx} x={xScale(item.t)} y={height - padding.bottom + 20} textAnchor="middle" fontSize="10" fill="#6B7280">{item.label}</text>))}
@@ -1127,7 +1156,7 @@ const AddAssetForm = ({ searchMode, setSearchMode, query, setQuery, suggestions,
                     <input value={nlName} onChange={e => setNlName(e.target.value)} placeholder="Category (Property, Bond, Dividend, Land)" className="rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" />
                     <input value={nlQty} onChange={e => setNlQty(e.target.value)} placeholder="Qty / Units" type="number" className="rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" />
                     <div className="flex gap-2">
-                        <input value={nlPrice} onChange={e => setNlPrice(e.target.value)} placeholder="Purchase Price (Can be 0)" type="number" className="flex-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" />
+                        <input value={nlPrice} onChange={e => setNlPrice(e.target.value)} placeholder="Purchase Price" type="number" className="flex-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" />
                         <select value={nlPriceCcy} onChange={e => setNlPriceCcy(e.target.value)} className="w-24 rounded bg-zinc-800 px-2 py-2 text-sm border border-zinc-700 text-white"><option value="IDR">IDR</option><option value="USD">USD</option></select>
                     </div>
                     <div className="flex flex-col justify-center">
