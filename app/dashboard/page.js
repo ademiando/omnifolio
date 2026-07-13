@@ -118,7 +118,7 @@ function formatQty(v) {
 }
 
 function ensureNumericAsset(a) {
-  return { ...a, id: a.id || `${a.type}:${a.symbol}:${Math.random()}`, name: a.name || a.symbol, shares: toNum(a.shares || 0), avgPrice: toNum(a.avgPrice || 0), investedUSD: toNum(a.investedUSD || 0), lastPriceUSD: toNum(a.lastPriceUSD || 0), change24hUSD: toNum(a.change24hUSD || 0), change24hPct: toNum(a.change24hPct || 0), createdAt: a.createdAt || Date.now(), purchaseDate: a.purchaseDate || a.createdAt || Date.now(), nonLiquidYoy: toNum(a.nonLiquidYoy || 0), coupon: toNum(a.coupon || 0), type: a.type || "stock", image: a.image || null, };
+  return { ...a, id: a.id || `${a.type}:${a.symbol}:${Math.random()}`, name: a.name || a.symbol, shares: toNum(a.shares || 0), avgPrice: toNum(a.avgPrice || 0), investedUSD: toNum(a.investedUSD || 0), lastPriceUSD: toNum(a.lastPriceUSD || 0), change24hUSD: toNum(a.change24hUSD || 0), change24hPct: toNum(a.change24hPct || 0), createdAt: a.createdAt || Date.now(), purchaseDate: a.purchaseDate || a.createdAt || Date.now(), nonLiquidYoy: toNum(a.nonLiquidYoy || 0), type: a.type || "stock", image: a.image || null, };
 }
 
 /* ===================== UI Helpers ===================== */
@@ -191,7 +191,7 @@ export default function App() {
   const [assetSortBy, setAssetSortBy] = useState('default');
   const [assetDisplayAs, setAssetDisplayAs] = useState(() => safeGetStorage(`pf_asset_display_as_${STORAGE_VERSION}`, 'card'));
 
-  const [nlName, setNlName] = useState(""), [nlQty, setNlQty] = useState(""), [nlPrice, setNlPrice] = useState(""), [nlPriceCcy, setNlPriceCcy] = useState("IDR"), [nlPurchaseDate, setNlPurchaseDate] = useState(""), [nlCoupon, setNlCoupon] = useState(""), [nlYoy, setNlYoy] = useState(""), [nlDesc, setNlDesc] = useState("");
+  const [nlName, setNlName] = useState(""), [nlQty, setNlQty] = useState(""), [nlPrice, setNlPrice] = useState(""), [nlPriceCcy, setNlPriceCcy] = useState("IDR"), [nlPurchaseDate, setNlPurchaseDate] = useState(""), [nlYoy, setNlYoy] = useState(""), [nlDesc, setNlDesc] = useState("");
   const importInputRef = useRef(null);
   const prevAssetsRef = useRef();
   
@@ -432,8 +432,8 @@ export default function App() {
     const name = nlName.trim(), qty = toNum(nlQty), priceIn = toNum(nlPrice);
     if (!name || qty <= 0 || priceIn <= 0) { alert("Name, quantity, and price must be filled."); return; }
     const priceUSD = nlPriceCcy === 'IDR' ? priceIn / usdIdr : priceIn;
-    const newAssetStub = { id: `nonliquid:${name.replace(/\s/g,'_')}`, type: 'nonliquid', symbol: name.slice(0,8).toUpperCase(), name, purchaseDate: nlPurchaseDate ? new Date(nlPurchaseDate).getTime() : Date.now(), nonLiquidYoy: toNum(nlYoy), coupon: toNum(nlCoupon), description: nlDesc };
-    if (handleBuy(newAssetStub, qty, priceUSD)) { setAddAssetModalOpen(false); setNlName(''); setNlQty(''); setNlPrice(''); setNlPurchaseDate(''); setNlCoupon(''); setNlYoy(''); setNlDesc(''); }
+    const newAssetStub = { id: `nonliquid:${name.replace(/\s/g,'_')}`, type: 'nonliquid', symbol: name.slice(0,8).toUpperCase(), name, purchaseDate: nlPurchaseDate ? new Date(nlPurchaseDate).getTime() : Date.now(), nonLiquidYoy: toNum(nlYoy), description: nlDesc };
+    if (handleBuy(newAssetStub, qty, priceUSD)) { setAddAssetModalOpen(false); setNlName(''); setNlQty(''); setNlPrice(''); setNlPurchaseDate(''); setNlDesc(''); }
   };
   
   const handleAddBalance = (amount) => { addTransaction({ id: `tx:${Date.now()}`, type: "deposit", amount: toNum(amount), date: Date.now() }); setBalanceModalOpen(false); };
@@ -455,30 +455,88 @@ export default function App() {
 
   const handleImportClick = () => { importInputRef.current.click(); };
 
+  // Fungsi Import yang Diperbarui: Mendukung CSV, TSV, Copy-Paste Spreadsheet, serta perataan otomatis
   const handleFileImport = (event) => {
     const file = event.target.files[0];
-    if (!file) { return; }
-    if (!confirm("Mengimpor file baru akan menggantikan semua transaksi saat ini. Apakah Anda yakin ingin melanjutkan?")) { event.target.value = null; return; }
+    if (!file) return;
+    if (!confirm("Mengimpor data baru akan menggantikan semua histori transaksi Anda saat ini. Lanjutkan?")) { event.target.value = null; return; }
+    
     const reader = new FileReader();
     reader.onload = (e) => {
         try {
-            const text = e.target.result; const lines = text.split(/\r\n|\n/);
-            if (lines.length < 2) throw new Error("File CSV kosong atau hanya berisi header.");
-            const headerLine = lines.shift(); const headers = headerLine.split(',').map(h => h.trim());
-            const newTransactions = lines.filter(line => line.trim() !== '').map(line => {
-                const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(val => val.startsWith('"') && val.endsWith('"') ? val.slice(1, -1).replace(/""/g, '"') : val);
+            const text = e.target.result;
+            // Deteksi pembatas kolom (koma untuk CSV standar, tab untuk TSV/salinan spreadsheet Excel)
+            const lines = text.split(/\r\n|\n/).map(l => l.trim()).filter(Boolean);
+            if (lines.length < 2) throw new Error("File kosong atau format data tidak valid.");
+            
+            const firstLine = lines[0];
+            let delimiter = ',';
+            if (firstLine.includes('\t')) {
+                delimiter = '\t';
+            }
+
+            const headers = firstLine.split(delimiter).map(h => h.trim().replace(/^"|"$/g, ''));
+            
+            const newTransactions = lines.slice(1).map((line, lineIdx) => {
+                let values = [];
+                if (delimiter === ',') {
+                    // Regex cerdas penanganan koma di dalam tanda kutip (RFC 4180)
+                    values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(val => val.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
+                } else {
+                    values = line.split('\t').map(val => val.trim().replace(/^"|"$/g, ''));
+                }
+
                 const tx = {};
-                headers.forEach((header, index) => { if (values[index] !== undefined) tx[header] = values[index]; });
-                if (tx.type === 'buy' && tx.assetStub_symbol) { tx.assetStub = { id: tx.assetStub_id, type: tx.assetStub_type, symbol: tx.assetStub_symbol, name: tx.assetStub_name, image: tx.assetStub_image, coingeckoId: tx.assetStub_coingeckoId, }; }
-                Object.keys(tx).forEach(key => { if (key.startsWith('assetStub_')) delete tx[key]; });
+                headers.forEach((header, idx) => {
+                    if (values[idx] !== undefined) {
+                        tx[header] = values[idx];
+                    }
+                });
+
+                // Perataan struktur assetStub
+                if (tx.type === 'buy' && tx.assetStub_symbol) {
+                    tx.assetStub = {
+                        id: tx.assetStub_id || `${tx.assetStub_type || 'stock'}:${tx.assetStub_symbol}`,
+                        type: tx.assetStub_type || 'stock',
+                        symbol: tx.assetStub_symbol,
+                        name: tx.assetStub_name || tx.assetStub_symbol,
+                        image: tx.assetStub_image || null,
+                        coingeckoId: tx.assetStub_coingeckoId || undefined
+                    };
+                }
+
+                // Hapus sisa-sisa properti flatted CSV jika ada
+                Object.keys(tx).forEach(key => {
+                    if (key.startsWith('assetStub_')) delete tx[key];
+                });
+
+                // Konversi tipe data numerik
                 const numericFields = ['date', 'qty', 'pricePerUnit', 'cost', 'proceeds', 'realized', 'amount'];
-                numericFields.forEach(field => { if (tx[field]) tx[field] = toNum(tx[field]); });
+                numericFields.forEach(field => {
+                    if (tx[field] !== undefined) {
+                        tx[field] = toNum(tx[field]);
+                    }
+                });
+
+                // Fail-safe validasi minimal data import
+                if (!tx.id) tx.id = `import:${Date.now()}:${lineIdx}`;
+                if (!tx.date) tx.date = Date.now();
+                if (!tx.type) tx.type = 'deposit';
+
                 return tx;
             });
-            setTransactions(newTransactions); alert("Transaksi berhasil diimpor!");
-        } catch (error) { console.error("Gagal mengimpor CSV:", error); alert(`Terjadi kesalahan saat mengimpor file: ${error.message}`); } finally { event.target.value = null; }
+
+            setTransactions(newTransactions);
+            alert("Berhasil mengimpor " + newTransactions.length + " data transaksi!");
+        } catch (error) {
+            console.error("Gagal mengimpor data:", error);
+            alert(`Gagal mengimpor file: ${error.message}. Pastikan file merupakan CSV/TSV valid.`);
+        } finally {
+            event.target.value = null;
+        }
     };
-    reader.readAsText(file); setManagePortfolioOpen(false);
+    reader.readAsText(file);
+    setManagePortfolioOpen(false);
   };
 
   const handleSetWatchedAsset = (assetData) => {
@@ -801,7 +859,7 @@ export default function App() {
         </Modal>
 
         <AssetDetailModal isOpen={isAssetDetailModalOpen} onClose={() => setAssetDetailModalOpen(false)} asset={selectedAssetForDetail} onBuy={handleBuy} onSell={handleSell} onDelete={handleDeleteAsset} usdIdr={usdIdr} displaySymbol={displaySymbol} />
-        <Modal title="Add New Asset" isOpen={isAddAssetModalOpen} onClose={() => setAddAssetModalOpen(false)} size="lg"><AddAssetForm {...{searchMode, setSearchMode, query, setQuery, suggestions, setSelectedSuggestion, isSearching, addAssetWithInitial, addNonLiquidAsset, nlName, setNlName, nlQty, setNlQty, nlPrice, setNlPrice, nlPriceCcy, setNlPriceCcy, nlPurchaseDate, setNlPurchaseDate, nlCoupon, setNlCoupon, nlYoy, setNlYoy, nlDesc, setNlDesc, displaySymbol, handleSetWatchedAsset, watchedAssets}} /></Modal>
+        <Modal title="Add New Asset" isOpen={isAddAssetModalOpen} onClose={() => setAddAssetModalOpen(false)} size="lg"><AddAssetForm {...{searchMode, setSearchMode, query, setQuery, suggestions, setSelectedSuggestion, isSearching, addAssetWithInitial, addNonLiquidAsset, nlName, setNlName, nlQty, setNlQty, nlPrice, setNlPrice, nlPriceCcy, setNlPriceCcy, nlPurchaseDate, setNlPurchaseDate, nlYoy, setNlYoy, nlDesc, setNlDesc, displaySymbol, handleSetWatchedAsset, watchedAssets}} /></Modal>
         <Modal title={`${balanceModalMode} Balance`} isOpen={isBalanceModalOpen} onClose={() => setBalanceModalOpen(false)} size="lg"><BalanceManager onConfirm={balanceModalMode === 'Add' ? handleAddBalance : handleWithdraw} /></Modal>
         <Modal title="Portfolio Growth" isOpen={isEquityModalOpen} onClose={() => setIsEquityModalOpen(false)} size="3xl"><EquityGrowthView equitySeries={equitySeries} displaySymbol={displaySymbol} usdIdr={usdIdr} totalEquity={derivedData.totalEquity} /></Modal>
         <Modal title="Portfolio Allocation" isOpen={isAllocationModalOpen} onClose={() => setIsAllocationModalOpen(false)}><PortfolioAllocation data={derivedData.rows} tradingBalance={financialSummaries.tradingBalance} displaySymbol={displaySymbol} usdIdr={usdIdr}/></Modal>
@@ -821,7 +879,7 @@ export default function App() {
             />
         </Modal>
         <BottomSheet isOpen={isManagePortfolioOpen} onClose={() => setManagePortfolioOpen(false)}><ManagePortfolioSheet onAddBalance={() => { setManagePortfolioOpen(false); setBalanceModalMode('Add'); setBalanceModalOpen(true); }} onWithdraw={() => { setManagePortfolioOpen(false); setBalanceModalMode('Withdraw'); setBalanceModalOpen(true); }} onClearAll={() => { if(confirm("Erase all portfolio data? This cannot be undone.")) { setTransactions([]); } setManagePortfolioOpen(false); }} onExport={handleExport} onImport={handleImportClick} /></BottomSheet>
-        <input type="file" ref={importInputRef} onChange={handleFileImport} className="hidden" accept=".csv" />
+        <input type="file" ref={importInputRef} onChange={handleFileImport} className="hidden" accept=".csv,.tsv,.txt" />
       </div>
     </div>
   );
@@ -1032,9 +1090,9 @@ const HistoryView = ({ transactions, usdIdr, displaySymbol, onDeleteTransaction 
       </button>
   </td> </tr> ))} {transactions.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-gray-500">No history</td></tr>} </tbody> </table> </div> );
 const BalanceManager = ({ onConfirm }) => { const [amount, setAmount] = useState(''); return ( <form onSubmit={(e) => { e.preventDefault(); onConfirm(amount); }} className="space-y-4"> <div><label className="block text-sm font-medium mb-1 text-gray-400">Amount (dalam Rupiah)</label><input type="number" step="any" value={amount} onChange={e => setAmount(e.target.value)} autoFocus className="w-full bg-zinc-800 px-3 py-2 rounded border border-zinc-700 text-white" placeholder="e.g. 1000000" /></div> <button type="submit" className="w-full py-2.5 rounded font-semibold bg-emerald-600 text-white hover:bg-emerald-500">Confirm</button> </form> ); };
-const ManagePortfolioSheet = ({ onAddBalance, onWithdraw, onClearAll, onExport, onImport }) => ( <div className="p-4 text-white text-sm"> <h3 className="text-base font-semibold mb-4 px-2">Manage Portfolio</h3> <div className="space-y-1"> <button onClick={onAddBalance} className="w-full text-left p-2 rounded hover:bg-zinc-700/50 text-gray-300">Add Balance</button> <button onClick={onWithdraw} className="w-full text-left p-2 rounded hover:bg-zinc-700/50 text-gray-300">Withdraw</button> <div className="border-t border-zinc-700 my-2"></div> <button onClick={onExport} className="w-full text-left p-2 rounded hover:bg-zinc-700/50 text-gray-300">Export as CSV</button> <button onClick={onImport} className="w-full text-left p-2 rounded hover:bg-zinc-700/50 text-gray-300">Import from CSV</button> <div className="border-t border-zinc-700 my-2"></div> <button onClick={onClearAll} className="w-full text-left p-2 rounded hover:bg-red-700/20 text-red-400">Erase all data</button> </div> </div> );
+const ManagePortfolioSheet = ({ onAddBalance, onWithdraw, onClearAll, onExport, onImport }) => ( <div className="p-4 text-white text-sm"> <h3 className="text-base font-semibold mb-4 px-2">Manage Portfolio</h3> <div className="space-y-1"> <button onClick={onAddBalance} className="w-full text-left p-2 rounded hover:bg-zinc-700/50 text-gray-300">Add Balance</button> <button onClick={onWithdraw} className="w-full text-left p-2 rounded hover:bg-zinc-700/50 text-gray-300">Withdraw</button> <div className="border-t border-zinc-700 my-2"></div> <button onClick={onExport} className="w-full text-left p-2 rounded hover:bg-zinc-700/50 text-gray-300">Export as CSV</button> <button onClick={onImport} className="w-full text-left p-2 rounded hover:bg-zinc-700/50 text-gray-300">Import from CSV/TSV</button> <div className="border-t border-zinc-700 my-2"></div> <button onClick={onClearAll} className="w-full text-left p-2 rounded hover:bg-red-700/20 text-red-400">Erase all data</button> </div> </div> );
 
-const AddAssetForm = ({ searchMode, setSearchMode, query, setQuery, suggestions, setSelectedSuggestion, isSearching, addAssetWithInitial, addNonLiquidAsset, nlName, setNlName, nlQty, setNlQty, nlPrice, setNlPrice, nlPriceCcy, setNlPriceCcy, nlPurchaseDate, setNlPurchaseDate, nlCoupon, setNlCoupon, nlYoy, setNlYoy, nlDesc, setNlDesc, displaySymbol, handleSetWatchedAsset, watchedAssets }) => {
+const AddAssetForm = ({ searchMode, setSearchMode, query, setQuery, suggestions, setSelectedSuggestion, isSearching, addAssetWithInitial, addNonLiquidAsset, nlName, setNlName, nlQty, setNlQty, nlPrice, setNlPrice, nlPriceCcy, setNlPriceCcy, nlPurchaseDate, setNlPurchaseDate, nlYoy, setNlYoy, nlDesc, setNlDesc, displaySymbol, handleSetWatchedAsset, watchedAssets }) => {
     const [shares, setShares] = useState(''); const [price, setPrice] = useState(''); const [total, setTotal] = useState('');
     const handleInputChange = (field, value) => { if (field === 'shares') { setShares(value); const num = toNum(price) * toNum(value); setTotal(num > 0 ? `${num}` : ''); } else if (field === 'price') { setPrice(value); const num = toNum(value) * toNum(shares); setTotal(num > 0 ? `${num}` : ''); } else if (field === 'total') { setTotal(value); const nTotal = toNum(value), nShares = toNum(shares); if (nShares > 0) setPrice(String(nTotal / nShares)); } };
     return ( <div className="space-y-4"> <div className="flex border-b border-white/10">{[{ key: 'stock', label: 'Stock' }, { key:'crypto', label:'Crypto' }, { key:'nonliquid', label:'Alternative Assets' }].map(item => (<button key={item.key} onClick={() => setSearchMode(item.key)} className={`px-3 py-2 text-sm font-medium ${searchMode === item.key ? 'text-white border-b-2 border-emerald-400' : 'text-gray-400'}`}>{item.label}</button>))}</div> {searchMode !== 'nonliquid' ? ( <div className="space-y-4"> <div className="relative">
@@ -1058,7 +1116,6 @@ const AddAssetForm = ({ searchMode, setSearchMode, query, setQuery, suggestions,
                     <label className="text-xs text-gray-400 mb-1">Purchase Date &gt;</label>
                     <input type="date" value={nlPurchaseDate} onChange={e => setNlPurchaseDate(e.target.value)} className="rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" />
                 </div>
-                <input value={nlCoupon} onChange={e => setNlCoupon(e.target.value)} placeholder="Coupon / Yield (Annual)" type="number" className="w-full rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" />
                 <input value={nlYoy} onChange={e => setNlYoy(e.target.value)} placeholder="YoY Gain (%)" type="number" className="w-full rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" />
                 <input value={nlDesc} onChange={e => setNlDesc(e.target.value)} placeholder="Description (Optional)" className="w-full rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" />
             </div> 
@@ -1076,7 +1133,7 @@ const AssetDetailModal = ({ isOpen, onClose, asset, onBuy, onSell, onDelete, usd
                 <TradingViewWidget asset={asset} />
                 {asset.shares > 0 && (
                     <div className="border-t border-white/10 pt-4">
-                      <TradeForm asset={asset} onBuy={onBuy} onSell={onSell} onDelete={handleDelete} usdIdr={usdIdr} displaySymbol={displaySymbol} />
+                      <TradeForm asset={asset} onBuy={onBuy} onSell={onSell} onDelete={onDelete} usdIdr={usdIdr} displaySymbol={displaySymbol} />
                     </div>
                 )}
             </div>
