@@ -610,31 +610,28 @@ export default function App() {
         if (a.type === 'nonliquid') {
             const purchaseTime = a.purchaseDate || a.createdAt || Date.now();
             const nowTime = Date.now();
-            const purchaseDateObj = new Date(purchaseTime);
-            const nowDateObj = new Date(nowTime);
             
-            // 1. YoY Gain Applied on Calendar Years Passed
-            const purchaseYear = purchaseDateObj.getFullYear();
-            const currentYear = nowDateObj.getFullYear();
-            const calendarYearsPassed = Math.max(0, currentYear - purchaseYear);
+            // 1. YoY Gain (Fractional/Exact Years Passed for precise calculation)
+            const exactYearsPassed = Math.max(0, (nowTime - purchaseTime) / (1000 * 60 * 60 * 24 * 365.25));
             
             const initialPrice = a.avgPrice || 0;
-            const currentPrice = initialPrice * (1 + ((a.nonLiquidYoy || 0) / 100) * calendarYearsPassed);
+            const currentPrice = initialPrice * (1 + ((a.nonLiquidYoy || 0) / 100) * exactYearsPassed);
             const capitalValueUSD = a.shares * currentPrice;
             
-            // 2. Income Calculation based on Frequency
+            // 2. Income Calculation based on fixed nominal per frequency
             let accumulatedCouponUSD = 0;
             let nextIncomeDate = null;
             const freq = a.incomeFrequency || 'None';
+            let validPeriods = 0;
 
             if (freq !== 'None' && a.coupon > 0) {
                 let monthsPerPeriod = 12;
                 if (freq === 'Monthly') monthsPerPeriod = 1;
                 else if (freq === 'Quarterly') monthsPerPeriod = 3;
                 else if (freq === 'Semi Annual') monthsPerPeriod = 6;
+                else if (freq === 'Annual') monthsPerPeriod = 12;
 
                 let tempDate = new Date(purchaseTime);
-                let validPeriods = 0;
                 
                 // Hitung periode berlalu berdasarkan penambahan bulan
                 while(true) {
@@ -647,7 +644,8 @@ export default function App() {
                     }
                 }
                 
-                const incomePerPeriod = (a.coupon * a.shares) / (12 / monthsPerPeriod);
+                // Sesuai nominal yg diinput * qty, TANPA dipengaruhi harga beli (Invested)
+                const incomePerPeriod = a.coupon * a.shares; 
                 accumulatedCouponUSD = validPeriods * incomePerPeriod;
             }
             
@@ -655,7 +653,7 @@ export default function App() {
             const pnlUSD = marketValueUSD - a.investedUSD;
             const pnlPct = a.investedUSD > 0 ? (pnlUSD / a.investedUSD) * 100 : 0;
             
-            return { ...a, marketValueUSD, pnlUSD, pnlPct, lastPriceUSD: currentPrice, accumulatedCouponUSD, nextIncomeDate, capitalValueUSD, calendarYearsPassed };
+            return { ...a, marketValueUSD, pnlUSD, pnlPct, lastPriceUSD: currentPrice, accumulatedCouponUSD, nextIncomeDate, capitalValueUSD, exactYearsPassed, validPeriods };
         } else {
             const currentPrice = a.lastPriceUSD > 0 ? a.lastPriceUSD : a.avgPrice;
             const marketValueUSD = a.shares * currentPrice;
@@ -1258,16 +1256,20 @@ const AlternativeAssetDetails = ({ asset, usdIdr, displaySymbol }) => {
     const holdingPeriod = `${years > 0 ? years + ' Yr ' : ''}${months > 0 ? months + ' Mo ' : ''}${days} D`;
     const formatAmt = (val) => formatCurrency(val, true, displaySymbol, usdIdr);
     
+    const exactYearsPassed = asset.exactYearsPassed || 0;
+    const validPeriods = asset.validPeriods || 0;
+    
     const freq = asset.incomeFrequency || 'None';
-    const annualIncome = asset.coupon * asset.shares;
+    
+    // Income yg diset user adalah nominal tetap PER PERIODE
+    const incomePerPeriod = freq !== 'None' ? asset.coupon * asset.shares : 0;
     
     let periodsPerYear = 1;
     if (freq === 'Monthly') periodsPerYear = 12;
     if (freq === 'Quarterly') periodsPerYear = 4;
     if (freq === 'Semi Annual') periodsPerYear = 2;
     
-    const incomePerPeriod = freq !== 'None' ? annualIncome / periodsPerYear : 0;
-    const validPeriods = freq !== 'None' && incomePerPeriod > 0 ? Math.floor((asset.accumulatedCouponUSD || 0) / incomePerPeriod) : 0;
+    const annualIncome = incomePerPeriod * periodsPerYear;
 
     return (
         <div className="space-y-4">
@@ -1290,10 +1292,10 @@ const AlternativeAssetDetails = ({ asset, usdIdr, displaySymbol }) => {
                     </div>
                     <div className="flex justify-between text-xs text-gray-400 mb-2">
                         <span>YoY Growth Rate: <strong className="text-white">{asset.nonLiquidYoy || 0}%</strong></span>
-                        <span>Years Passed: <strong className="text-white">{asset.calendarYearsPassed || 0}</strong></span>
+                        <span>Years Passed: <strong className="text-white">{exactYearsPassed.toFixed(2)}</strong></span>
                     </div>
                     <div className="text-[10px] sm:text-xs text-gray-400 font-mono bg-black/40 p-2 rounded break-all">
-                        Invested + (Invested × {asset.nonLiquidYoy || 0}% × {asset.calendarYearsPassed || 0})
+                        Invested + (Invested × {asset.nonLiquidYoy || 0}% × {exactYearsPassed.toFixed(2)})
                     </div>
                     <div className="text-right mt-2 text-sm">
                         <span className="text-gray-500 mr-2">Est. Capital Value =</span>
@@ -1308,8 +1310,8 @@ const AlternativeAssetDetails = ({ asset, usdIdr, displaySymbol }) => {
                     </div>
                     <div className="grid grid-cols-2 gap-y-3 gap-x-2 text-[10px] sm:text-xs text-gray-300 mb-3">
                         <div><span className="text-gray-500 block">Frequency</span><span className="font-medium">{freq}</span></div>
-                        <div><span className="text-gray-500 block">Annual Income</span><span className="tabular-nums font-medium">{formatAmt(annualIncome)}</span></div>
-                        <div><span className="text-gray-500 block">Income per Period</span><span className="tabular-nums font-medium">{formatAmt(incomePerPeriod)}</span></div>
+                        <div><span className="text-gray-500 block">Income per Period</span><span className="tabular-nums font-medium text-white">{formatAmt(incomePerPeriod)}</span></div>
+                        <div><span className="text-gray-500 block">Est. Annual Income</span><span className="tabular-nums font-medium">{formatAmt(annualIncome)}</span></div>
                         <div><span className="text-gray-500 block">Periods Passed</span><span className="font-medium">{validPeriods}x</span></div>
                     </div>
                     
@@ -1596,4 +1598,5 @@ const AssetTableView = ({ rows, displaySymbol, usdIdr, onRowClick }) => {
         </div>
     );
 }
+
 
