@@ -3,7 +3,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 /* ===================== Icons (Modern & Professional) ===================== */
-const HamburgerIcon = () => (<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>);
 const UserAvatar = () => (<svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#374151"></circle><path d="M12 14c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4zm0-2c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z" fill="#9CA3AF"></path></svg>);
 const MoreVerticalIcon = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>);
 const ArrowRightIconSimple = () => (<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"></polyline></svg>);
@@ -126,6 +125,12 @@ export default function PortfolioDashboard() {
   
   const [usdIdr, setUsdIdr] = useState(() => isBrowser ? Number(localStorage.getItem(`pf_usd_idr_rate_${STORAGE_VERSION}`) || 16200) : 16200);
   const [profilePic, setProfilePic] = useState(() => isBrowser ? localStorage.getItem(`pf_profile_pic_${STORAGE_VERSION}`) || null : null);
+
+  // Profile Modal/Bottom Sheet States
+  const [isProfileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [isViewPhotoOpen, setIsViewPhotoOpen] = useState(false);
+  const cameraInputRef = useRef(null);
+  const galleryInputRef = useRef(null);
 
   // Initial Fetch USD/IDR Rate on Mount
   useEffect(() => {
@@ -483,6 +488,7 @@ export default function PortfolioDashboard() {
           };
           reader.readAsDataURL(file);
       }
+      e.target.value = null; 
   };
 
   const { tradingBalance, realizedUSD, totalDeposits, totalWithdrawals } = financialSummaries;
@@ -579,21 +585,20 @@ export default function PortfolioDashboard() {
         .tradingview-widget-container:fullscreen { background-color: #131722; }
       `}</style>
       <div className="max-w-4xl mx-auto">
-        <header className="p-4 flex justify-between items-center sticky top-0 bg-[#000000] z-10">
-            <div className="flex items-center gap-4">
-                <label className="cursor-pointer flex items-center justify-center">
+        <header className="p-4 flex justify-end items-center sticky top-0 bg-[#000000] z-10 w-full">
+            <div className="flex items-center gap-4 sm:gap-6">
+                <button onClick={() => setAddAssetModalOpen(true)} className="text-gray-400 hover:text-white"><SearchIcon /></button>
+                <div className="flex items-center gap-2"><span className="text-xs font-semibold text-gray-400">IDR</span><div role="switch" aria-checked={displaySymbol === "$"} onClick={() => setDisplaySymbol(prev => prev === "Rp" ? "$" : "Rp")} className={`relative w-12 h-6 rounded-full p-1 cursor-pointer transition ${displaySymbol === "$" ? 'bg-emerald-600' : 'bg-zinc-700'}`}><div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${displaySymbol === "$" ? 'translate-x-6' : 'translate-x-0'}`}></div></div><span className="text-xs font-semibold text-gray-400">USD</span></div>
+                <button onClick={() => setManagePortfolioOpen(true)} className="text-gray-400 hover:text-white"><MoreVerticalIcon /></button>
+                
+                {/* Profile Pic Button Moved to Far Right */}
+                <button onClick={() => setProfileMenuOpen(true)} className="flex items-center justify-center outline-none">
                     {profilePic ? (
                         <img src={profilePic} alt="Profile" className="w-[30px] h-[30px] rounded-full object-cover border border-white/20" />
                     ) : (
                         <UserAvatar />
                     )}
-                    <input type="file" accept="image/*" className="hidden" onChange={handleProfilePicChange} />
-                </label>
-            </div>
-            <div className="flex items-center gap-4 sm:gap-6">
-                <button onClick={() => setAddAssetModalOpen(true)} className="text-gray-400 hover:text-white"><SearchIcon /></button>
-                <div className="flex items-center gap-2"><span className="text-xs font-semibold text-gray-400">IDR</span><div role="switch" aria-checked={displaySymbol === "$"} onClick={() => setDisplaySymbol(prev => prev === "Rp" ? "$" : "Rp")} className={`relative w-12 h-6 rounded-full p-1 cursor-pointer transition ${displaySymbol === "$" ? 'bg-emerald-600' : 'bg-zinc-700'}`}><div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${displaySymbol === "$" ? 'translate-x-6' : 'translate-x-0'}`}></div></div><span className="text-xs font-semibold text-gray-400">USD</span></div>
-                <button onClick={() => setManagePortfolioOpen(true)} className="text-gray-400 hover:text-white"><MoreVerticalIcon /></button>
+                </button>
             </div>
         </header>
         <main>
@@ -754,6 +759,41 @@ export default function PortfolioDashboard() {
           </div>
 
         </main>
+        
+        {/* Hidden Inputs untuk Profile Pic */}
+        <input type="file" accept="image/*" capture="user" ref={cameraInputRef} onChange={handleProfilePicChange} className="hidden" />
+        <input type="file" accept="image/*" ref={galleryInputRef} onChange={handleProfilePicChange} className="hidden" />
+
+        {/* Profile Menu Bottom Sheet */}
+        <BottomSheet isOpen={isProfileMenuOpen} onClose={() => setProfileMenuOpen(false)}>
+            <div className="p-4 text-white text-sm">
+                <h3 className="text-base font-semibold mb-4 px-2">Menu Foto Profil</h3>
+                <div className="space-y-1">
+                    {profilePic && (
+                        <button onClick={() => { setProfileMenuOpen(false); setIsViewPhotoOpen(true); }} className="w-full text-left p-3 rounded hover:bg-zinc-700/50 text-emerald-400 font-medium">Lihat Foto Penuh</button>
+                    )}
+                    <button onClick={() => { setProfileMenuOpen(false); cameraInputRef.current.click(); }} className="w-full text-left p-3 rounded hover:bg-zinc-700/50 text-gray-300">{profilePic ? 'Ganti dari Kamera' : 'Ambil dari Kamera'}</button>
+                    <button onClick={() => { setProfileMenuOpen(false); galleryInputRef.current.click(); }} className="w-full text-left p-3 rounded hover:bg-zinc-700/50 text-gray-300">{profilePic ? 'Ganti dari Galeri/File' : 'Pilih dari Galeri/File'}</button>
+                    {profilePic && (
+                        <button onClick={() => { 
+                            if(confirm("Hapus foto profil saat ini?")) {
+                                setProfilePic(null); 
+                                if(isBrowser) localStorage.removeItem(`pf_profile_pic_${STORAGE_VERSION}`);
+                            }
+                            setProfileMenuOpen(false); 
+                        }} className="w-full text-left p-3 rounded hover:bg-red-700/20 text-red-400 mt-2 border-t border-zinc-700/50">Hapus Foto Profil</button>
+                    )}
+                </div>
+            </div>
+        </BottomSheet>
+
+        {/* View Photo Fullscreen Modal */}
+        <Modal isOpen={isViewPhotoOpen} onClose={() => setIsViewPhotoOpen(false)} title="Foto Profil" size="lg">
+            <div className="flex items-center justify-center p-2">
+                <img src={profilePic} alt="Profile Full" className="max-w-full max-h-[70vh] rounded-lg object-contain" />
+            </div>
+        </Modal>
+
         <AssetDetailModal isOpen={isAssetDetailModalOpen} onClose={() => setAssetDetailModalOpen(false)} asset={selectedAssetForDetail} onBuy={handleBuy} onSell={handleSell} onDelete={handleDeleteAsset} usdIdr={usdIdr} displaySymbol={displaySymbol} />
         <Modal title="Add New Asset" isOpen={isAddAssetModalOpen} onClose={() => setAddAssetModalOpen(false)} size="lg"><AddAssetForm {...{searchMode, setSearchMode, query, setQuery, suggestions, setSelectedSuggestion, isSearching, addAssetWithInitial, addNonLiquidAsset, nlName, setNlName, nlQty, setNlQty, nlPrice, setNlPrice, nlPriceCcy, setNlPriceCcy, nlPurchaseDate, setNlPurchaseDate, nlYoy, setNlYoy, nlDesc, setNlDesc, displaySymbol, handleSetWatchedAsset, watchedAssets}} /></Modal>
         <Modal title={`${balanceModalMode} Balance`} isOpen={isBalanceModalOpen} onClose={() => setBalanceModalOpen(false)} size="lg"><BalanceManager onConfirm={balanceModalMode === 'Add' ? handleAddBalance : handleWithdraw} /></Modal>
@@ -1254,4 +1294,5 @@ const AssetTableView = ({ rows, displaySymbol, usdIdr, onRowClick }) => {
         </div>
     );
 }
+
 
