@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -582,7 +581,6 @@ export default function PortfolioDashboard() {
       <div className="max-w-4xl mx-auto">
         <header className="p-4 flex justify-between items-center sticky top-0 bg-[#000000] z-10">
             <div className="flex items-center gap-4">
-                <button className="text-gray-400 hover:text-white bg-transparent outline-none border-none lg:hidden" style={{ WebkitTapHighlightColor: 'transparent' }}><HamburgerIcon /></button>
                 <label className="cursor-pointer flex items-center justify-center">
                     {profilePic ? (
                         <img src={profilePic} alt="Profile" className="w-[30px] h-[30px] rounded-full object-cover border border-white/20" />
@@ -721,7 +719,7 @@ export default function PortfolioDashboard() {
                                     <p className="text-[10px] sm:text-xs text-gray-400 truncate w-full">{r.name}</p>
                                 </div>
                                 <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-                                    <div className="hidden sm:block w-20 h-8">
+                                    <div className="w-16 h-6 sm:w-20 sm:h-8">
                                         <Sparkline data={priceHistory[r.id] || []} color={r.change24hPct >= 0 ? '#10B981' : '#EF4444'} />
                                     </div>
                                     <div className={`text-right p-1 rounded-md ${flashClass} shrink-0`}>
@@ -789,7 +787,7 @@ const Sparkline = ({ data = [], color = '#10B981' }) => {
 
   if (!data || data.length < 2) {
     return (
-      <svg width="100%" height="100%" viewBox="0 0 80 32">
+      <svg width="100%" height="100%" viewBox="0 0 80 32" preserveAspectRatio="none">
         <line x1="0" y1="16" x2="80" y2="16" stroke="#4B5563" strokeWidth="1.5" strokeDasharray="2,2" />
       </svg>
     );
@@ -803,7 +801,7 @@ const Sparkline = ({ data = [], color = '#10B981' }) => {
   const areaPoints = `0,${height} ${points} ${width},${height}`;
   
   return (
-    <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`}>
+    <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
       <defs>
         <linearGradient id={uniqueId} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.4" />
@@ -883,7 +881,7 @@ const AreaChart = ({ data: chartData, simplified = false, displaySymbol, range, 
   return (
     <div>
       <div className="relative group">
-        <svg ref={svgRef} width="100%" height={height} viewBox={`0 0 ${width} ${height}`} onMouseMove={handleMouseMove} onMouseLeave={() => setHoverData(null)} className="cursor-crosshair">
+        <svg ref={svgRef} width="100%" height={height} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio={simplified ? "none" : "xMidYMid meet"} onMouseMove={handleMouseMove} onMouseLeave={() => setHoverData(null)} className="cursor-crosshair">
           <defs>
               <linearGradient id="areaGradientBroker" x1="0" x2="0" y1="0" y2="1">
                   <stop offset="0%" stopColor="#10B981" stopOpacity={0.4} />
@@ -1185,7 +1183,7 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="font-semibold text-white truncate w-full">{d.name}</div>
-                                    <div className="text-[10px] sm:text-xs text-gray-400 truncate w-full">{formatCurrencyCompact(valueDisplay, false, displaySymbol, 1)}</div>
+                                    <div className="text-[10px] sm:text-xs text-gray-400 truncate w-full">{formatCurrency(valueDisplay, false, displaySymbol, 1)}</div>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2 w-1/2 shrink-0">
@@ -1256,3 +1254,4 @@ const AssetTableView = ({ rows, displaySymbol, usdIdr, onRowClick }) => {
         </div>
     );
 }
+
