@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -1127,7 +1128,7 @@ const TradingViewWidget = ({ asset }) => {
         if (containerRef.current && typeof window.TradingView !== 'undefined' && asset) {
             containerRef.current.innerHTML = '';
             new window.TradingView.widget({
-                autosize: true, symbol: formatSymbolForTV(asset), interval: "240", timezone: "Asia/Jakarta", theme: "dark", style: "1", locale: "en", enable_publishing: false, allow_symbol_change: false, hide_side_toolbar: false, container_id: containerRef.current.id,
+                autosize: true, symbol: formatSymbolForTV(asset), interval: "D", timezone: "Asia/Jakarta", theme: "dark", style: "1", locale: "en", enable_publishing: false, allow_symbol_change: false, hide_side_toolbar: false, container_id: containerRef.current.id,
             });
         }
     };
@@ -1315,5 +1316,3 @@ const AssetTableView = ({ rows, displaySymbol, usdIdr, onRowClick }) => {
         </div>
     );
 }
-
-
