@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -77,10 +78,12 @@ const TradingCalculator = () => {
   const rrRatio = lossAmt > 0 && profitAmt > 0 ? profitAmt / lossAmt : 0;
 
   return (
-    <div className="flex flex-col h-full w-full p-4 overflow-y-auto scrollbar-hide">
-      <div className="flex bg-zinc-900/80 p-1 mb-4 shrink-0 rounded-xl border border-white/5">
-        <button onClick={() => setTab("average")} className={`flex-1 py-2.5 text-xs sm:text-sm font-semibold rounded-lg transition-all duration-300 ${tab === "average" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-gray-200"}`}>Averaging</button>
-        <button onClick={() => setTab("pl")} className={`flex-1 py-2.5 text-xs sm:text-sm font-semibold rounded-lg transition-all duration-300 ${tab === "pl" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-gray-200"}`}>Trade Plan</button>
+    <div className="flex flex-col h-full w-full px-4 pb-4 overflow-y-auto scrollbar-hide relative">
+      <div className="sticky top-0 pt-4 pb-4 z-40 bg-black/90 backdrop-blur-md">
+        <div className="flex bg-zinc-900/80 p-0.5 shrink-0 rounded-xl border border-white/5">
+          <button onClick={() => setTab("average")} className={`flex-1 py-1.5 text-[11px] font-semibold rounded-lg transition-all duration-300 ${tab === "average" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-gray-200"}`}>Averaging</button>
+          <button onClick={() => setTab("pl")} className={`flex-1 py-1.5 text-[11px] font-semibold rounded-lg transition-all duration-300 ${tab === "pl" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-gray-200"}`}>Trade Plan</button>
+        </div>
       </div>
 
       {tab === "average" && (
@@ -414,18 +417,18 @@ export default function App() {
 
       <div className="w-full max-w-md mx-auto h-full flex flex-col relative">
         
-        {/* Navigasi Toggle */}
-        <div className="flex justify-center pt-6 pb-2 w-full shrink-0">
-          <div className="flex bg-zinc-900/80 rounded-full p-1 border border-white/10 shadow-lg backdrop-blur-md">
+        {/* Navigasi Toggle (Sticky & Smaller) */}
+        <div className="sticky top-0 z-50 flex justify-center pt-4 pb-2 w-full shrink-0 bg-black/90 backdrop-blur-md">
+          <div className="flex bg-zinc-900/80 rounded-full p-0.5 border border-white/10 shadow-lg">
             <button 
               onClick={() => setActiveTab("scientific")} 
-              className={`px-6 py-2 text-xs sm:text-sm font-semibold rounded-full transition-all duration-300 ${activeTab === "scientific" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-white"}`}
+              className={`px-4 py-1.5 text-[11px] font-semibold rounded-full transition-all duration-300 ${activeTab === "scientific" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-white"}`}
             >
               Calculator
             </button>
             <button 
               onClick={() => setActiveTab("trading")} 
-              className={`px-6 py-2 text-xs sm:text-sm font-semibold rounded-full transition-all duration-300 ${activeTab === "trading" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-white"}`}
+              className={`px-4 py-1.5 text-[11px] font-semibold rounded-full transition-all duration-300 ${activeTab === "trading" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-white"}`}
             >
               Trading Plan
             </button>
@@ -441,5 +444,3 @@ export default function App() {
     </div>
   );
 }
-
-
