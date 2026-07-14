@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -352,7 +351,6 @@ const ScientificCalculator = () => {
   ];
 
   const getBtnClass = (btn) => {
-    // Mengganti class dasar dari 'glass-card' ke 'glass-btn' untuk memungkinkan rounded-full bekerja maksimal.
     if (btn === "=") return "bg-emerald-600 text-white hover:bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:shadow-[0_0_20px_rgba(16,185,129,0.5)]";
     if (btn === "C" || btn === "⌫") return "glass-btn text-red-400 hover:bg-red-500/10 hover:border-red-500/30";
     if (["÷", "×", "-", "+", "%"].includes(btn)) return "glass-btn text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-500/30";
@@ -364,22 +362,37 @@ const ScientificCalculator = () => {
     <div className="flex flex-col h-full w-full px-2 pb-6 sm:pb-8">
       {/* Layar Kalkulator Fleksibel - Diberi ruang lebih agar grid tombol terdorong kebawah */}
       <div className="flex-1 flex flex-col justify-end px-4 pb-6 sm:pb-10 min-h-[140px]">
-        <div className="text-right text-white text-4xl sm:text-[3.5rem] leading-tight font-light tracking-wide overflow-x-auto whitespace-nowrap mb-2 pb-1 scrollbar-hide">
-          {eq ? formatEquation(eq) : ""}
-        </div>
+        {/* INPUT YANG BISA MENGELUARKAN KEYBOARD BAWAAN */}
+        <input 
+          type="text"
+          value={eq ? formatEquation(eq) : ""}
+          onChange={(e) => {
+            // Memungkinkan Anda mengetik/menghapus secara leluasa dengan keyboard bawaan
+            setEq(e.target.value.replace(/,/g, ''));
+            setHasCalculated(false);
+          }}
+          onKeyDown={(e) => {
+            // Jika menekan Enter/Return di keyboard HP/Laptop, otomatis kalkulasi
+            if (e.key === "Enter") {
+              handleInput("=");
+            }
+          }}
+          className="w-full bg-transparent text-right text-white text-4xl sm:text-[3.5rem] leading-tight font-light tracking-wide overflow-x-auto whitespace-nowrap mb-2 pb-1 outline-none scrollbar-hide"
+          placeholder="0"
+        />
         <div className="text-right text-gray-500 text-xl sm:text-2xl h-8 tracking-wide font-light whitespace-nowrap overflow-x-auto scrollbar-hide">
           {liveResult !== null ? formatCurrency(liveResult) : ""}
         </div>
       </div>
 
-      {/* Grid Tombol - Ketinggian diatur dan ditambah mt-auto agar posisinya turun */}
+      {/* Grid Tombol - aspect-square dihapus & dikembalikan menggunakan tinggi tetap agar bentuknya oval/gepeng */}
       <div className="flex flex-col flex-none h-[60%] sm:h-[65%] w-full max-h-[500px] sm:max-h-[550px] gap-2 md:gap-3 px-2 sm:px-4 mt-auto">
         {buttonRows.map((row, rIndex) => (
           <div key={rIndex} className="flex flex-1 gap-2 md:gap-3">
             {row.map((btn, cIndex) => (
               <button 
                 key={cIndex} onClick={() => handleInput(btn)} 
-                // Diubah ke rounded-full agar semua tombol menjadi bulat sempurna
+                // aspect-square SUDAH DIHAPUS, kembali menjadi oval fleksibel sesuai container
                 className={`flex-1 flex items-center justify-center text-[16px] sm:text-lg font-medium rounded-full transition-all duration-200 active:scale-95 active:opacity-70 ${getBtnClass(btn)}`}
               >
                 {btn}
@@ -409,7 +422,7 @@ export default function App() {
             border-radius: 12px; 
             border: 1px solid rgba(255, 255, 255, 0.08); 
         }
-        /* Class baru khusus untuk tombol agar radius bisa menimpa glass-card (bulat sempurna) */
+        /* Class baru khusus untuk tombol agar radius bisa menimpa glass-card */
         .glass-btn { 
             background: rgba(28, 28, 32, 0.6); 
             backdrop-filter: blur(12px); 
@@ -445,3 +458,5 @@ export default function App() {
     </div>
   );
 }
+
+
