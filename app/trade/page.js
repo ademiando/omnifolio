@@ -35,7 +35,10 @@ export default function TradePage() {
       )}
 
       <div className="max-w-md mx-auto">
-        <h1 className="text-2xl font-bold mb-8 tracking-tight">Connect Assets</h1>
+        {/* Judul diposisikan di tengah */}
+        <h1 className="text-2xl font-bold mb-8 tracking-tight text-center">
+          Connect Assets
+        </h1>
         
         <div className="space-y-2">
           {services.map((name) => (
