@@ -78,16 +78,17 @@ const TradingCalculator = () => {
   const rrRatio = lossAmt > 0 && profitAmt > 0 ? profitAmt / lossAmt : 0;
 
   return (
-    <div className="flex flex-col h-full w-full px-4 pb-4 overflow-y-auto scrollbar-hide relative">
-      <div className="sticky top-0 pt-4 pb-4 z-40 bg-black/90 backdrop-blur-md">
-        <div className="flex bg-zinc-900/80 p-0.5 shrink-0 rounded-xl border border-white/5">
-          <button onClick={() => setTab("average")} className={`flex-1 py-1.5 text-[11px] font-semibold rounded-lg transition-all duration-300 ${tab === "average" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-gray-200"}`}>Averaging</button>
-          <button onClick={() => setTab("pl")} className={`flex-1 py-1.5 text-[11px] font-semibold rounded-lg transition-all duration-300 ${tab === "pl" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-gray-200"}`}>Trade Plan</button>
+    <div className="flex flex-col w-full px-4 pb-8">
+      {/* INNER TABS STICKY DI BAWAH MAIN NAV */}
+      <div className="sticky top-[52px] z-50 py-2 bg-black/90 backdrop-blur-xl -mx-4 px-4 border-b border-white/5">
+        <div className="flex bg-zinc-900/80 p-0.5 rounded-lg border border-white/5">
+          <button onClick={() => setTab("average")} className={`flex-1 py-1 text-[10px] font-semibold rounded-md transition-all duration-300 ${tab === "average" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-gray-200"}`}>Averaging</button>
+          <button onClick={() => setTab("pl")} className={`flex-1 py-1 text-[10px] font-semibold rounded-md transition-all duration-300 ${tab === "pl" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-gray-200"}`}>Trade Plan</button>
         </div>
       </div>
 
       {tab === "average" && (
-        <div className="flex flex-col gap-3 pb-8">
+        <div className="flex flex-col gap-3 pt-3">
           <div className="glass-card p-5 relative overflow-hidden group">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-teal-500 opacity-50"></div>
             <p className="text-gray-400 text-xs uppercase tracking-wider mb-2">Average Price</p>
@@ -122,7 +123,7 @@ const TradingCalculator = () => {
       )}
 
       {tab === "pl" && (
-        <div className="flex flex-col gap-4 pb-8">
+        <div className="flex flex-col gap-4 pt-3">
           <div className="grid grid-cols-2 gap-3">
             <div className="glass-card p-4 focus-within:border-blue-500/50 transition-all">
               <label className="text-[10px] font-medium uppercase text-gray-500">Buy Price</label>
@@ -395,13 +396,13 @@ const ScientificCalculator = () => {
 };
 
 // ==========================================
-// 3. MAIN APP WRAPPER (100dvh enforced)
+// 3. MAIN APP WRAPPER (Dynamic Scroll)
 // ==========================================
 export default function App() {
   const [activeTab, setActiveTab] = useState("scientific");
 
   return (
-    <div className="h-[100dvh] w-full bg-black flex flex-col font-sans selection:bg-transparent overflow-hidden main-background">
+    <div className={`w-full bg-black flex flex-col font-sans selection:bg-transparent main-background ${activeTab === 'scientific' ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]'}`}>
       <style>{`
         body, .main-background { background-color: #000000; }
         .glass-card { 
@@ -415,32 +416,29 @@ export default function App() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="w-full max-w-md mx-auto h-full flex flex-col relative">
-        
-        {/* Navigasi Toggle (Sticky & Smaller) */}
-        <div className="sticky top-0 z-50 flex justify-center pt-4 pb-2 w-full shrink-0 bg-black/90 backdrop-blur-md">
-          <div className="flex bg-zinc-900/80 rounded-full p-0.5 border border-white/10 shadow-lg">
-            <button 
-              onClick={() => setActiveTab("scientific")} 
-              className={`px-4 py-1.5 text-[11px] font-semibold rounded-full transition-all duration-300 ${activeTab === "scientific" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-white"}`}
-            >
-              Calculator
-            </button>
-            <button 
-              onClick={() => setActiveTab("trading")} 
-              className={`px-4 py-1.5 text-[11px] font-semibold rounded-full transition-all duration-300 ${activeTab === "trading" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-white"}`}
-            >
-              Trading Plan
-            </button>
-          </div>
+      {/* MAIN NAV - DIJAMIN STICKY KARENA PAKAI FIXED POSITION */}
+      <div className="fixed top-0 left-0 right-0 z-[100] flex justify-center pt-3 pb-2 w-full bg-black/90 backdrop-blur-xl border-b border-white/5">
+        <div className="flex bg-zinc-900/80 rounded-full p-0.5 border border-white/10 shadow-lg">
+          <button 
+            onClick={() => setActiveTab("scientific")} 
+            className={`px-4 py-1 text-[10px] font-semibold rounded-full transition-all duration-300 ${activeTab === "scientific" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-white"}`}
+          >
+            Calculator
+          </button>
+          <button 
+            onClick={() => setActiveTab("trading")} 
+            className={`px-4 py-1 text-[10px] font-semibold rounded-full transition-all duration-300 ${activeTab === "trading" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-white"}`}
+          >
+            Trading Plan
+          </button>
         </div>
+      </div>
 
-        {/* Konten */}
-        <div className="flex-1 overflow-hidden min-h-0">
-          {activeTab === "scientific" ? <ScientificCalculator /> : <TradingCalculator />}
-        </div>
-
+      {/* Konten dengan padding top agar tidak tertutup header */}
+      <div className="flex-1 w-full max-w-md mx-auto flex flex-col relative pt-[52px]">
+        {activeTab === "scientific" ? <ScientificCalculator /> : <TradingCalculator />}
       </div>
     </div>
   );
 }
+
