@@ -11,11 +11,15 @@ export default function TradePage() {
     "Ajaib", 
     "Stockbit", 
     "Coinbase", 
-    "Interactive Brokers"
+    "Interactive Brokers",
+    "Tokocrypto",
+    "Pintu",
+    "Bibit",
+    "Bareksa"
   ];
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 font-sans">
+    <div className="min-h-screen bg-black text-white font-sans">
       {/* Modal Notifikasi */}
       {showNotify && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -34,28 +38,29 @@ export default function TradePage() {
         </div>
       )}
 
-      <div className="max-w-md mx-auto">
-        {/* Judul diposisikan di tengah */}
-        <h1 className="text-2xl font-bold mb-8 tracking-tight text-center">
+      {/* Header Sticky */}
+      <div className="sticky top-0 z-40 bg-black/90 backdrop-blur-md pt-6 pb-4 px-6 border-b border-white/5">
+        <h1 className="text-2xl font-bold tracking-tight text-center">
           Connect Assets
         </h1>
-        
-        <div className="space-y-2">
-          {services.map((name) => (
-            <button 
-              key={name}
-              onClick={() => setShowNotify(true)}
-              className="w-full flex items-center justify-between p-4 bg-[#0a0a0a] border border-white/5 rounded-xl hover:border-emerald-500/30 transition-all group"
-            >
-              <span className="font-medium text-sm text-gray-200 group-hover:text-white transition-colors">
-                {name}
-              </span>
-              <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
-                Connect
-              </span>
-            </button>
-          ))}
-        </div>
+      </div>
+
+      {/* List */}
+      <div className="max-w-md mx-auto p-6 space-y-2">
+        {services.map((name) => (
+          <button 
+            key={name}
+            onClick={() => setShowNotify(true)}
+            className="w-full flex items-center justify-between p-4 bg-[#0a0a0a] border border-white/5 rounded-xl hover:border-emerald-500/30 transition-all group"
+          >
+            <span className="font-medium text-sm text-gray-200 group-hover:text-white transition-colors">
+              {name}
+            </span>
+            <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
+              Connect
+            </span>
+          </button>
+        ))}
       </div>
     </div>
   );
