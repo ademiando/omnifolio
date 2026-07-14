@@ -352,23 +352,19 @@ const ScientificCalculator = () => {
   ];
 
   const getBtnClass = (btn) => {
-    // Primary Action (Equals)
+    // Mengganti class dasar dari 'glass-card' ke 'glass-btn' untuk memungkinkan rounded-full bekerja maksimal.
     if (btn === "=") return "bg-emerald-600 text-white hover:bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:shadow-[0_0_20px_rgba(16,185,129,0.5)]";
-    // Danger/Clear Actions
-    if (btn === "C" || btn === "⌫") return "glass-card text-red-400 hover:bg-red-500/10 hover:border-red-500/30";
-    // Operators
-    if (["÷", "×", "-", "+", "%"].includes(btn)) return "glass-card text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-500/30";
-    // Numbers & Basics
-    if (/[0-9]/.test(btn) || btn === "." || btn === "( )") return "glass-card text-white hover:bg-white/10";
-    // Scientific Math Functions
-    return "glass-card text-gray-400 hover:bg-white/10 hover:text-white";
+    if (btn === "C" || btn === "⌫") return "glass-btn text-red-400 hover:bg-red-500/10 hover:border-red-500/30";
+    if (["÷", "×", "-", "+", "%"].includes(btn)) return "glass-btn text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-500/30";
+    if (/[0-9]/.test(btn) || btn === "." || btn === "( )") return "glass-btn text-white hover:bg-white/10";
+    return "glass-btn text-gray-400 hover:bg-white/10 hover:text-white";
   };
 
   return (
-    <div className="flex flex-col h-full w-full px-2 pb-2">
-      {/* Layar Kalkulator Fleksibel */}
-      <div className="flex-1 flex flex-col justify-end px-4 pb-4 min-h-[100px]">
-        <div className="text-right text-white text-4xl sm:text-[3rem] leading-tight font-light tracking-wide overflow-x-auto whitespace-nowrap mb-1 pb-1 scrollbar-hide">
+    <div className="flex flex-col h-full w-full px-2 pb-6 sm:pb-8">
+      {/* Layar Kalkulator Fleksibel - Diberi ruang lebih agar grid tombol terdorong kebawah */}
+      <div className="flex-1 flex flex-col justify-end px-4 pb-6 sm:pb-10 min-h-[140px]">
+        <div className="text-right text-white text-4xl sm:text-[3.5rem] leading-tight font-light tracking-wide overflow-x-auto whitespace-nowrap mb-2 pb-1 scrollbar-hide">
           {eq ? formatEquation(eq) : ""}
         </div>
         <div className="text-right text-gray-500 text-xl sm:text-2xl h-8 tracking-wide font-light whitespace-nowrap overflow-x-auto scrollbar-hide">
@@ -376,14 +372,15 @@ const ScientificCalculator = () => {
         </div>
       </div>
 
-      {/* Grid Tombol */}
-      <div className="flex flex-col flex-none h-[68%] w-full max-h-[600px] gap-2 md:gap-2.5 px-2">
+      {/* Grid Tombol - Ketinggian diatur dan ditambah mt-auto agar posisinya turun */}
+      <div className="flex flex-col flex-none h-[60%] sm:h-[65%] w-full max-h-[500px] sm:max-h-[550px] gap-2 md:gap-3 px-2 sm:px-4 mt-auto">
         {buttonRows.map((row, rIndex) => (
-          <div key={rIndex} className="flex flex-1 gap-2 md:gap-2.5">
+          <div key={rIndex} className="flex flex-1 gap-2 md:gap-3">
             {row.map((btn, cIndex) => (
               <button 
                 key={cIndex} onClick={() => handleInput(btn)} 
-                className={`flex-1 flex items-center justify-center text-[16px] sm:text-lg font-medium rounded-2xl sm:rounded-3xl transition-all duration-200 active:scale-95 active:opacity-70 ${getBtnClass(btn)}`}
+                // Diubah ke rounded-full agar semua tombol menjadi bulat sempurna
+                className={`flex-1 flex items-center justify-center text-[16px] sm:text-lg font-medium rounded-full transition-all duration-200 active:scale-95 active:opacity-70 ${getBtnClass(btn)}`}
               >
                 {btn}
               </button>
@@ -412,14 +409,18 @@ export default function App() {
             border-radius: 12px; 
             border: 1px solid rgba(255, 255, 255, 0.08); 
         }
+        /* Class baru khusus untuk tombol agar radius bisa menimpa glass-card (bulat sempurna) */
+        .glass-btn { 
+            background: rgba(28, 28, 32, 0.6); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+        }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* MENGGUNAKAN STICKY INTERNAL DENGAN Z-INDEX LEBIH RENDAH (z-30) 
-        DAN TANPA CLASS 'fixed left-0 right-0' AGAR TETAP DI DALAM AREA KALKULATOR 
-        DAN TIDAK MENUTUPI HAMBURGER MENU GLOBAL APLIKASI UTAMA ANDA.
-      */}
+      {/* MENGGUNAKAN STICKY INTERNAL DENGAN Z-INDEX LEBIH RENDAH (z-30) */}
       <div className="sticky top-0 z-30 flex justify-center pt-3 pb-2 w-full bg-black/95 backdrop-blur-md border-b border-white/5">
         <div className="flex bg-zinc-900/80 rounded-full p-0.5 border border-white/10 shadow-lg">
           <button 
@@ -437,8 +438,8 @@ export default function App() {
         </div>
       </div>
 
-      {/* Konten */}
-      <div className="flex-1 w-full max-w-md mx-auto flex flex-col relative">
+      {/* Konten - max-w diubah dari md menjadi ukuran device agar tombol tidak melebar di desktop */}
+      <div className="flex-1 w-full max-w-[400px] sm:max-w-[420px] mx-auto flex flex-col relative">
         {activeTab === "scientific" ? <ScientificCalculator /> : <TradingCalculator />}
       </div>
     </div>
