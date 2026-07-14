@@ -79,8 +79,8 @@ const TradingCalculator = () => {
 
   return (
     <div className="flex flex-col w-full px-4 pb-8">
-      {/* INNER TABS STICKY DI BAWAH MAIN NAV */}
-      <div className="sticky top-[52px] z-50 py-2 bg-black/90 backdrop-blur-xl -mx-4 px-4 border-b border-white/5">
+      {/* SUB-TABS STICKY DI BAWAH MAIN NAV */}
+      <div className="sticky top-[42px] z-20 py-2 bg-black/90 backdrop-blur-xl -mx-4 px-4 border-b border-white/5">
         <div className="flex bg-zinc-900/80 p-0.5 rounded-lg border border-white/5">
           <button onClick={() => setTab("average")} className={`flex-1 py-1 text-[10px] font-semibold rounded-md transition-all duration-300 ${tab === "average" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-gray-200"}`}>Averaging</button>
           <button onClick={() => setTab("pl")} className={`flex-1 py-1 text-[10px] font-semibold rounded-md transition-all duration-300 ${tab === "pl" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-gray-200"}`}>Trade Plan</button>
@@ -396,7 +396,7 @@ const ScientificCalculator = () => {
 };
 
 // ==========================================
-// 3. MAIN APP WRAPPER (Dynamic Scroll)
+// 3. MAIN APP WRAPPER (Safe Sticky)
 // ==========================================
 export default function App() {
   const [activeTab, setActiveTab] = useState("scientific");
@@ -416,29 +416,31 @@ export default function App() {
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      {/* MAIN NAV - DIJAMIN STICKY KARENA PAKAI FIXED POSITION */}
-      <div className="fixed top-0 left-0 right-0 z-[100] flex justify-center pt-3 pb-2 w-full bg-black/90 backdrop-blur-xl border-b border-white/5">
+      {/* MENGGUNAKAN STICKY INTERNAL DENGAN Z-INDEX LEBIH RENDAH (z-30) 
+        DAN TANPA CLASS 'fixed left-0 right-0' AGAR TETAP DI DALAM AREA KALKULATOR 
+        DAN TIDAK MENUTUPI HAMBURGER MENU GLOBAL APLIKASI UTAMA ANDA.
+      */}
+      <div className="sticky top-0 z-30 flex justify-center pt-3 pb-2 w-full bg-black/95 backdrop-blur-md border-b border-white/5">
         <div className="flex bg-zinc-900/80 rounded-full p-0.5 border border-white/10 shadow-lg">
           <button 
             onClick={() => setActiveTab("scientific")} 
-            className={`px-4 py-1 text-[10px] font-semibold rounded-full transition-all duration-300 ${activeTab === "scientific" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-white"}`}
+            className={`px-4 py-1.5 text-[10px] font-semibold rounded-full transition-all duration-300 ${activeTab === "scientific" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-white"}`}
           >
             Calculator
           </button>
           <button 
             onClick={() => setActiveTab("trading")} 
-            className={`px-4 py-1 text-[10px] font-semibold rounded-full transition-all duration-300 ${activeTab === "trading" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-white"}`}
+            className={`px-4 py-1.5 text-[10px] font-semibold rounded-full transition-all duration-300 ${activeTab === "trading" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-white"}`}
           >
             Trading Plan
           </button>
         </div>
       </div>
 
-      {/* Konten dengan padding top agar tidak tertutup header */}
-      <div className="flex-1 w-full max-w-md mx-auto flex flex-col relative pt-[52px]">
+      {/* Konten */}
+      <div className="flex-1 w-full max-w-md mx-auto flex flex-col relative">
         {activeTab === "scientific" ? <ScientificCalculator /> : <TradingCalculator />}
       </div>
     </div>
   );
 }
-
