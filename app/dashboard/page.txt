@@ -122,7 +122,6 @@ function ensureNumericAsset(a) {
 
 /* ===================== UI Helpers ===================== */
 const Modal = ({ children, isOpen, onClose, title, size = "2xl" }) => {
-  // Prevent body scrolling when modal is open to fix layout glitch
   useEffect(() => {
     if (isOpen && isBrowser) {
       const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
@@ -165,7 +164,7 @@ const BottomSheet = ({ isOpen, onClose, children }) => {
 
 /* ===================== Main Component ===================== */
 export default function App() {
-  const STORAGE_VERSION = "v37"; 
+  const STORAGE_VERSION = "v38"; 
   
   const [assets, setAssets] = useState(() => JSON.parse(safeGetStorage(`pf_assets_${STORAGE_VERSION}`, "[]")).map(ensureNumericAsset));
   const [transactions, setTransactions] = useState(() => JSON.parse(safeGetStorage(`pf_transactions_${STORAGE_VERSION}`, "[]")));
@@ -423,7 +422,7 @@ export default function App() {
     const costUSD = qty * priceUSD;
     
     if (costUSD * usdIdr > financialSummaries.tradingBalance) {
-        alert("Saldo tidak cukup! Mengarahkan ke menu pengisian saldo...");
+        alert("Insufficient balance! Redirecting to Add Balance...");
         setAddAssetModalOpen(false);
         setAssetDetailModalOpen(false);
         setBalanceModalMode('Add');
@@ -522,14 +521,14 @@ export default function App() {
   const handleFileImport = (event) => {
     const file = event.target.files[0];
     if (!file) return;
-    if (!confirm("Mengimpor data baru akan menggantikan semua histori transaksi Anda saat ini. Lanjutkan?")) { event.target.value = null; return; }
+    if (!confirm("Importing new data will replace your current transaction history. Continue?")) { event.target.value = null; return; }
     
     const reader = new FileReader();
     reader.onload = (e) => {
         try {
             const text = e.target.result;
             const lines = text.split(/\r\n|\n/).map(l => l.trim()).filter(Boolean);
-            if (lines.length < 2) throw new Error("File kosong atau format data tidak valid.");
+            if (lines.length < 2) throw new Error("File is empty or data format is invalid.");
             
             const firstLine = lines[0];
             let delimiter = ',';
@@ -586,10 +585,10 @@ export default function App() {
             });
 
             setTransactions(newTransactions);
-            alert("Berhasil mengimpor " + newTransactions.length + " data transaksi!");
+            alert("Successfully imported " + newTransactions.length + " transactions!");
         } catch (error) {
-            console.error("Gagal mengimpor data:", error);
-            alert(`Gagal mengimpor file: ${error.message}. Pastikan file merupakan CSV/TSV valid.`);
+            console.error("Failed to import data:", error);
+            alert(`Failed to import file: ${error.message}. Please ensure it is a valid CSV/TSV file.`);
         } finally {
             event.target.value = null;
         }
@@ -808,19 +807,19 @@ export default function App() {
                 <div onClick={() => setIsEquityModalOpen(true)} className="glass-card p-3 sm:p-4 shadow-lg flex flex-col justify-between cursor-pointer hover:border-white/20 transition-all overflow-hidden relative group">
                     <div className="min-w-0 z-10">
                         <p className="text-gray-400 text-[10px] sm:text-xs">Total Equity</p>
-                        <p className="text-xl sm:text-2xl md:text-3xl font-bold text-white truncate w-full">{formatCurrency(derivedData.totalEquity, false, displaySymbol, usdIdr)}</p>
-                        <p className="text-[11px] sm:text-xs text-gray-400 mt-1 truncate w-full">{displaySymbol === 'Rp' ? formatCurrency(derivedData.totalEquity, false, '$', usdIdr) : formatCurrency(derivedData.totalEquity, false, 'Rp', usdIdr)}</p>
+                        <p className="text-lg sm:text-2xl md:text-3xl font-bold text-white whitespace-nowrap overflow-hidden text-ellipsis w-full">{formatCurrency(derivedData.totalEquity, false, displaySymbol, usdIdr)}</p>
+                        <p className="text-[11px] sm:text-xs text-gray-400 mt-1 whitespace-nowrap overflow-hidden text-ellipsis w-full">{displaySymbol === 'Rp' ? formatCurrency(derivedData.totalEquity, false, '$', usdIdr) : formatCurrency(derivedData.totalEquity, false, 'Rp', usdIdr)}</p>
                     </div>
                      <div className="text-[10px] sm:text-xs mt-2 space-y-1 text-gray-400 border-t border-white/10 pt-2 min-w-0 z-10">
                         <div className="flex justify-between w-full">
                             <span className="truncate pr-1">Unrealized P&L</span>
-                            <span className={`font-semibold shrink-0 ${derivedData.totals.unrealizedPnlUSD >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            <span className={`font-semibold shrink-0 whitespace-nowrap ${derivedData.totals.unrealizedPnlUSD >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                                 {formatCurrencyShort(derivedData.totals.unrealizedPnlUSD, true, displaySymbol, usdIdr)}
                             </span>
                         </div>
                         <div className="flex justify-between w-full">
                             <span>&nbsp;</span>
-                            <span className={`font-semibold text-right block shrink-0 ${derivedData.totals.unrealizedPnlUSD >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            <span className={`font-semibold text-right block shrink-0 whitespace-nowrap ${derivedData.totals.unrealizedPnlUSD >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                                 {derivedData.totals.unrealizedPnlUSD >= 0 ? '+' : ''}{derivedData.totals.unrealizedPnlPct.toFixed(2)}%
                             </span>
                         </div>
@@ -832,11 +831,11 @@ export default function App() {
                     <div className="grid grid-cols-2 text-center gap-1 w-full">
                         <div className="flex flex-col items-center overflow-hidden w-full">
                             <p className="text-gray-400 text-[11px] sm:text-xs">Cash</p>
-                            <p className="font-semibold text-sm sm:text-base -mt-1 truncate w-full">{formatCurrencyCompact(tradingBalance, false, displaySymbol, usdIdr)}</p>
+                            <p className="font-semibold text-sm sm:text-base -mt-1 whitespace-nowrap w-full overflow-hidden text-ellipsis">{formatCurrencyCompact(tradingBalance, false, displaySymbol, usdIdr)}</p>
                         </div>
                         <div className="flex flex-col items-center overflow-hidden w-full">
                             <p className="text-gray-400 text-[11px] sm:text-xs">Invested</p>
-                            <p className="font-semibold text-sm sm:text-base -mt-1 truncate w-full">{formatCurrencyCompact(derivedData.totals.marketValueUSD, true, displaySymbol, usdIdr)}</p>
+                            <p className="font-semibold text-sm sm:text-base -mt-1 whitespace-nowrap w-full overflow-hidden text-ellipsis">{formatCurrencyCompact(derivedData.totals.marketValueUSD, true, displaySymbol, usdIdr)}</p>
                         </div>
                     </div>
                     <div className="relative w-full h-4 bg-black/20 rounded-full my-2 flex text-[10px] font-bold text-white items-center">
@@ -850,11 +849,11 @@ export default function App() {
                     <div className="text-[10px] sm:text-xs mt-2 space-y-1 text-gray-400 border-t border-white/10 pt-2 min-w-0">
                         <div className="flex justify-between w-full gap-1">
                             <span className="truncate shrink-0">Net Deposit</span>
-                            <span className="font-medium text-gray-300 truncate text-right">{formatCurrencyCompact(derivedData.netDeposit, false, displaySymbol, usdIdr)}</span>
+                            <span className="font-medium text-gray-300 whitespace-nowrap text-right">{formatCurrencyCompact(derivedData.netDeposit, false, displaySymbol, usdIdr)}</span>
                         </div>
                         <div className="flex justify-between w-full gap-1">
                             <span className="truncate shrink-0">Total G/L</span>
-                            <span className={`font-semibold truncate text-right ${derivedData.totalPnlUSD >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            <span className={`font-semibold whitespace-nowrap text-right ${derivedData.totalPnlUSD >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                                 {derivedData.totalPnlUSD >= 0 ? '+' : ''}{formatCurrencyCompact(derivedData.totalPnlUSD, true, displaySymbol, usdIdr)}
                             </span>
                         </div>
@@ -864,9 +863,9 @@ export default function App() {
                 <div onClick={() => setIsHistoryModalOpen(true)} className="glass-card p-3 sm:p-4 shadow-lg cursor-pointer hover:border-white/20 transition-all min-w-0">
                      <p className="text-gray-400 text-[10px] sm:text-xs mb-2">Summary</p>
                     <div className="text-[11px] sm:text-xs space-y-2 min-w-0">
-                        <div className="flex justify-between items-center gap-1 w-full"><span className="text-gray-400 shrink-0">Deposit</span><span className="font-medium truncate text-right">{formatCurrencyShort(totalDeposits, false, displaySymbol, usdIdr)}</span></div>
-                        <div className="flex justify-between items-center gap-1 w-full"><span className="text-gray-400 shrink-0">Withdraw</span><span className="font-medium truncate text-right">{formatCurrencyShort(totalWithdrawals, false, displaySymbol, usdIdr)}</span></div>
-                        <div className="flex justify-between items-center gap-1 w-full border-t border-white/10 pt-2 mt-2"><span className="text-gray-400 shrink-0">Realized P&L</span><span className={`font-semibold truncate text-right ${realizedUSD >= 0 ? 'text-[#20c997]' : 'text-red-400'}`}>{realizedUSD >= 0 ? '+' : ''}{formatCurrencyShort(realizedUSD, true, displaySymbol, usdIdr)}</span></div>
+                        <div className="flex justify-between items-center gap-1 w-full"><span className="text-gray-400 shrink-0">Deposit</span><span className="font-medium whitespace-nowrap text-right">{formatCurrencyShort(totalDeposits, false, displaySymbol, usdIdr)}</span></div>
+                        <div className="flex justify-between items-center gap-1 w-full"><span className="text-gray-400 shrink-0">Withdraw</span><span className="font-medium whitespace-nowrap text-right">{formatCurrencyShort(totalWithdrawals, false, displaySymbol, usdIdr)}</span></div>
+                        <div className="flex justify-between items-center gap-1 w-full border-t border-white/10 pt-2 mt-2"><span className="text-gray-400 shrink-0">Realized P&L</span><span className={`font-semibold whitespace-nowrap text-right ${realizedUSD >= 0 ? 'text-[#20c997]' : 'text-red-400'}`}>{realizedUSD >= 0 ? '+' : ''}{formatCurrencyShort(realizedUSD, true, displaySymbol, usdIdr)}</span></div>
                     </div>
                 </div>
                 <div className="flex flex-col gap-2 min-w-0">
@@ -886,8 +885,8 @@ export default function App() {
                                 <div className="text-right shrink-0">
                                     {currentPrice > 0 ? (
                                         <>
-                                            <p className="text-[11px] sm:text-xs font-semibold text-white tabular-nums truncate max-w-[75px]">{formatCurrencyShort(currentPrice, true, displaySymbol, usdIdr)}</p>
-                                            <p className={`text-[10px] sm:text-xs font-semibold tabular-nums truncate ${change >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{change > 0 ? '+' : ''}{change.toFixed(2)}%</p>
+                                            <p className="text-[11px] sm:text-xs font-semibold text-white tabular-nums whitespace-nowrap">{formatCurrencyShort(currentPrice, true, displaySymbol, usdIdr)}</p>
+                                            <p className={`text-[9px] sm:text-xs font-semibold tabular-nums whitespace-nowrap ${change >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{change > 0 ? '+' : ''}{change.toFixed(2)}%</p>
                                         </>
                                     ) : (
                                         <div className="w-10 h-3 bg-zinc-700/50 rounded animate-pulse"></div>
@@ -919,19 +918,19 @@ export default function App() {
                         <div key={r.id} className="glass-card p-3 sm:p-4 cursor-pointer hover:border-white/20 transition-all min-w-0" onClick={() => { setSelectedAssetForDetail(r); setAssetDetailModalOpen(true); }}>
                             <div className="flex justify-between items-center mb-3 min-w-0">
                                 <div className="min-w-0 flex-1 pr-2">
-                                    <h3 className="text-base sm:text-lg font-bold text-white truncate">{r.symbol}</h3>
-                                    <p className="text-[10px] sm:text-xs text-gray-400 truncate w-full">{r.name}</p>
+                                    <h3 className="text-sm sm:text-lg font-bold text-white truncate">{r.symbol}</h3>
+                                    <p className="text-[9px] sm:text-xs text-gray-400 truncate w-full">{r.name}</p>
                                 </div>
                                 <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-                                    <div className="w-16 h-6 sm:w-20 sm:h-8">
+                                    <div className="w-12 h-5 sm:w-20 sm:h-8">
                                         {r.type === 'nonliquid' ? 
                                             <div className="w-full h-full flex items-center justify-end"><span className="text-[10px] text-gray-500 italic">Alternative</span></div> 
                                             : <Sparkline data={priceHistory[r.id] || []} color={r.change24hPct >= 0 ? '#10B981' : '#EF4444'} />
                                         }
                                     </div>
                                     <div className={`text-right p-1 rounded-md ${flashClass} shrink-0`}>
-                                        <p className="text-sm sm:text-base font-semibold text-white tabular-nums truncate max-w-[80px] sm:max-w-full">{formatCurrency(r.lastPriceUSD, true, displaySymbol, usdIdr)}</p>
-                                        <p className={`text-[10px] sm:text-xs font-semibold tabular-nums truncate max-w-[80px] sm:max-w-full ${changeColor}`}>
+                                        <p className="text-xs sm:text-base font-semibold text-white tabular-nums whitespace-nowrap">{formatCurrency(r.lastPriceUSD, true, displaySymbol, usdIdr)}</p>
+                                        <p className={`text-[9px] sm:text-xs font-semibold tabular-nums whitespace-nowrap ${changeColor}`}>
                                             {r.type === 'nonliquid' ? '' : (r.change24hUSD >= 0 ? '+' : '')}{r.type === 'nonliquid' ? '-' : formatCurrencyShort(r.change24hUSD, true, displaySymbol, usdIdr)} {r.type === 'nonliquid' ? '' : `(${r.change24hPct?.toFixed(2) ?? '0.00'}%)`}
                                         </p>
                                     </div>
@@ -940,14 +939,14 @@ export default function App() {
 
                             <div className="grid grid-cols-2 gap-2 sm:gap-4 text-[10px] sm:text-xs pt-3 border-t border-white/10 min-w-0">
                                 <div className="space-y-1 min-w-0">
-                                    <div className="flex justify-between items-center gap-1"><span className="text-gray-400 shrink-0">Qty</span><span className="font-medium text-gray-200 truncate">{formatQty(r.shares)}</span></div>
-                                    <div className="flex justify-between items-center gap-1"><span className="text-gray-400 shrink-0">Invested</span><span className="font-medium text-gray-200 truncate">{formatCurrencyShort(r.investedUSD, true, displaySymbol, usdIdr)}</span></div>
-                                    <div className="flex justify-between items-center gap-1"><span className="text-gray-400 shrink-0">Avg Price</span><span className="font-medium text-gray-200 truncate">{formatCurrencyShort(r.avgPrice, true, displaySymbol, usdIdr)}</span></div>
+                                    <div className="flex justify-between items-center gap-1"><span className="text-gray-400 truncate pr-1">Qty</span><span className="font-medium text-gray-200 whitespace-nowrap">{formatQty(r.shares)}</span></div>
+                                    <div className="flex justify-between items-center gap-1"><span className="text-gray-400 truncate pr-1">Invested</span><span className="font-medium text-gray-200 whitespace-nowrap">{formatCurrencyShort(r.investedUSD, true, displaySymbol, usdIdr)}</span></div>
+                                    <div className="flex justify-between items-center gap-1"><span className="text-gray-400 truncate pr-1">Avg Price</span><span className="font-medium text-gray-200 whitespace-nowrap">{formatCurrencyShort(r.avgPrice, true, displaySymbol, usdIdr)}</span></div>
                                 </div>
                                 <div className="space-y-1 text-right min-w-0">
-                                    <div className="flex justify-between items-center gap-1"><span className="text-gray-400 shrink-0">Gain P&L</span><span className={`font-semibold truncate ${pnlColor}`}>{r.pnlUSD >= 0 ? '+' : ''}{formatCurrencyShort(r.pnlUSD, true, displaySymbol, usdIdr)} ({r.pnlPct.toFixed(1)}%)</span></div>
-                                    <div className="flex justify-between items-center gap-1"><span className="text-gray-400 shrink-0">Market</span><span className="font-semibold text-gray-200 truncate">{formatCurrencyShort(r.marketValueUSD, true, displaySymbol, usdIdr)}</span></div>
-                                    <div className="flex justify-between items-center gap-1"><span className="text-gray-400 shrink-0">Current</span><span className="font-semibold text-gray-200 truncate">{formatCurrencyShort(r.lastPriceUSD, true, displaySymbol, usdIdr)}</span></div>
+                                    <div className="flex justify-between items-center gap-1"><span className="text-gray-400 truncate pr-1">Gain P&L</span><span className={`font-semibold whitespace-nowrap ${pnlColor}`}>{r.pnlUSD >= 0 ? '+' : ''}{formatCurrencyShort(r.pnlUSD, true, displaySymbol, usdIdr)} ({r.pnlPct.toFixed(1)}%)</span></div>
+                                    <div className="flex justify-between items-center gap-1"><span className="text-gray-400 truncate pr-1">Market</span><span className="font-semibold text-gray-200 whitespace-nowrap">{formatCurrencyShort(r.marketValueUSD, true, displaySymbol, usdIdr)}</span></div>
+                                    <div className="flex justify-between items-center gap-1"><span className="text-gray-400 truncate pr-1">Current</span><span className="font-semibold text-gray-200 whitespace-nowrap">{formatCurrencyShort(r.lastPriceUSD, true, displaySymbol, usdIdr)}</span></div>
                                 </div>
                             </div>
                         </div>
@@ -1167,7 +1166,7 @@ const AreaChart = ({ data: chartData, simplified = false, displaySymbol, range, 
                       <text x={width - padding.right + 6} y={yScale(v) + 4} fontSize="10" fill="#6B7280" className="font-semibold">{strLabel}</text>
                   </g>
               )})}
-              {Array.from({length: 5}, (_, i) => {const t = timeStart + (i / 4) * (timeEnd - timeStart); return {t, label: new Date(t).toLocaleDateString('id-ID', {day: 'numeric', month: 'short'})}}).map((item, idx) => (<text key={idx} x={xScale(item.t)} y={height - padding.bottom + 20} textAnchor="middle" fontSize="10" fill="#6B7280">{item.label}</text>))}
+              {Array.from({length: 5}, (_, i) => {const t = timeStart + (i / 4) * (timeEnd - timeStart); return {t, label: new Date(t).toLocaleDateString('en-US', {day: 'numeric', month: 'short'})}}).map((item, idx) => (<text key={idx} x={xScale(item.t)} y={height - padding.bottom + 20} textAnchor="middle" fontSize="10" fill="#6B7280">{item.label}</text>))}
               
               {hoverData && (
                   <g>
@@ -1180,7 +1179,7 @@ const AreaChart = ({ data: chartData, simplified = false, displaySymbol, range, 
         </svg>
         {hoverData && !simplified && (
             <div className="absolute p-3 rounded-xl bg-zinc-800/95 backdrop-blur shadow-2xl border border-white/10 text-white text-xs pointer-events-none transform -translate-x-1/2 -translate-y-full transition-transform" style={{ left: `${(hoverData.x / width) * 100}%`, top: `${hoverData.y - 15}px`, minWidth: '130px', zIndex: 10 }}>
-                <div className="text-gray-400 font-medium mb-1">{new Date(hoverData.point.t).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour:'2-digit', minute:'2-digit' })}</div>
+                <div className="text-gray-400 font-medium mb-1">{new Date(hoverData.point.t).toLocaleString('en-US', { day: 'numeric', month: 'short', year: 'numeric', hour:'2-digit', minute:'2-digit' })}</div>
                 <div className="font-bold text-lg text-emerald-400">{formatCurrency(hoverData.point.v, false, displaySymbol, 1)}</div>
             </div>
         )}
@@ -1211,7 +1210,7 @@ const EquityGrowthView = ({ equitySeries, displaySymbol, usdIdr, totalEquity }) 
             return { date: dateLabel, equity: item.endEquity, pnl, pnlPct, rawDate: item.endDate }
         }).sort((a,b) => b.rawDate - a.rawDate);
     }, [equitySeries, returnPeriod]);
-    return ( <div className="p-1"> <div><p className="text-sm text-gray-400">Total Equity</p><p className="text-2xl sm:text-3xl font-bold text-white mb-1 truncate w-full">{formatCurrency(totalEquity, false, displaySymbol, usdIdr)}</p></div> <div className="mt-6"><AreaChart data={equitySeries} displaySymbol={displaySymbol} range={chartRange} setRange={setChartRange} /></div> <div className="mt-8 max-h-64 overflow-y-auto"> <div className="flex justify-between items-center mb-4 sticky top-0 bg-zinc-900/80 backdrop-blur-sm py-2"><h3 className="text-base font-semibold text-white">Total Equity Return</h3><div className="flex items-center gap-2 text-sm">{['Daily', 'Monthly', 'Yearly'].map(p => (<button key={p} onClick={() => setReturnPeriod(p)} className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs ${returnPeriod === p ? 'bg-zinc-700 text-white' : 'text-gray-400'}`}>{p}</button>))}</div></div> <table className="w-full text-xs sm:text-sm"> <thead className="text-left text-gray-500 text-xs"><tr><th className="p-2 font-normal">Date</th><th className="p-2 font-normal text-right">Equity</th><th className="p-2 font-normal text-right">P&L</th></tr></thead> <tbody>{equityReturnData.map((item, index) => (<tr key={index} className="border-t border-white/10"><td className="p-2 text-white">{item.date}</td><td className="p-2 text-white text-right tabular-nums">{formatCurrencyShort(item.equity, false, displaySymbol, usdIdr)}</td><td className={`p-2 text-right tabular-nums ${item.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{item.pnl >= 0 ? '+' : ''}{formatCurrencyShort(item.pnl, false, displaySymbol, usdIdr)} <br className="sm:hidden" />({item.pnlPct.toFixed(2)}%)</td></tr>))}</tbody> </table> </div> </div> );
+    return ( <div className="p-1"> <div><p className="text-sm text-gray-400">Total Equity</p><p className="text-2xl sm:text-3xl font-bold text-white mb-1 truncate w-full">{formatCurrency(totalEquity, false, displaySymbol, usdIdr)}</p></div> <div className="mt-6"><AreaChart data={equitySeries} displaySymbol={displaySymbol} range={chartRange} setRange={setChartRange} /></div> <div className="mt-8 max-h-64 overflow-y-auto"> <div className="flex justify-between items-center mb-4 sticky top-0 bg-zinc-900/80 backdrop-blur-sm py-2"><h3 className="text-base font-semibold text-white">Total Equity Return</h3><div className="flex items-center gap-2 text-sm">{['Daily', 'Monthly', 'Yearly'].map(p => (<button key={p} onClick={() => setReturnPeriod(p)} className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs ${returnPeriod === p ? 'bg-zinc-700 text-white' : 'text-gray-400'}`}>{p}</button>))}</div></div> <table className="w-full text-xs sm:text-sm"> <thead className="text-left text-gray-500 text-xs"><tr><th className="p-2 font-normal">Date</th><th className="p-2 font-normal text-right">Equity</th><th className="p-2 font-normal text-right">P&L</th></tr></thead> <tbody>{equityReturnData.map((item, index) => (<tr key={index} className="border-t border-white/10"><td className="p-2 text-white">{item.date}</td><td className="p-2 text-white text-right tabular-nums whitespace-nowrap">{formatCurrencyShort(item.equity, false, displaySymbol, usdIdr)}</td><td className={`p-2 text-right tabular-nums whitespace-nowrap ${item.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{item.pnl >= 0 ? '+' : ''}{formatCurrencyShort(item.pnl, false, displaySymbol, usdIdr)} <br className="sm:hidden" />({item.pnlPct.toFixed(2)}%)</td></tr>))}</tbody> </table> </div> </div> );
 };
 const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr }) => {
     const [chartRange, setChartRange] = useState("All");
@@ -1220,9 +1219,9 @@ const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr }) => {
     const sells = useMemo(() => transactions.filter(tx => tx.type === 'sell' || tx.type === 'delete'), [transactions]); const realizedGainOnly = useMemo(() => sells.filter(tx => tx.realized > 0).reduce((sum, tx) => sum + tx.realized, 0), [sells]); const realizedLossOnly = useMemo(() => sells.filter(tx => tx.realized < 0).reduce((sum, tx) => sum + (tx.realized < 0 ? tx.realized : 0), 0), [sells]);
     const topGainers = useMemo(() => { const gainers = {}; sells.forEach(tx => { if (!gainers[tx.symbol]) gainers[tx.symbol] = { trades: 0, pnl: 0, cost: 0 }; gainers[tx.symbol].trades++; gainers[tx.symbol].pnl += tx.realized; gainers[tx.symbol].cost += tx.costOfSold || 0; }); return Object.entries(gainers).map(([symbol, data]) => ({ symbol, ...data, pnlPct: data.cost > 0 ? (data.pnl / data.cost) * 100 : 0 })).sort((a, b) => b.pnl - a.pnl).slice(0, 5); }, [sells]);
     if (!stats) return <div className="p-4 text-center text-gray-500">No trade data available.</div>;
-    return ( <div className="p-4 space-y-6"> <div className="glass-card p-4"> <div className="flex items-center justify-between"> <div><p className="text-sm text-gray-400">Win Rate</p><p className="text-3xl font-bold text-white mt-1">{stats.winRate.toFixed(2)}%</p></div> <div className="relative w-24 h-24"><svg className="w-full h-full transform -rotate-90"><circle cx="50%" cy="50%" r="45%" stroke="rgba(255,255,255,0.1)" strokeWidth="8" fill="transparent" /><circle cx="50%" cy="50%" r="45%" stroke="#10B981" strokeWidth="8" fill="transparent" strokeDasharray={`${Math.PI * 2 * 45 * (stats.winRate / 100)}, ${Math.PI * 2 * 45}`} strokeLinecap="round"/></svg><div className="absolute inset-0 flex flex-col items-center justify-center text-xs text-center"><div className="font-semibold">{stats.trades}</div><div className="text-gray-400">Trades</div><div className="mt-1 flex gap-2"><div><span className="text-emerald-400">{stats.wins}</span> W</div><div><span className="text-red-400">{stats.losses}</span> L</div></div></div></div> </div> </div> <div className="grid grid-cols-2 gap-4"> <div className="glass-card p-3 min-w-0"><p className="text-sm text-gray-400 flex items-center gap-1"><ArrowUpIcon className="text-emerald-400 shrink-0"/>Max Profit</p><p className="text-base font-semibold text-white mt-1 truncate">{formatCurrencyShort(stats.maxProfit, true, displaySymbol, usdIdr)}</p><p className="text-[10px] sm:text-sm text-emerald-400">+{maxProfitPct.toFixed(2)}%</p></div> <div className="glass-card p-3 min-w-0"><p className="text-sm text-gray-400 flex items-center gap-1"><ArrowDownIcon className="text-red-400 shrink-0"/>Max Loss</p><p className="text-base font-semibold text-white mt-1 truncate">{formatCurrencyShort(stats.maxLoss, true, displaySymbol, usdIdr)}</p><p className="text-[10px] sm:text-sm text-red-400">{maxLossPct.toFixed(2)}%</p></div> <div className="glass-card p-3 min-w-0"><p className="text-sm text-gray-400 flex items-center gap-1"><AvgProfitIcon className="text-gray-400 w-4 h-4 shrink-0"/>Avg. Profit</p><p className="text-base font-semibold text-white mt-1 truncate">{formatCurrencyShort(stats.avgProfit, true, displaySymbol, usdIdr)}</p></div> <div className="glass-card p-3 min-w-0"><p className="text-sm text-gray-400 flex items-center gap-1"><AvgLossIcon className="text-gray-400 w-4 h-4 shrink-0"/>Avg. Loss</p><p className="text-base font-semibold text-white mt-1 truncate">{formatCurrencyShort(stats.avgLoss, true, displaySymbol, usdIdr)}</p></div> </div> <div className="glass-card p-4 min-w-0"> <h3 className="font-semibold text-white flex items-center gap-1">Total Realized Gain <InfoIcon className="text-gray-400 w-3 h-3" /></h3> <p className={`text-xl sm:text-2xl font-bold mt-1 truncate ${stats.totalRealizedGain >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{stats.totalRealizedGain >= 0 ? '+' : ''}{formatCurrency(stats.totalRealizedGain, true, displaySymbol, usdIdr)}</p> <div className="h-48 mt-2"><AreaChart data={realizedGainSeries} displaySymbol={displaySymbol} range={chartRange} setRange={setChartRange} showTimeframes={false}/></div> <div className="mt-2 text-[10px] sm:text-xs text-gray-400 border-t border-white/10 pt-2 space-y-1 min-w-0"> <div className="flex justify-between gap-1 w-full"><span className="shrink-0">Realized Gain</span> <span className="text-emerald-400 font-semibold truncate text-right">{formatCurrencyShort(realizedGainOnly, true, displaySymbol, usdIdr)}</span></div> <div className="flex justify-between gap-1 w-full"><span className="shrink-0">Realized Loss</span> <span className="text-red-400 font-semibold truncate text-right">{formatCurrencyShort(realizedLossOnly, true, displaySymbol, usdIdr)}</span></div> </div> </div> <div className="glass-card p-4"> <h3 className="font-semibold text-white mb-2">Top Gainer ({displaySymbol})</h3> <table className="w-full text-xs sm:text-sm"> <thead className="text-gray-400 text-xs font-light"><tr><th className="text-left font-normal py-1">Code</th><th className="text-center font-normal py-1">Trades</th><th className="text-right font-normal py-1">P&L</th></tr></thead> <tbody>{topGainers.map(g => (<tr key={g.symbol} className="border-t border-white/10"><td className="py-2 flex items-center gap-2 truncate max-w-[80px] sm:max-w-[150px]"><div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-zinc-700 flex items-center justify-center font-bold text-white text-[10px] sm:text-xs shrink-0">{g.symbol.charAt(0)}</div><span className="truncate">{g.symbol}</span></td><td className="text-center py-2">{g.trades}</td><td className={`text-right py-2 font-semibold tabular-nums ${g.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{g.pnl >= 0 ? '+' : ''}{formatCurrencyShort(g.pnl, true, displaySymbol, usdIdr)} <br className="sm:hidden" />({g.pnlPct.toFixed(2)}%)</td></tr>))}</tbody> </table> </div> </div> );
+    return ( <div className="p-4 space-y-6"> <div className="glass-card p-4"> <div className="flex items-center justify-between"> <div><p className="text-sm text-gray-400">Win Rate</p><p className="text-3xl font-bold text-white mt-1">{stats.winRate.toFixed(2)}%</p></div> <div className="relative w-24 h-24"><svg className="w-full h-full transform -rotate-90"><circle cx="50%" cy="50%" r="45%" stroke="rgba(255,255,255,0.1)" strokeWidth="8" fill="transparent" /><circle cx="50%" cy="50%" r="45%" stroke="#10B981" strokeWidth="8" fill="transparent" strokeDasharray={`${Math.PI * 2 * 45 * (stats.winRate / 100)}, ${Math.PI * 2 * 45}`} strokeLinecap="round"/></svg><div className="absolute inset-0 flex flex-col items-center justify-center text-xs text-center"><div className="font-semibold">{stats.trades}</div><div className="text-gray-400">Trades</div><div className="mt-1 flex gap-2"><div><span className="text-emerald-400">{stats.wins}</span> W</div><div><span className="text-red-400">{stats.losses}</span> L</div></div></div></div> </div> </div> <div className="grid grid-cols-2 gap-4"> <div className="glass-card p-3 min-w-0"><p className="text-sm text-gray-400 flex items-center gap-1"><ArrowUpIcon className="text-emerald-400 shrink-0"/>Max Profit</p><p className="text-base font-semibold text-white mt-1 whitespace-nowrap overflow-hidden text-ellipsis">{formatCurrencyShort(stats.maxProfit, true, displaySymbol, usdIdr)}</p><p className="text-[10px] sm:text-sm text-emerald-400">+{maxProfitPct.toFixed(2)}%</p></div> <div className="glass-card p-3 min-w-0"><p className="text-sm text-gray-400 flex items-center gap-1"><ArrowDownIcon className="text-red-400 shrink-0"/>Max Loss</p><p className="text-base font-semibold text-white mt-1 whitespace-nowrap overflow-hidden text-ellipsis">{formatCurrencyShort(stats.maxLoss, true, displaySymbol, usdIdr)}</p><p className="text-[10px] sm:text-sm text-red-400">{maxLossPct.toFixed(2)}%</p></div> <div className="glass-card p-3 min-w-0"><p className="text-sm text-gray-400 flex items-center gap-1"><AvgProfitIcon className="text-gray-400 w-4 h-4 shrink-0"/>Avg. Profit</p><p className="text-base font-semibold text-white mt-1 whitespace-nowrap overflow-hidden text-ellipsis">{formatCurrencyShort(stats.avgProfit, true, displaySymbol, usdIdr)}</p></div> <div className="glass-card p-3 min-w-0"><p className="text-sm text-gray-400 flex items-center gap-1"><AvgLossIcon className="text-gray-400 w-4 h-4 shrink-0"/>Avg. Loss</p><p className="text-base font-semibold text-white mt-1 whitespace-nowrap overflow-hidden text-ellipsis">{formatCurrencyShort(stats.avgLoss, true, displaySymbol, usdIdr)}</p></div> </div> <div className="glass-card p-4 min-w-0"> <h3 className="font-semibold text-white flex items-center gap-1">Total Realized Gain <InfoIcon className="text-gray-400 w-3 h-3" /></h3> <p className={`text-xl sm:text-2xl font-bold mt-1 whitespace-nowrap overflow-hidden text-ellipsis ${stats.totalRealizedGain >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{stats.totalRealizedGain >= 0 ? '+' : ''}{formatCurrency(stats.totalRealizedGain, true, displaySymbol, usdIdr)}</p> <div className="h-48 mt-2"><AreaChart data={realizedGainSeries} displaySymbol={displaySymbol} range={chartRange} setRange={setChartRange} showTimeframes={false}/></div> <div className="mt-2 text-[10px] sm:text-xs text-gray-400 border-t border-white/10 pt-2 space-y-1 min-w-0"> <div className="flex justify-between gap-1 w-full"><span className="shrink-0">Realized Gain</span> <span className="text-emerald-400 font-semibold whitespace-nowrap overflow-hidden text-ellipsis text-right">{formatCurrencyShort(realizedGainOnly, true, displaySymbol, usdIdr)}</span></div> <div className="flex justify-between gap-1 w-full"><span className="shrink-0">Realized Loss</span> <span className="text-red-400 font-semibold whitespace-nowrap overflow-hidden text-ellipsis text-right">{formatCurrencyShort(realizedLossOnly, true, displaySymbol, usdIdr)}</span></div> </div> </div> <div className="glass-card p-4"> <h3 className="font-semibold text-white mb-2">Top Gainer ({displaySymbol})</h3> <table className="w-full text-xs sm:text-sm"> <thead className="text-gray-400 text-xs font-light"><tr><th className="text-left font-normal py-1">Code</th><th className="text-center font-normal py-1">Trades</th><th className="text-right font-normal py-1">P&L</th></tr></thead> <tbody>{topGainers.map(g => (<tr key={g.symbol} className="border-t border-white/10"><td className="py-2 flex items-center gap-2 truncate max-w-[80px] sm:max-w-[150px]"><div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-zinc-700 flex items-center justify-center font-bold text-white text-[10px] sm:text-xs shrink-0">{g.symbol.charAt(0)}</div><span className="truncate">{g.symbol}</span></td><td className="text-center py-2">{g.trades}</td><td className={`text-right py-2 font-semibold tabular-nums whitespace-nowrap ${g.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{g.pnl >= 0 ? '+' : ''}{formatCurrencyShort(g.pnl, true, displaySymbol, usdIdr)} <br className="sm:hidden" />({g.pnlPct.toFixed(2)}%)</td></tr>))}</tbody> </table> </div> </div> );
 };
-const HistoryView = ({ transactions, usdIdr, displaySymbol, onDeleteTransaction }) => ( <div className="p-1 max-h-[70vh] overflow-y-auto"> <table className="w-full text-[10px] sm:text-sm"> <thead className="text-left text-gray-500 text-xs sticky top-0 bg-zinc-900/80 backdrop-blur-sm z-10"> <tr><th className="p-2 sm:p-3">Time</th><th className="p-2 sm:p-3">Type</th><th className="p-2 sm:p-3">Detail</th><th className="p-2 sm:p-3 text-right">Nominal</th><th className="p-2 sm:p-3 text-right">Aksi</th></tr> </thead> <tbody> {[...transactions].sort((a,b) => b.date - a.date).map(tx => ( <tr key={tx.id} className="border-t border-white/10 hover:bg-white/5 transition-colors"> <td className="p-2 sm:p-3 text-gray-400 text-[9px] sm:text-xs">{new Date(tx.date).toLocaleDateString()}<br/>{new Date(tx.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td> <td className="p-2 sm:p-3 capitalize font-semibold">{tx.type}</td> <td className="p-2 sm:p-3 text-[9px] sm:text-xs truncate max-w-[80px] sm:max-w-[150px]">{tx.type === 'buy' || tx.type === 'sell' || tx.type === 'delete' ? (<><div><strong className="truncate block">{tx.symbol}</strong></div><div className="truncate">{formatQty(tx.qty)} @ {formatCurrencyShort(tx.pricePerUnit, true, displaySymbol, usdIdr)}</div></>) : (<span>-</span>)}</td> <td className="p-2 sm:p-3 text-right tabular-nums">{formatCurrencyShort(tx.type === 'deposit' || tx.type === 'withdraw' ? tx.amount : (tx.cost || tx.proceeds || 0) * usdIdr, false, 'Rp', usdIdr)}</td> <td className="p-2 sm:p-3 text-right align-middle">
+const HistoryView = ({ transactions, usdIdr, displaySymbol, onDeleteTransaction }) => ( <div className="p-1 max-h-[70vh] overflow-y-auto"> <table className="w-full text-[10px] sm:text-sm"> <thead className="text-left text-gray-500 text-xs sticky top-0 bg-zinc-900/80 backdrop-blur-sm z-10"> <tr><th className="p-2 sm:p-3">Time</th><th className="p-2 sm:p-3">Type</th><th className="p-2 sm:p-3">Detail</th><th className="p-2 sm:p-3 text-right">Nominal</th><th className="p-2 sm:p-3 text-right">Action</th></tr> </thead> <tbody> {[...transactions].sort((a,b) => b.date - a.date).map(tx => ( <tr key={tx.id} className="border-t border-white/10 hover:bg-white/5 transition-colors"> <td className="p-2 sm:p-3 text-gray-400 text-[9px] sm:text-xs">{new Date(tx.date).toLocaleDateString()}<br/>{new Date(tx.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td> <td className="p-2 sm:p-3 capitalize font-semibold">{tx.type}</td> <td className="p-2 sm:p-3 text-[9px] sm:text-xs truncate max-w-[80px] sm:max-w-[150px]">{tx.type === 'buy' || tx.type === 'sell' || tx.type === 'delete' ? (<><div><strong className="truncate block">{tx.symbol}</strong></div><div className="truncate">{formatQty(tx.qty)} @ {formatCurrencyShort(tx.pricePerUnit, true, displaySymbol, usdIdr)}</div></>) : (<span>-</span>)}</td> <td className="p-2 sm:p-3 text-right tabular-nums whitespace-nowrap">{formatCurrencyShort(tx.type === 'deposit' || tx.type === 'withdraw' ? tx.amount : (tx.cost || tx.proceeds || 0) * usdIdr, false, 'Rp', usdIdr)}</td> <td className="p-2 sm:p-3 text-right align-middle">
       <button onClick={(e) => { e.stopPropagation(); onDeleteTransaction(tx.id); }} className="text-red-500 hover:text-red-400 bg-red-500/10 hover:bg-red-500/20 p-1.5 sm:p-2 rounded-md inline-flex items-center justify-center cursor-pointer relative z-20">
           <TrashIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
       </button>
@@ -1230,12 +1229,12 @@ const HistoryView = ({ transactions, usdIdr, displaySymbol, onDeleteTransaction 
 
 const BalanceManager = ({ onConfirm, displaySymbol }) => { 
     const [amount, setAmount] = useState(''); 
-    const currencyName = displaySymbol === '$' ? 'USD' : 'Rupiah';
+    const currencyName = displaySymbol === '$' ? 'USD' : 'IDR';
     
     return ( 
         <form onSubmit={(e) => { e.preventDefault(); onConfirm(amount); }} className="space-y-4"> 
             <div>
-                <label className="block text-sm font-medium mb-1 text-gray-400">Amount (dalam {currencyName})</label>
+                <label className="block text-sm font-medium mb-1 text-gray-400">Amount (in {currencyName})</label>
                 <input type="number" step="any" value={amount} onChange={e => setAmount(e.target.value)} autoFocus className="w-full bg-zinc-800 px-3 py-2 rounded border border-zinc-700 text-white" placeholder={`e.g. ${displaySymbol === '$' ? '1000' : '1000000'}`} />
             </div> 
             <button type="submit" className="w-full py-2.5 rounded font-semibold bg-emerald-600 text-white hover:bg-emerald-500">Confirm</button> 
@@ -1520,7 +1519,7 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
             const top7 = allAssets.slice(0, 7);
             const others = allAssets.slice(7);
             const othersValue = others.reduce((sum, item) => sum + item.value, 0);
-            finalEquityData = [ ...top7, { name: 'Lainnya', value: othersValue, type: 'other' } ];
+            finalEquityData = [ ...top7, { name: 'Others', value: othersValue, type: 'other' } ];
         } else {
             finalEquityData = allAssets;
         }
@@ -1643,9 +1642,9 @@ const AssetTableView = ({ rows, displaySymbol, usdIdr, onRowClick }) => {
                         return (
                             <tr key={r.id} onClick={() => onRowClick(r)} className="border-b border-zinc-800 hover:bg-zinc-800/50 cursor-pointer">
                                 <td className="px-2 sm:px-4 py-3 align-top min-w-0 max-w-[80px] sm:max-w-none"><div className="font-medium text-white truncate w-full text-[11px] sm:text-sm">{r.symbol}</div><div className="text-[10px] sm:text-xs text-gray-400 truncate">{formatQty(r.shares)}</div></td>
-                                <td className="px-2 sm:px-4 py-3 text-right align-top tabular-nums"><div className="font-medium text-white text-[10px] sm:text-xs truncate">{formatCurrencyShort(r.investedUSD, true, displaySymbol, usdIdr)}</div><div className="text-[9px] sm:text-[10px] text-gray-400 truncate">{formatCurrencyShort(r.avgPrice, true, displaySymbol, usdIdr)}</div></td>
-                                <td className="px-2 sm:px-4 py-3 text-right align-top tabular-nums"><div className="font-medium text-white text-[10px] sm:text-xs truncate">{formatCurrencyShort(r.marketValueUSD, true, displaySymbol, usdIdr)}</div><div className="text-[9px] sm:text-[10px] text-gray-400 truncate">{r.type === 'nonliquid' ? '-' : formatCurrencyShort(r.lastPriceUSD, true, displaySymbol, usdIdr)}</div></td>
-                                <td className="px-2 sm:px-4 py-3 text-right align-top tabular-nums"><div className={`font-medium ${pnlColor} text-[10px] sm:text-xs truncate`}>{pnlPrefix}{formatCurrencyShort(r.pnlUSD, true, displaySymbol, usdIdr)}</div><div className={`text-[9px] sm:text-[10px] ${pnlColor} truncate`}>{pnlPrefix}{r.pnlPct.toFixed(2)}%</div></td>
+                                <td className="px-2 sm:px-4 py-3 text-right align-top tabular-nums whitespace-nowrap"><div className="font-medium text-white text-[10px] sm:text-xs">{formatCurrencyShort(r.investedUSD, true, displaySymbol, usdIdr)}</div><div className="text-[9px] sm:text-[10px] text-gray-400">{formatCurrencyShort(r.avgPrice, true, displaySymbol, usdIdr)}</div></td>
+                                <td className="px-2 sm:px-4 py-3 text-right align-top tabular-nums whitespace-nowrap"><div className="font-medium text-white text-[10px] sm:text-xs">{formatCurrencyShort(r.marketValueUSD, true, displaySymbol, usdIdr)}</div><div className="text-[9px] sm:text-[10px] text-gray-400">{r.type === 'nonliquid' ? '-' : formatCurrencyShort(r.lastPriceUSD, true, displaySymbol, usdIdr)}</div></td>
+                                <td className="px-2 sm:px-4 py-3 text-right align-top tabular-nums whitespace-nowrap"><div className={`font-medium ${pnlColor} text-[10px] sm:text-xs`}>{pnlPrefix}{formatCurrencyShort(r.pnlUSD, true, displaySymbol, usdIdr)}</div><div className={`text-[9px] sm:text-[10px] ${pnlColor}`}>{pnlPrefix}{r.pnlPct.toFixed(2)}%</div></td>
                             </tr>
                         )
                     })}
