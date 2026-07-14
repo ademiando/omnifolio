@@ -402,7 +402,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("scientific");
 
   return (
-    <div className={`w-full bg-black flex flex-col font-sans selection:bg-transparent main-background ${activeTab === 'scientific' ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]'}`}>
+    <div className="w-full bg-black flex flex-col font-sans selection:bg-transparent main-background min-h-[100dvh]">
       <style>{`
         body, .main-background { background-color: #000000; }
         .glass-card { 
