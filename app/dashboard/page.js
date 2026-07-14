@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -64,11 +65,12 @@ function formatCurrency(value, valueIsUSD, displaySymbol, usdIdr) {
   const sign = displayValue < 0 ? '-' : '';
   const prefix = isRupiah ? 'Rp ' : '$';
 
+  // Format T dan B mulai dari 10 Miliar ke atas (10 B atau lebih / 11 digit)
   if (absNum >= 1e12) {
-      const numStr = (absNum / 1e12).toFixed(2);
+      const numStr = parseFloat((absNum / 1e12).toFixed(2)).toString();
       return `${sign}${prefix}${isRupiah ? numStr.replace('.', ',') : numStr} T`;
-  } else if (absNum >= 1e9) {
-      const numStr = (absNum / 1e9).toFixed(2);
+  } else if (absNum >= 10e9) {
+      const numStr = parseFloat((absNum / 1e9).toFixed(2)).toString();
       return `${sign}${prefix}${isRupiah ? numStr.replace('.', ',') : numStr} B`;
   }
 
@@ -98,13 +100,14 @@ function formatCurrencyCompact(value, valueIsUSD, displaySymbol, usdIdr) {
 
   const formatNum = (num, divisor) => {
       let str = (num / divisor).toFixed(2);
-      if (str.endsWith('.00')) str = str.slice(0, -3); 
+      str = parseFloat(str).toString(); // Menghilangkan 00 desimal di belakang koma jika genap
       return isRupiah ? str.replace('.', ',') : str;
   };
 
   if (absNum >= 1e12) return `${sign}${prefix}${formatNum(absNum, 1e12)} T`;
   if (absNum >= 1e9)  return `${sign}${prefix}${formatNum(absNum, 1e9)} B`;
   if (absNum >= 1e6)  return `${sign}${prefix}${formatNum(absNum, 1e6)} M`;
+  if (absNum >= 1e3)  return `${sign}${prefix}${formatNum(absNum, 1e3)} K`;
   
   return formatCurrency(value, valueIsUSD, displaySymbol, usdIdr); 
 }
@@ -774,6 +777,16 @@ export default function App() {
     setAssetDetailModalOpen(true);
   };
 
+  // Kalkulasi ukuran kelas teks untuk total equity secara dinamis berdasarkan panjang string nominal
+  const totalEquityFontSizeClass = useMemo(() => {
+    const textFormatted = formatCurrency(derivedData.totalEquity, false, displaySymbol, usdIdr);
+    const length = textFormatted.length;
+    if (length > 20) return "text-sm sm:text-lg md:text-2xl";
+    if (length > 16) return "text-base sm:text-xl md:text-2xl";
+    if (length > 12) return "text-lg sm:text-2xl md:text-3xl";
+    return "text-xl sm:text-2xl md:text-3xl";
+  }, [derivedData.totalEquity, displaySymbol, usdIdr]);
+
   return (
     <div className="bg-black text-gray-300 min-h-screen font-sans main-background">
       <style>{`
@@ -803,12 +816,16 @@ export default function App() {
         </header>
         <main>
           <section className="p-4">
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                <div onClick={() => setIsEquityModalOpen(true)} className="glass-card p-3 sm:p-4 shadow-lg flex flex-col justify-between cursor-pointer hover:border-white/20 transition-all overflow-hidden relative group">
+            <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                <div onClick={() => setIsEquityModalOpen(true)} className="glass-card p-2.5 sm:p-4 shadow-lg flex flex-col justify-between cursor-pointer hover:border-white/20 transition-all overflow-hidden relative group">
                     <div className="min-w-0 z-10">
                         <p className="text-gray-400 text-[10px] sm:text-xs">Total Equity</p>
-                        <p className="text-lg sm:text-2xl md:text-3xl font-bold text-white whitespace-nowrap overflow-hidden text-ellipsis w-full">{formatCurrency(derivedData.totalEquity, false, displaySymbol, usdIdr)}</p>
-                        <p className="text-[11px] sm:text-xs text-gray-400 mt-1 whitespace-nowrap overflow-hidden text-ellipsis w-full">{displaySymbol === 'Rp' ? formatCurrency(derivedData.totalEquity, false, '$', usdIdr) : formatCurrency(derivedData.totalEquity, false, 'Rp', usdIdr)}</p>
+                        <p className={`${totalEquityFontSizeClass} font-bold text-white tracking-tight leading-normal whitespace-nowrap overflow-hidden text-ellipsis w-full mt-0.5`}>
+                          {formatCurrency(derivedData.totalEquity, false, displaySymbol, usdIdr)}
+                        </p>
+                        <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis w-full">
+                          {displaySymbol === 'Rp' ? formatCurrency(derivedData.totalEquity, false, '$', usdIdr) : formatCurrency(derivedData.totalEquity, false, 'Rp', usdIdr)}
+                        </p>
                     </div>
                      <div className="text-[10px] sm:text-xs mt-2 space-y-1 text-gray-400 border-t border-white/10 pt-2 min-w-0 z-10">
                         <div className="flex justify-between w-full">
@@ -827,7 +844,7 @@ export default function App() {
                     <div className="h-20 -mb-4 -mx-4 mt-auto pt-2 opacity-80 group-hover:opacity-100 transition-opacity"><AreaChart data={equitySeries} simplified={true} displaySymbol={displaySymbol}/></div>
                 </div>
                 
-                <div onClick={() => setIsAllocationModalOpen(true)} className="glass-card p-3 sm:p-4 shadow-lg flex flex-col justify-center cursor-pointer hover:border-white/20 transition-all min-w-0">
+                <div onClick={() => setIsAllocationModalOpen(true)} className="glass-card p-2.5 sm:p-4 shadow-lg flex flex-col justify-center cursor-pointer hover:border-white/20 transition-all min-w-0">
                     <div className="grid grid-cols-2 text-center gap-1 w-full">
                         <div className="flex flex-col items-center overflow-hidden w-full">
                             <p className="text-gray-400 text-[11px] sm:text-xs">Cash</p>
@@ -849,12 +866,12 @@ export default function App() {
                     <div className="text-[10px] sm:text-xs mt-2 space-y-1 text-gray-400 border-t border-white/10 pt-2 min-w-0">
                         <div className="flex justify-between w-full gap-1">
                             <span className="truncate shrink-0">Net Deposit</span>
-                            <span className="font-medium text-gray-300 whitespace-nowrap text-right">{formatCurrencyCompact(derivedData.netDeposit, false, displaySymbol, usdIdr)}</span>
+                            <span className="font-medium text-gray-300 whitespace-nowrap text-right">{formatCurrency(derivedData.netDeposit, false, displaySymbol, usdIdr)}</span>
                         </div>
                         <div className="flex justify-between w-full gap-1">
                             <span className="truncate shrink-0">Total G/L</span>
                             <span className={`font-semibold whitespace-nowrap text-right ${derivedData.totalPnlUSD >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                {derivedData.totalPnlUSD >= 0 ? '+' : ''}{formatCurrencyCompact(derivedData.totalPnlUSD, true, displaySymbol, usdIdr)}
+                                {derivedData.totalPnlUSD >= 0 ? '+' : ''}{formatCurrency(derivedData.totalPnlUSD, true, displaySymbol, usdIdr)}
                             </span>
                         </div>
                     </div>
@@ -1653,5 +1670,3 @@ const AssetTableView = ({ rows, displaySymbol, usdIdr, onRowClick }) => {
         </div>
     );
 }
-
-
