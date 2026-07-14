@@ -2,13 +2,19 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 
-// --- FORMATTING UTILITIES (US Standard for Finance) ---
+// --- FORMATTING UTILITIES ---
 const formatCurrency = (num) => {
   if (num === null || num === undefined || isNaN(num)) return "";
   const str = num.toString().split(".");
   str[0] = str[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   return str.join(".");
 };
+
+const TrashIcon = ({ className }) => (
+  <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path>
+  </svg>
+);
 
 // ==========================================
 // 1. TRADING / INVESTMENT CALCULATOR
@@ -27,7 +33,6 @@ const TradingCalculator = () => {
   });
 
   const handleAvgChange = (index, field, value) => {
-    // Only allow numbers and max one decimal dot
     const cleanValue = value.replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1");
     const newEntries = [...avgEntries];
     newEntries[index][field] = cleanValue;
@@ -72,95 +77,102 @@ const TradingCalculator = () => {
   const rrRatio = lossAmt > 0 && profitAmt > 0 ? profitAmt / lossAmt : 0;
 
   return (
-    <div className="flex flex-col h-full w-full bg-[#121212] p-4 overflow-y-auto" style={{ scrollbarWidth: "none" }}>
-      <div className="flex bg-[#1c1d22] rounded-xl p-1 mb-4 shrink-0">
-        <button onClick={() => setTab("average")} className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${tab === "average" ? "bg-blue-600 text-white" : "text-gray-400"}`}>Averaging</button>
-        <button onClick={() => setTab("pl")} className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${tab === "pl" ? "bg-blue-600 text-white" : "text-gray-400"}`}>Trade Plan</button>
+    <div className="flex flex-col h-full w-full p-4 overflow-y-auto scrollbar-hide">
+      <div className="flex bg-zinc-900/80 p-1 mb-4 shrink-0 rounded-xl border border-white/5">
+        <button onClick={() => setTab("average")} className={`flex-1 py-2.5 text-xs sm:text-sm font-semibold rounded-lg transition-all duration-300 ${tab === "average" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-gray-200"}`}>Averaging</button>
+        <button onClick={() => setTab("pl")} className={`flex-1 py-2.5 text-xs sm:text-sm font-semibold rounded-lg transition-all duration-300 ${tab === "pl" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-gray-200"}`}>Trade Plan</button>
       </div>
 
       {tab === "average" && (
         <div className="flex flex-col gap-3 pb-8">
-          <div className="bg-[#1c1d22] p-4 rounded-xl shadow-sm border border-gray-800/50">
-            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Average Price</p>
-            <p className="text-3xl font-semibold text-white">{formatCurrency(averagePrice.toFixed(2))}</p>
-            <div className="flex justify-between mt-4 text-sm border-t border-gray-700/50 pt-3">
-              <span className="text-gray-400">Capital: <span className="text-white font-medium">{formatCurrency(totalValue.toFixed(2))}</span></span>
-              <span className="text-gray-400">Qty/Units: <span className="text-white font-medium">{formatCurrency(totalQty)}</span></span>
+          <div className="glass-card p-5 relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-teal-500 opacity-50"></div>
+            <p className="text-gray-400 text-xs uppercase tracking-wider mb-2">Average Price</p>
+            <p className="text-3xl sm:text-4xl font-bold text-white tracking-tight whitespace-nowrap overflow-x-auto scrollbar-hide">{formatCurrency(averagePrice.toFixed(2))}</p>
+            <div className="flex justify-between mt-5 text-sm border-t border-white/10 pt-4">
+              <span className="text-gray-400">Capital: <span className="text-white font-medium whitespace-nowrap">{formatCurrency(totalValue.toFixed(2))}</span></span>
+              <span className="text-gray-400">Units: <span className="text-white font-medium whitespace-nowrap">{formatCurrency(totalQty)}</span></span>
             </div>
           </div>
-          <div className="space-y-3 mt-1">
+
+          <div className="space-y-3 mt-2">
             {avgEntries.map((entry, i) => (
               <div key={i} className="flex gap-2 items-center">
-                <div className="flex-1 bg-[#1c1d22] rounded-xl px-3 py-2 border border-transparent focus-within:border-gray-600 transition-colors">
+                <div className="flex-1 glass-card px-4 py-2 focus-within:border-emerald-500/50 focus-within:shadow-[0_0_10px_rgba(16,185,129,0.1)] transition-all">
                   <label className="text-[10px] font-medium uppercase text-gray-500">Entry {i + 1} Price</label>
-                  <input type="text" inputMode="decimal" value={entry.price} onChange={(e) => handleAvgChange(i, "price", e.target.value)} className="w-full bg-transparent text-white outline-none font-medium text-lg mt-0.5" placeholder="0.00" />
+                  <input type="text" inputMode="decimal" value={entry.price} onChange={(e) => handleAvgChange(i, "price", e.target.value)} className="w-full bg-transparent text-white outline-none font-medium text-lg mt-0.5 tabular-nums" placeholder="0.00" />
                 </div>
-                <div className="w-24 bg-[#1c1d22] rounded-xl px-3 py-2 border border-transparent focus-within:border-gray-600 transition-colors">
+                <div className="w-24 sm:w-28 glass-card px-4 py-2 focus-within:border-emerald-500/50 focus-within:shadow-[0_0_10px_rgba(16,185,129,0.1)] transition-all">
                   <label className="text-[10px] font-medium uppercase text-gray-500">Qty</label>
-                  <input type="text" inputMode="decimal" value={entry.qty} onChange={(e) => handleAvgChange(i, "qty", e.target.value)} className="w-full bg-transparent text-white outline-none font-medium text-lg mt-0.5" placeholder="0" />
+                  <input type="text" inputMode="decimal" value={entry.qty} onChange={(e) => handleAvgChange(i, "qty", e.target.value)} className="w-full bg-transparent text-white outline-none font-medium text-lg mt-0.5 tabular-nums" placeholder="0" />
                 </div>
-                {i > 1 && <button onClick={() => removeAvgEntry(i)} className="p-3.5 text-red-500 bg-[#1c1d22] rounded-xl hover:bg-red-500/20 active:scale-95 transition-all">✕</button>}
+                {i > 1 && (
+                    <button onClick={() => removeAvgEntry(i)} className="p-4 text-red-400 glass-card hover:bg-red-500/20 hover:border-red-500/30 active:scale-95 transition-all flex items-center justify-center">
+                        <TrashIcon className="w-5 h-5" />
+                    </button>
+                )}
               </div>
             ))}
           </div>
-          <button onClick={addAvgEntry} className="w-full py-3.5 mt-2 border border-dashed border-gray-600 text-gray-400 font-medium rounded-xl hover:bg-[#1c1d22] hover:text-white transition-colors">+ Add Entry</button>
+          <button onClick={addAvgEntry} className="w-full py-4 mt-2 glass-card border-dashed border-white/20 text-gray-400 font-medium hover:border-emerald-500/50 hover:text-emerald-400 hover:bg-emerald-500/5 transition-all">+ Add Another Entry</button>
         </div>
       )}
 
       {tab === "pl" && (
         <div className="flex flex-col gap-4 pb-8">
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-[#1c1d22] p-3 rounded-xl border border-transparent focus-within:border-gray-600">
+            <div className="glass-card p-4 focus-within:border-blue-500/50 transition-all">
               <label className="text-[10px] font-medium uppercase text-gray-500">Buy Price</label>
-              <input type="text" inputMode="decimal" value={tradePlan.buyPrice} onChange={(e) => setTradePlan({ ...tradePlan, buyPrice: e.target.value.replace(/[^0-9.]/g, "") })} className="w-full bg-transparent text-white outline-none font-medium text-lg mt-1" placeholder="0.00" />
+              <input type="text" inputMode="decimal" value={tradePlan.buyPrice} onChange={(e) => setTradePlan({ ...tradePlan, buyPrice: e.target.value.replace(/[^0-9.]/g, "") })} className="w-full bg-transparent text-white outline-none font-medium text-lg mt-1 tabular-nums" placeholder="0.00" />
             </div>
-            <div className="bg-[#1c1d22] p-3 rounded-xl border border-transparent focus-within:border-gray-600">
+            <div className="glass-card p-4 focus-within:border-blue-500/50 transition-all">
               <label className="text-[10px] font-medium uppercase text-gray-500">Quantity</label>
-              <input type="text" inputMode="decimal" value={tradePlan.qty} onChange={(e) => setTradePlan({ ...tradePlan, qty: e.target.value.replace(/[^0-9.]/g, "") })} className="w-full bg-transparent text-white outline-none font-medium text-lg mt-1" placeholder="0" />
+              <input type="text" inputMode="decimal" value={tradePlan.qty} onChange={(e) => setTradePlan({ ...tradePlan, qty: e.target.value.replace(/[^0-9.]/g, "") })} className="w-full bg-transparent text-white outline-none font-medium text-lg mt-1 tabular-nums" placeholder="0" />
             </div>
-            <div className="bg-[#1c1d22] p-3 rounded-xl border border-green-900/30 focus-within:border-green-500/50">
-              <label className="text-[10px] font-medium uppercase text-green-500">Target Price</label>
-              <input type="text" inputMode="decimal" value={tradePlan.targetPrice} onChange={(e) => setTradePlan({ ...tradePlan, targetPrice: e.target.value.replace(/[^0-9.]/g, "") })} className="w-full bg-transparent text-green-400 outline-none font-medium text-lg mt-1" placeholder="0.00" />
+            <div className="glass-card p-4 border-emerald-900/30 focus-within:border-emerald-500/70 focus-within:shadow-[0_0_15px_rgba(16,185,129,0.15)] transition-all">
+              <label className="text-[10px] font-medium uppercase text-emerald-500">Target Price</label>
+              <input type="text" inputMode="decimal" value={tradePlan.targetPrice} onChange={(e) => setTradePlan({ ...tradePlan, targetPrice: e.target.value.replace(/[^0-9.]/g, "") })} className="w-full bg-transparent text-emerald-400 outline-none font-medium text-lg mt-1 tabular-nums" placeholder="0.00" />
             </div>
-            <div className="bg-[#1c1d22] p-3 rounded-xl border border-red-900/30 focus-within:border-red-500/50">
+            <div className="glass-card p-4 border-red-900/30 focus-within:border-red-500/70 focus-within:shadow-[0_0_15px_rgba(239,68,68,0.15)] transition-all">
               <label className="text-[10px] font-medium uppercase text-red-500">Stop Loss</label>
-              <input type="text" inputMode="decimal" value={tradePlan.stopLoss} onChange={(e) => setTradePlan({ ...tradePlan, stopLoss: e.target.value.replace(/[^0-9.]/g, "") })} className="w-full bg-transparent text-red-400 outline-none font-medium text-lg mt-1" placeholder="0.00" />
+              <input type="text" inputMode="decimal" value={tradePlan.stopLoss} onChange={(e) => setTradePlan({ ...tradePlan, stopLoss: e.target.value.replace(/[^0-9.]/g, "") })} className="w-full bg-transparent text-red-400 outline-none font-medium text-lg mt-1 tabular-nums" placeholder="0.00" />
             </div>
           </div>
 
-          <div className="bg-[#1c1d22] p-4 rounded-xl shadow-sm border border-gray-800/50">
-             <div className="flex justify-between items-end pb-4 border-b border-gray-700/50">
-               <div>
-                  <p className="text-[10px] font-medium uppercase tracking-wide text-gray-500 mb-1">Risk / Reward Ratio</p>
-                  <p className="text-2xl font-semibold text-white">1 : {rrRatio ? rrRatio.toFixed(2) : "0.00"}</p>
+          <div className="glass-card p-5 relative overflow-hidden group">
+             <div className="flex justify-between items-end pb-4 border-b border-white/10 min-w-0">
+               <div className="min-w-0 pr-2">
+                  <p className="text-[10px] font-medium uppercase tracking-wide text-gray-500 mb-1">Risk / Reward</p>
+                  <p className="text-xl sm:text-2xl font-bold text-white whitespace-nowrap">1 : {rrRatio ? rrRatio.toFixed(2) : "0.00"}</p>
                </div>
-               <div className="text-right">
+               <div className="text-right shrink-0 min-w-0">
                   <p className="text-[10px] font-medium uppercase tracking-wide text-gray-500 mb-1">Capital (+Fee)</p>
-                  <p className="text-base font-medium text-gray-300">{formatCurrency(totalCapital.toFixed(2))}</p>
+                  <p className="text-sm sm:text-base font-semibold text-gray-200 whitespace-nowrap overflow-x-auto scrollbar-hide">{formatCurrency(totalCapital.toFixed(2))}</p>
                </div>
              </div>
-             <div className="flex justify-between items-center pt-4">
-               <div>
-                 <p className="text-[10px] font-medium uppercase tracking-wide text-green-500 mb-1">Pot. Profit</p>
-                 <p className="text-xl font-semibold text-green-400">+{formatCurrency(profitAmt.toFixed(2))}</p>
-                 <p className="text-xs text-green-500 mt-0.5">+{profitPct.toFixed(2)}%</p>
+             
+             <div className="flex justify-between items-center pt-5 min-w-0 gap-2">
+               <div className="min-w-0">
+                 <p className="text-[10px] font-medium uppercase tracking-wide text-emerald-500 mb-1">Pot. Profit</p>
+                 <p className="text-lg sm:text-xl font-bold text-emerald-400 whitespace-nowrap overflow-x-auto scrollbar-hide">+{formatCurrency(profitAmt.toFixed(2))}</p>
+                 <p className="text-xs font-semibold text-emerald-500/80 mt-1">+{profitPct.toFixed(2)}%</p>
                </div>
-               <div className="text-right">
+               <div className="text-right min-w-0">
                  <p className="text-[10px] font-medium uppercase tracking-wide text-red-500 mb-1">Pot. Loss</p>
-                 <p className="text-xl font-semibold text-red-400">-{formatCurrency(lossAmt.toFixed(2))}</p>
-                 <p className="text-xs text-red-500 mt-0.5">-{lossPct.toFixed(2)}%</p>
+                 <p className="text-lg sm:text-xl font-bold text-red-400 whitespace-nowrap overflow-x-auto scrollbar-hide">-{formatCurrency(lossAmt.toFixed(2))}</p>
+                 <p className="text-xs font-semibold text-red-500/80 mt-1">-{lossPct.toFixed(2)}%</p>
                </div>
              </div>
           </div>
 
           <div className="flex gap-3">
-             <div className="flex-1 flex justify-between items-center bg-[#1c1d22] px-3 py-2.5 rounded-lg border border-transparent focus-within:border-gray-600">
-                <span className="text-[11px] font-medium text-gray-500">Buy Fee %</span>
-                <input type="number" step="0.01" value={tradePlan.feeBuy} onChange={(e) => setTradePlan({...tradePlan, feeBuy: e.target.value})} className="w-14 bg-transparent text-right font-medium text-white outline-none" />
+             <div className="flex-1 flex justify-between items-center glass-card px-4 py-3 focus-within:border-white/30 transition-all">
+                <span className="text-[11px] font-medium text-gray-400">Buy Fee %</span>
+                <input type="number" step="0.01" value={tradePlan.feeBuy} onChange={(e) => setTradePlan({...tradePlan, feeBuy: e.target.value})} className="w-16 bg-transparent text-right font-medium text-white outline-none tabular-nums" />
              </div>
-             <div className="flex-1 flex justify-between items-center bg-[#1c1d22] px-3 py-2.5 rounded-lg border border-transparent focus-within:border-gray-600">
-                <span className="text-[11px] font-medium text-gray-500">Sell Fee %</span>
-                <input type="number" step="0.01" value={tradePlan.feeSell} onChange={(e) => setTradePlan({...tradePlan, feeSell: e.target.value})} className="w-14 bg-transparent text-right font-medium text-white outline-none" />
+             <div className="flex-1 flex justify-between items-center glass-card px-4 py-3 focus-within:border-white/30 transition-all">
+                <span className="text-[11px] font-medium text-gray-400">Sell Fee %</span>
+                <input type="number" step="0.01" value={tradePlan.feeSell} onChange={(e) => setTradePlan({...tradePlan, feeSell: e.target.value})} className="w-16 bg-transparent text-right font-medium text-white outline-none tabular-nums" />
              </div>
           </div>
         </div>
@@ -176,7 +188,7 @@ const ScientificCalculator = () => {
   const [eq, setEq] = useState("");
   const [liveResult, setLiveResult] = useState(null);
   const [isRad, setIsRad] = useState(true);
-  const [hasCalculated, setHasCalculated] = useState(false); // Kunci logika reset layar
+  const [hasCalculated, setHasCalculated] = useState(false);
 
   const formatEquation = (equation) => {
     return equation.replace(/\d+(\.\d+)?/g, (match) => {
@@ -186,7 +198,6 @@ const ScientificCalculator = () => {
     });
   };
 
-  // Evaluator Math Tahan Banting (Safe Eval)
   const evaluateMath = useCallback((equation) => {
     if (!equation) return null;
     let jsExpr = equation
@@ -204,7 +215,6 @@ const ScientificCalculator = () => {
       .replace(/ln\(/g, "math.log(")
       .replace(/log\(/g, "math.log10(");
 
-    // Auto-close open parentheses
     const openP = (jsExpr.match(/\(/g) || []).length;
     const closeP = (jsExpr.match(/\)/g) || []).length;
     for (let i = 0; i < openP - closeP; i++) jsExpr += ")";
@@ -219,23 +229,20 @@ const ScientificCalculator = () => {
       const func = new Function("math", `return ${jsExpr}`);
       const result = func(math);
 
-      // Pastikan hasil valid (bukan NaN / Infinity string yang merusak)
       if (typeof result === "number" && !isNaN(result) && isFinite(result)) {
         return parseFloat(result.toPrecision(12));
       }
       return null;
     } catch (e) {
-      return null; // Abaikan error jika rumus masih gantung saat diketik (misal "5 + ")
+      return null;
     }
   }, [isRad]);
 
-  // Update Live Result secara real-time
   useEffect(() => {
     setLiveResult(evaluateMath(eq));
   }, [eq, evaluateMath]);
 
   const handleInput = (val) => {
-    // Tombol Fungsionalitas Dasar
     if (val === "C") { setEq(""); setLiveResult(null); setHasCalculated(false); return; }
     if (val === "⌫") { 
       if (hasCalculated) { setEq(""); setHasCalculated(false); return; }
@@ -246,7 +253,7 @@ const ScientificCalculator = () => {
       if (liveResult !== null) { 
         setEq(liveResult.toString()); 
         setLiveResult(null); 
-        setHasCalculated(true); // Tandai bahwa hitungan selesai
+        setHasCalculated(true); 
       }
       return;
     }
@@ -256,9 +263,7 @@ const ScientificCalculator = () => {
     setEq((prev) => {
       let current = prev;
 
-      // LOGIKA RESET LAYAR JIKA SEHABIS TEKAN '='
       if (hasCalculated) {
-        // Jika menekan operator (+, -, dsb), sambung hasilnya. Jika mengetik angka baru, reset layarnya.
         if (["+", "-", "×", "÷", "%", "x²", "xʸ", "eˣ", "^"].includes(val)) {
             current = prev; 
         } else {
@@ -267,7 +272,6 @@ const ScientificCalculator = () => {
         setHasCalculated(false);
       }
 
-      // LOGIKA PERSENTASE (%) AKURAT SEPERTI KALKULATOR ASLI
       if (val === "%") {
         const lastNumMatch = current.match(/(\d+(?:\.\d+)?)$/);
         if (!lastNumMatch) return current; 
@@ -285,13 +289,11 @@ const ScientificCalculator = () => {
         return preceding + cleanVal.toString();
       }
 
-      // Input Angka (Mencegah Leading Zero "0005" atau "+ 05")
       if (/[0-9]/.test(val)) {
         if (current === "0") return val;
         if (/[\+\-\×\÷\(\^]0$/.test(current)) return current.slice(0, -1) + val;
       }
 
-      // Mapping Spesial
       if (val === "x²") return current + "^2";
       if (val === "xʸ") return current + "^";
       if (val === "eˣ") return current + "e^";
@@ -300,14 +302,12 @@ const ScientificCalculator = () => {
       if (val === "|x|") return current + "abs(";
       if (["sin", "cos", "tan", "ln", "log"].includes(val)) return current + val + "(";
       
-      // Pencegahan Koma/Titik Ganda
       if (val === ".") {
         const lastNumMatch = current.match(/[\d.]+$/);
         if (lastNumMatch && lastNumMatch[0].includes(".")) return current;
         return current + (current.length === 0 || /[^\d]$/.test(current) ? "0." : ".");
       }
       
-      // Tanda Kurung Pintar
       if (val === "( )") {
         const openP = (current.match(/\(/g) || []).length;
         const closeP = (current.match(/\)/g) || []).length;
@@ -315,7 +315,6 @@ const ScientificCalculator = () => {
         return current + (current.length === 0 || /[\+\-\×\÷\(\^]$/.test(current) ? "(" : "×(");
       }
       
-      // Toggle Positif/Negatif
       if (val === "+/-") {
         const lastNumMatch = current.match(/(-?[\d.]+)$/);
         if (lastNumMatch) {
@@ -326,7 +325,6 @@ const ScientificCalculator = () => {
         return current + "(-";
       }
       
-      // Penumpukan Operator (Timpa operator jika diketik beruntun, misal + lalu x)
       if (["+", "-", "×", "÷"].includes(val)) {
         if (current === "") return val === "-" ? "-" : current;
         if (/[\+\-\×\÷]$/.test(current)) return current.slice(0, -1) + val;
@@ -350,33 +348,38 @@ const ScientificCalculator = () => {
   ];
 
   const getBtnClass = (btn) => {
-    if (btn === "=") return "bg-blue-600 text-white hover:bg-blue-500 shadow-md";
-    if (btn === "C" || btn === "⌫") return "bg-[#1c1d22] text-red-500 hover:bg-[#2b2d35]";
-    if (["÷", "×", "-", "+", "%"].includes(btn)) return "bg-[#1c1d22] text-gray-200 hover:bg-[#2b2d35]";
-    if (/[0-9]/.test(btn) || btn === "." || btn === "( )") return "bg-[#1c1d22] text-white hover:bg-[#2b2d35]";
-    return "bg-[#1c1d22] text-gray-400 hover:bg-[#2b2d35]";
+    // Primary Action (Equals)
+    if (btn === "=") return "bg-emerald-600 text-white hover:bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)] hover:shadow-[0_0_20px_rgba(16,185,129,0.5)]";
+    // Danger/Clear Actions
+    if (btn === "C" || btn === "⌫") return "glass-card text-red-400 hover:bg-red-500/10 hover:border-red-500/30";
+    // Operators
+    if (["÷", "×", "-", "+", "%"].includes(btn)) return "glass-card text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-500/30";
+    // Numbers & Basics
+    if (/[0-9]/.test(btn) || btn === "." || btn === "( )") return "glass-card text-white hover:bg-white/10";
+    // Scientific Math Functions
+    return "glass-card text-gray-400 hover:bg-white/10 hover:text-white";
   };
 
   return (
     <div className="flex flex-col h-full w-full px-2 pb-2">
-      {/* Layar Kalkulator Fleksibel (Ambil sisa ruang) */}
-      <div className="flex-1 flex flex-col justify-end px-3 pb-3 min-h-[100px]">
-        <div className="text-right text-white text-4xl sm:text-[2.75rem] leading-none font-light tracking-wide overflow-x-auto whitespace-nowrap mb-1 pb-1" style={{ scrollbarWidth: "none" }}>
+      {/* Layar Kalkulator Fleksibel */}
+      <div className="flex-1 flex flex-col justify-end px-4 pb-4 min-h-[100px]">
+        <div className="text-right text-white text-4xl sm:text-[3rem] leading-tight font-light tracking-wide overflow-x-auto whitespace-nowrap mb-1 pb-1 scrollbar-hide">
           {eq ? formatEquation(eq) : ""}
         </div>
-        <div className="text-right text-gray-500 text-xl sm:text-2xl h-8 tracking-wide font-light">
+        <div className="text-right text-gray-500 text-xl sm:text-2xl h-8 tracking-wide font-light whitespace-nowrap overflow-x-auto scrollbar-hide">
           {liveResult !== null ? formatCurrency(liveResult) : ""}
         </div>
       </div>
 
-      {/* Grid Tombol (Tingginya dikunci dinamis agar fit di HP tanpa scroll) */}
-      <div className="flex flex-col flex-none h-[68%] w-full max-h-[580px] gap-[6px] md:gap-2">
+      {/* Grid Tombol */}
+      <div className="flex flex-col flex-none h-[68%] w-full max-h-[600px] gap-2 md:gap-2.5 px-2">
         {buttonRows.map((row, rIndex) => (
-          <div key={rIndex} className="flex flex-1 gap-[6px] md:gap-2">
+          <div key={rIndex} className="flex flex-1 gap-2 md:gap-2.5">
             {row.map((btn, cIndex) => (
               <button 
                 key={cIndex} onClick={() => handleInput(btn)} 
-                className={`flex-1 flex items-center justify-center text-[16px] sm:text-[17px] font-medium rounded-2xl transition-all active:scale-95 active:opacity-70 ${getBtnClass(btn)}`}
+                className={`flex-1 flex items-center justify-center text-[16px] sm:text-lg font-medium rounded-2xl sm:rounded-3xl transition-all duration-200 active:scale-95 active:opacity-70 ${getBtnClass(btn)}`}
               >
                 {btn}
               </button>
@@ -395,29 +398,41 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("scientific");
 
   return (
-    // 'h-[100dvh]' memastikan tinggi div sama persis dengan tinggi layar viewport (terutama di iOS/Android)
-    <div className="h-[100dvh] w-full bg-black flex flex-col font-sans selection:bg-transparent overflow-hidden">
+    <div className="h-[100dvh] w-full bg-black flex flex-col font-sans selection:bg-transparent overflow-hidden main-background">
+      <style>{`
+        body, .main-background { background-color: #000000; }
+        .glass-card { 
+            background: rgba(28, 28, 32, 0.6); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px); 
+            border-radius: 12px; 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+
       <div className="w-full max-w-md mx-auto h-full flex flex-col relative">
         
-        {/* Navigasi Toggle - Sekarang Dikecilkan & Pas di Tengah */}
-        <div className="flex justify-center pt-5 pb-3 w-full shrink-0">
-          <div className="flex bg-[#1c1d22] rounded-full p-1 border border-gray-800 shadow-sm">
+        {/* Navigasi Toggle */}
+        <div className="flex justify-center pt-6 pb-2 w-full shrink-0">
+          <div className="flex bg-zinc-900/80 rounded-full p-1 border border-white/10 shadow-lg backdrop-blur-md">
             <button 
               onClick={() => setActiveTab("scientific")} 
-              className={`px-5 py-2 text-[13px] sm:text-sm font-medium rounded-full transition-all ${activeTab === "scientific" ? "bg-[#32343d] text-white shadow" : "text-gray-500 hover:text-gray-300"}`}
+              className={`px-6 py-2 text-xs sm:text-sm font-semibold rounded-full transition-all duration-300 ${activeTab === "scientific" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-white"}`}
             >
               Calculator
             </button>
             <button 
               onClick={() => setActiveTab("trading")} 
-              className={`px-5 py-2 text-[13px] sm:text-sm font-medium rounded-full transition-all ${activeTab === "trading" ? "bg-[#32343d] text-white shadow" : "text-gray-500 hover:text-gray-300"}`}
+              className={`px-6 py-2 text-xs sm:text-sm font-semibold rounded-full transition-all duration-300 ${activeTab === "trading" ? "bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]" : "text-gray-400 hover:text-white"}`}
             >
               Trading Plan
             </button>
           </div>
         </div>
 
-        {/* Konten (Kalkulator) */}
+        {/* Konten */}
         <div className="flex-1 overflow-hidden min-h-0">
           {activeTab === "scientific" ? <ScientificCalculator /> : <TradingCalculator />}
         </div>
