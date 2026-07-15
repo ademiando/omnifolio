@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -111,6 +110,31 @@ function formatCurrencyCompact(value, valueIsUSD, displaySymbol, usdIdr) {
   
   return formatCurrency(value, valueIsUSD, displaySymbol, usdIdr); 
 }
+
+function formatCurrencyCompactNoSymbol(value, valueIsUSD, displaySymbol, usdIdr) {
+  if (value === null || typeof value === 'undefined' || isNaN(Number(value))) return '0';
+  let displayValue = valueIsUSD ? value : (displaySymbol === '$' ? value / usdIdr : value);
+  if (!valueIsUSD && displaySymbol !== '$') displayValue = value;
+  if (valueIsUSD && displaySymbol !== '$') displayValue = value * usdIdr;
+
+  const absNum = Math.abs(displayValue);
+  const isRupiah = displaySymbol !== '$';
+  const sign = displayValue < 0 ? '-' : '';
+
+  const formatNum = (num, divisor) => {
+      let str = (num / divisor).toFixed(2);
+      str = parseFloat(str).toString(); 
+      return isRupiah ? str.replace('.', ',') : str;
+  };
+
+  if (absNum >= 1e12) return `${sign}${formatNum(absNum, 1e12)} T`;
+  if (absNum >= 1e9)  return `${sign}${formatNum(absNum, 1e9)} B`;
+  if (absNum >= 1e6)  return `${sign}${formatNum(absNum, 1e6)} M`;
+  if (absNum >= 1e3)  return `${sign}${formatNum(absNum, 1e3)} K`;
+
+  return new Intl.NumberFormat(isRupiah ? 'id-ID' : 'en-US', { style: 'decimal', minimumFractionDigits: isRupiah ? 0 : 2, maximumFractionDigits: isRupiah ? 0 : 2 }).format(displayValue);
+}
+
 
 function formatQty(v) {
   const n = Number(v || 0);
@@ -409,7 +433,7 @@ export default function App() {
               id: it.symbol.toUpperCase(), 
               source: "yahoo", 
               type: "stock", 
-              image: `https://ui-avatars.com/api/?name=${it.symbol}&background=random&color=fff&rounded=true&bold=true` 
+              image: `https://assets.parqet.com/logos/symbol/${it.symbol.toUpperCase()}?format=png`
           })).slice(0, 10));
         }
       } catch (e) { console.error("Search failed:", e); setSuggestions([]); } finally { setIsSearching(false); }
@@ -511,7 +535,7 @@ export default function App() {
   const handleExport = () => {
     if (transactions.length === 0) { alert("No transactions to export."); return; }
     const formatCsvCell = (cellData) => { const stringData = String(cellData ?? ''); if (stringData.includes(',') || stringData.includes('"') || stringData.includes('\n')) { return `"${stringData.replace(/"/g, '""')}"`; } return stringData; };
-    const headers = ['id', 'date', 'type', 'symbol', 'name', 'qty', 'pricePerUnit', 'cost', 'proceeds', 'realized', 'amount', 'assetId', 'note', 'assetStub_id', 'assetStub_type', 'assetStub_symbol', 'assetStub_name', 'assetStub_image', 'assetStub_coingeckoId', 'assetStub_incomeFrequency', 'assetStub_coupon'];
+    const headers = ['id', 'date', 'type', 'symbol', 'name', 'qty', 'pricePerUnit', 'cost', 'proceeds', 'realized', 'amount', 'assetId', 'note', 'assetStub_id', 'assetStub_type', 'assetStub_symbol', 'assetStub_name', 'assetStub_image', 'assetStub_coingeckoId', 'assetStub_incomeFrequency', 'assetStub_coupon', 'assetStub_purchaseDate', 'assetStub_nonLiquidYoy', 'assetStub_description'];
     const headerRow = headers.join(',') + '\n';
     const rows = transactions.map(tx => { const rowData = headers.map(header => { if (header.startsWith('assetStub_')) { const key = header.replace('assetStub_', ''); return tx.assetStub ? tx.assetStub[key] : ''; } return tx[header]; }); return rowData.map(formatCsvCell).join(','); }).join('\n');
     const csvContent = headerRow + rows; const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a");
@@ -565,7 +589,10 @@ export default function App() {
                         image: tx.assetStub_image || null,
                         coingeckoId: tx.assetStub_coingeckoId || undefined,
                         incomeFrequency: tx.assetStub_incomeFrequency || 'None',
-                        coupon: toNum(tx.assetStub_coupon || 0)
+                        coupon: toNum(tx.assetStub_coupon || 0),
+                        purchaseDate: tx.assetStub_purchaseDate ? Number(tx.assetStub_purchaseDate) : Date.now(),
+                        nonLiquidYoy: toNum(tx.assetStub_nonLiquidYoy || 0),
+                        description: tx.assetStub_description || ''
                     };
                 }
 
@@ -848,11 +875,11 @@ export default function App() {
                     <div className="grid grid-cols-2 text-center gap-1 w-full">
                         <div className="flex flex-col items-center overflow-hidden w-full">
                             <p className="text-gray-400 text-[11px] sm:text-xs">Cash</p>
-                            <p className="font-semibold text-sm sm:text-base -mt-1 whitespace-nowrap w-full overflow-hidden text-ellipsis">{formatCurrencyCompact(tradingBalance, false, displaySymbol, usdIdr)}</p>
+                            <p className="font-semibold text-sm sm:text-base -mt-1 whitespace-nowrap w-full overflow-hidden text-ellipsis">{formatCurrencyCompactNoSymbol(tradingBalance, false, displaySymbol, usdIdr)}</p>
                         </div>
                         <div className="flex flex-col items-center overflow-hidden w-full">
                             <p className="text-gray-400 text-[11px] sm:text-xs">Invested</p>
-                            <p className="font-semibold text-sm sm:text-base -mt-1 whitespace-nowrap w-full overflow-hidden text-ellipsis">{formatCurrencyCompact(derivedData.totals.marketValueUSD, true, displaySymbol, usdIdr)}</p>
+                            <p className="font-semibold text-sm sm:text-base -mt-1 whitespace-nowrap w-full overflow-hidden text-ellipsis">{formatCurrencyCompactNoSymbol(derivedData.totals.marketValueUSD, true, displaySymbol, usdIdr)}</p>
                         </div>
                     </div>
                     <div className="relative w-full h-4 bg-black/20 rounded-full my-2 flex text-[10px] font-bold text-white items-center">
@@ -893,7 +920,7 @@ export default function App() {
                         return (
                             <div key={w.id} onClick={() => handleWatchedAssetClick({...w, ...data})} className="flex-1 glass-card p-2 flex items-center justify-between cursor-pointer hover:border-white/20 transition-all overflow-hidden min-w-0">
                                 <div className="flex items-center gap-2 min-w-0 pr-2">
-                                    <img src={w.image} alt={w.name} className="w-6 h-6 rounded-full bg-zinc-800 object-cover shrink-0"/>
+                                    <img src={w.image} alt={w.name} className="w-6 h-6 rounded-full bg-zinc-800 object-cover shrink-0" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${w.symbol}&background=random&color=fff&rounded=true&bold=true`; }} />
                                     <div className="min-w-0">
                                         <p className="text-[11px] sm:text-xs font-semibold text-white truncate max-w-[70px] sm:max-w-[100px]">{w.symbol}</p>
                                         <p className="text-[9px] text-gray-400 truncate max-w-[70px] sm:max-w-[100px]">{w.name.replace(/\(.*?\)/,'').trim()}</p>
@@ -928,7 +955,7 @@ export default function App() {
              {assetDisplayAs === 'card' ? (
                 sortedAssets.map(r => {
                     const pnlColor = r.pnlUSD >= 0 ? 'text-emerald-400' : 'text-red-400';
-                    const changeColor = r.change24hPct >= 0 ? 'text-emerald-400' : 'text-red-400';
+                    const changeColor = r.change24hPct >= 0 ? 'textemerald-400' : 'text-red-400';
                     const flashClass = priceFlashes[r.id] === 'up' ? 'flash-up' : priceFlashes[r.id] === 'down' ? 'flash-down' : '';
 
                     return (
@@ -1267,7 +1294,7 @@ const AddAssetForm = ({ searchMode, setSearchMode, query, setQuery, suggestions,
     return ( <div className="space-y-4"> <div className="flex border-b border-white/10">{[{ key: 'stock', label: 'Stock' }, { key:'crypto', label:'Crypto' }, { key:'nonliquid', label: 'Alternative Assets' }].map(item => (<button key={item.key} onClick={() => setSearchMode(item.key)} className={`px-3 py-2 text-sm font-medium ${searchMode === item.key ? 'text-white border-b-2 border-emerald-400' : 'text-gray-400'}`}>{item.label}</button>))}</div> {searchMode !== 'nonliquid' ? ( <div className="space-y-4"> <div className="relative">
       <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search by code or name..." className="w-full rounded bg-zinc-800 px-3 py-2 text-sm outline-none border border-zinc-700 text-white pr-10" />
       {isSearching && <div className="absolute right-3 top-2.5 w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>}
-      {suggestions.length > 0 && <div className="absolute z-50 mt-1 w-full glass-card max-h-56 overflow-auto">{suggestions.map((s, i) => (<div key={i} className="w-full px-3 py-2 text-left hover:bg-white/10 flex items-center gap-3"><button className="flex-1 flex items-center gap-3 text-left overflow-hidden" onClick={() => { setSelectedSuggestion(s); setQuery(s.display); setSuggestions([]); }}><img src={s.image} alt={s.symbol} className="w-6 h-6 rounded-full bg-zinc-700 object-cover shrink-0" onError={(e) => e.target.style.display='none'} /><div className="flex-1 min-w-0"><div className="font-medium text-gray-100 truncate w-full">{s.display}</div><div className="text-xs text-gray-400">{s.exchange || s.source}</div></div></button>
+      {suggestions.length > 0 && <div className="absolute z-50 mt-1 w-full glass-card max-h-56 overflow-auto">{suggestions.map((s, i) => (<div key={i} className="w-full px-3 py-2 text-left hover:bg-white/10 flex items-center gap-3"><button className="flex-1 flex items-center gap-3 text-left overflow-hidden" onClick={() => { setSelectedSuggestion(s); setQuery(s.display); setSuggestions([]); }}><img src={s.image} alt={s.symbol} className="w-6 h-6 rounded-full bg-zinc-700 object-cover shrink-0" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${s.symbol}&background=random&color=fff&rounded=true&bold=true`; }} /><div className="flex-1 min-w-0"><div className="font-medium text-gray-100 truncate w-full">{s.display}</div><div className="text-xs text-gray-400">{s.exchange || s.source}</div></div></button>
         <button onClick={() => handleSetWatchedAsset({ id: s.id, symbol: s.symbol, name: s.display, type: s.type, image: s.image })} className="text-yellow-500 hover:text-yellow-400 p-1 shrink-0"><StarIcon isFilled={watchedAssets.some(w => w.id === s.id)} /></button>
     </div>))}</div>}</div> <div className="grid grid-cols-1 md:grid-cols-2 gap-3"><div><label className="text-xs text-gray-400">Qty</label><input value={shares} onChange={e => handleInputChange('shares', e.target.value)} className="w-full mt-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" type="text" /></div><div><label className="text-xs text-gray-400">Price ({displaySymbol})</label><input value={price} onChange={e => handleInputChange('price', e.target.value)} className="w-full mt-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" type="text" /></div></div> <div><label className="text-xs text-gray-400">Total Value ({displaySymbol})</label><input value={total} onChange={e => handleInputChange('total', e.target.value)} className="w-full mt-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" type="text" /></div> <div className="flex justify-end"><button onClick={() => addAssetWithInitial(shares, price)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 rounded font-semibold">Add Position</button></div> </div> ) : ( 
         <div className="space-y-4"> 
@@ -1511,13 +1538,16 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
 
     const { equityData, sectorData } = useMemo(() => {
         const tradingBalanceUSD = tradingBalance / usdIdr;
-        const colors = ["#10B981", "#60a5fa", "#F97316", "#8B5CF6", "#F59E0B", "#ec4899", "#ef4444"];
+        
+        // Pastel Colors untuk Grafik
+        const colors = ["#86efac", "#93c5fd", "#c4b5fd", "#f9a8d4", "#fdba74", "#fde047", "#fca5a5"];
 
+        // Set Warna Pastel untuk Tiap Sektor
         const secDataMap = {
-            'Cash': { value: tradingBalanceUSD, color: '#38bdf8', icon: <WalletIcon className="w-5 h-5 text-sky-400" /> },
-            'Equity': { value: 0, color: '#10B981', icon: <TrendingUpIcon className="w-5 h-5 text-emerald-400" /> }, 
-            'Crypto': { value: 0, color: '#60a5fa', icon: <CryptoIcon className="w-5 h-5 text-blue-400" /> }, 
-            'Alternative Assets': { value: 0, color: '#F97316', icon: <BuildingIcon className="w-5 h-5 text-orange-400" /> }
+            'Cash': { value: tradingBalanceUSD, color: '#67e8f9', icon: <WalletIcon className="w-5 h-5" style={{color: '#67e8f9'}} /> },
+            'Equity': { value: 0, color: '#86efac', icon: <TrendingUpIcon className="w-5 h-5" style={{color: '#86efac'}} /> }, 
+            'Crypto': { value: 0, color: '#c4b5fd', icon: <CryptoIcon className="w-5 h-5" style={{color: '#c4b5fd'}} /> }, 
+            'Alternative Assets': { value: 0, color: '#fdba74', icon: <BuildingIcon className="w-5 h-5" style={{color: '#fdba74'}} /> }
         }; 
         fullAssetData.forEach(asset => { 
             if (asset.type === 'stock') secDataMap['Equity'].value += asset.marketValueUSD; 
@@ -1544,13 +1574,13 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
         finalEquityData = finalEquityData.map((d, i) => {
             let icon, color;
             if (d.type === 'cash') {
-                icon = <WalletIcon className="w-5 h-5 text-sky-400" />;
-                color = '#38bdf8';
+                icon = <WalletIcon className="w-5 h-5" style={{color: '#67e8f9'}} />;
+                color = '#67e8f9';
             } else if (d.type === 'other') {
-                icon = <MoreVerticalIcon className="w-5 h-5 text-gray-400" />;
-                color = '#64748b';
+                icon = <MoreVerticalIcon className="w-5 h-5" style={{color: '#94a3b8'}} />;
+                color = '#94a3b8';
             } else {
-                icon = <img src={d.image || `https://ui-avatars.com/api/?name=${d.name}&background=random&color=fff&rounded=true`} alt={d.name} className="w-full h-full rounded-full object-cover"/>;
+                icon = <img src={d.image || `https://ui-avatars.com/api/?name=${d.name}&background=random&color=fff&rounded=true`} alt={d.name} className="w-full h-full rounded-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${d.name}&background=random&color=fff&rounded=true&bold=true`; }} />;
                 color = colors[i % colors.length];
             }
             return { ...d, icon, color };
@@ -1592,21 +1622,26 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
                 const valueDisplay = d.value * (displaySymbol === "Rp" ? usdIdr : 1); 
                 return (
                     <div key={d.name} className={`p-2 rounded-lg transition-colors duration-300 ${hoveredSegment === d.name ? 'bg-black/20' : ''}`} onMouseOver={() => setHoveredSegment(d.name)} onMouseOut={() => setHoveredSegment(null)}>
-                        <div className="flex justify-between items-center text-xs sm:text-sm min-w-0">
-                            <div className="flex items-center gap-2 sm:gap-3 w-1/2 min-w-0 pr-2">
-                                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-zinc-800/80 flex items-center justify-center font-bold text-white text-xs flex-shrink-0">
-                                    {d.icon}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="font-semibold text-white truncate w-full">{d.name}</div>
-                                    <div className="text-[10px] sm:text-xs text-gray-400 truncate w-full">{formatCurrency(valueDisplay, false, displaySymbol, 1)}</div>
-                                </div>
+                        <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm min-w-0">
+                            {/* Kiri: Logo Utuh Vertikal */}
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-zinc-800/80 flex items-center justify-center font-bold text-white text-xs flex-shrink-0 border border-white/5">
+                                {d.icon}
                             </div>
-                            <div className="flex items-center gap-2 w-1/2 shrink-0">
-                                <div className="w-full bg-zinc-700 rounded-full h-1.5 flex-grow">
-                                    <div className="h-1.5 rounded-full" style={{ width: `${percentage}%`, backgroundColor: d.color }}></div>
+                            
+                            {/* Kanan: Nama, Rp, % (Atas) & Bar (Bawah) */}
+                            <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                {/* Baris Atas */}
+                                <div className="flex justify-between items-baseline w-full mb-1.5">
+                                    <div className="flex items-baseline gap-2 truncate pr-2">
+                                        <span className="font-semibold text-white truncate text-sm">{d.name}</span>
+                                        <span className="text-[10px] sm:text-xs text-gray-400 truncate">{formatCurrency(valueDisplay, false, displaySymbol, 1)}</span>
+                                    </div>
+                                    <span className="text-white font-bold text-[10px] sm:text-xs shrink-0">{percentage.toFixed(1)}%</span>
                                 </div>
-                                <div className="text-white font-semibold text-[10px] sm:text-xs w-10 sm:w-12 text-right">{percentage.toFixed(1)}%</div>
+                                {/* Baris Bawah (Progress Bar) */}
+                                <div className="w-full bg-zinc-700/50 rounded-full h-1.5 sm:h-2 overflow-hidden">
+                                    <div className="h-full rounded-full transition-all duration-500" style={{ width: `${percentage}%`, backgroundColor: d.color }}></div>
+                                </div>
                             </div>
                         </div>
                     </div>); 
@@ -1670,3 +1705,5 @@ const AssetTableView = ({ rows, displaySymbol, usdIdr, onRowClick }) => {
         </div>
     );
 }
+
+
