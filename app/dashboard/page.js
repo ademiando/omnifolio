@@ -874,12 +874,12 @@ export default function App() {
                 <div onClick={() => setIsAllocationModalOpen(true)} className="glass-card p-2.5 sm:p-4 shadow-lg flex flex-col justify-center cursor-pointer hover:border-white/20 transition-all min-w-0">
                     <div className="grid grid-cols-2 text-center gap-1 w-full">
                         <div className="flex flex-col items-center overflow-hidden w-full">
-                            <p className="text-gray-400 text-[11px] sm:text-xs">Cash</p>
-                            <p className="font-semibold text-sm sm:text-base -mt-1 whitespace-nowrap w-full overflow-hidden text-ellipsis">{formatCurrencyCompactNoSymbol(tradingBalance, false, displaySymbol, usdIdr)}</p>
+                            <p className="text-gray-400 text-[11px] sm:text-xs mb-1">Cash</p>
+                            <p className="font-semibold text-sm sm:text-base whitespace-nowrap w-full overflow-hidden text-ellipsis">{formatCurrencyCompactNoSymbol(tradingBalance, false, displaySymbol, usdIdr)}</p>
                         </div>
                         <div className="flex flex-col items-center overflow-hidden w-full">
-                            <p className="text-gray-400 text-[11px] sm:text-xs">Invested</p>
-                            <p className="font-semibold text-sm sm:text-base -mt-1 whitespace-nowrap w-full overflow-hidden text-ellipsis">{formatCurrencyCompactNoSymbol(derivedData.totals.marketValueUSD, true, displaySymbol, usdIdr)}</p>
+                            <p className="text-gray-400 text-[11px] sm:text-xs mb-1">Invested</p>
+                            <p className="font-semibold text-sm sm:text-base whitespace-nowrap w-full overflow-hidden text-ellipsis">{formatCurrencyCompactNoSymbol(derivedData.totals.marketValueUSD, true, displaySymbol, usdIdr)}</p>
                         </div>
                     </div>
                     <div className="relative w-full h-4 bg-black/20 rounded-full my-2 flex text-[10px] font-bold text-white items-center">
