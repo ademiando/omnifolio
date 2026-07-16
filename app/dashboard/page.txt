@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 /* ===================== Icons (Modern & Professional) ===================== */
-const UserAvatar = () => (<svg width="30" height="30" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#374151"></circle><path d="M12 14c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4zm0-2c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z" fill="#9CA3AF"></path></svg>);
+const UserAvatar = () => (<svg width="26" height="26" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#374151"></circle><path d="M12 14c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4zm0-2c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z" fill="#9CA3AF"></path></svg>);
 const MoreVerticalIcon = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>);
 const ArrowRightIconSimple = () => (<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"></polyline></svg>);
 const TrashIcon = ({className}) => (<svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path></svg>);
@@ -13,8 +13,8 @@ const InfoIcon = ({className}) => <svg className={className} width="1em" height=
 const FullscreenIcon = ({className}) => (<svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>);
 const ExitFullscreenIcon = ({ className }) => (<svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 0-2-2h-3M3 16h3a2 2 0 0 0 2 2v3"/></svg>);
 const PencilIcon = (props) => (<svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>);
-const AvgProfitIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20V16"/></svg>;
-const AvgLossIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4v10"/><path d="M18 4v16"/><path d="M6 4v8"/></svg>;
+const AvgProfitIcon = ({className}) => <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20V16"/></svg>;
+const AvgLossIcon = ({className}) => <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4v10"/><path d="M18 4v16"/><path d="M6 4v8"/></svg>;
 const SearchIcon = (props) => (<svg {...props} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" ><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>);
 const StarIcon = ({ isFilled, ...props }) => (<svg {...props} width="20" height="20" viewBox="0 0 24 24" fill={isFilled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>);
 
@@ -24,25 +24,26 @@ const TrendingUpIcon = ({className}) => (<svg className={className} viewBox="0 0
 const BuildingIcon = ({className}) => (<svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><path d="M9 22v-4h6v4"></path><path d="M8 6h.01"></path><path d="M16 6h.01"></path><path d="M12 6h.01"></path><path d="M12 10h.01"></path><path d="M12 14h.01"></path><path d="M16 10h.01"></path><path d="M16 14h.01"></path><path d="M8 10h.01"></path><path d="M8 14h.01"></path></svg>);
 const CryptoIcon = ({className}) => (<svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 19 9 12 22 5 9 12 2"></polygon><polyline points="5 9 12 13 19 9"></polyline><line x1="12" y1="2" x2="12" y2="22"></line></svg>);
 
-/* ===================== Config & Proxy API ===================== */
+/* ===================== Config & Helpers ===================== */
 const COINGECKO_API = "https://api.coingecko.com/api/v3";
-const YAHOO_SEARCH_API = (q) => `https://api.allorigins.win/get?url=${encodeURIComponent(`https://query2.finance.yahoo.com/v1/finance/search?q=${q}`)}`;
-const YAHOO_SPARK_API = (symbols) => `https://api.allorigins.win/get?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v7/finance/spark?symbols=${symbols.join(',')}`)}`;
 const COINGECKO_MARKETS = (ids) => `${COINGECKO_API}/coins/markets?vs_currency=usd&ids=${encodeURIComponent(ids)}&price_change_percentage=24h`;
 
 const isBrowser = typeof window !== "undefined";
 const toNum = (v) => { const n = Number(String(v).replace(/,/g, '').replace(/\s/g,'')); return isNaN(n) ? 0 : n; };
 
-// Aman dari error iframe security
+// Fast fetcher
+const fetchWithTimeout = async (url, options = {}, timeout = 5000) => {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(id);
+    return response;
+};
+
 const safeGetStorage = (key, fallback) => {
     if (!isBrowser) return fallback;
-    try {
-        const val = localStorage.getItem(key);
-        return val !== null ? val : fallback;
-    } catch (e) {
-        console.warn("Storage access denied, using memory only.");
-        return fallback;
-    }
+    try { const val = localStorage.getItem(key); return val !== null ? val : fallback; } 
+    catch (e) { return fallback; }
 };
 const safeSetStorage = (key, value) => {
     if (!isBrowser) return;
@@ -64,7 +65,6 @@ function formatCurrency(value, valueIsUSD, displaySymbol, usdIdr) {
   const sign = displayValue < 0 ? '-' : '';
   const prefix = isRupiah ? 'Rp ' : '$';
 
-  // Format T dan B mulai dari 10 Miliar ke atas (10 B atau lebih / 11 digit)
   if (absNum >= 1e12) {
       const numStr = parseFloat((absNum / 1e12).toFixed(2)).toString();
       return `${sign}${prefix}${isRupiah ? numStr.replace('.', ',') : numStr} T`;
@@ -99,7 +99,7 @@ function formatCurrencyCompact(value, valueIsUSD, displaySymbol, usdIdr) {
 
   const formatNum = (num, divisor) => {
       let str = (num / divisor).toFixed(2);
-      str = parseFloat(str).toString(); // Menghilangkan 00 desimal di belakang koma jika genap
+      str = parseFloat(str).toString(); 
       return isRupiah ? str.replace('.', ',') : str;
   };
 
@@ -134,7 +134,6 @@ function formatCurrencyCompactNoSymbol(value, valueIsUSD, displaySymbol, usdIdr)
 
   return new Intl.NumberFormat(isRupiah ? 'id-ID' : 'en-US', { style: 'decimal', minimumFractionDigits: isRupiah ? 0 : 2, maximumFractionDigits: isRupiah ? 0 : 2 }).format(displayValue);
 }
-
 
 function formatQty(v) {
   const n = Number(v || 0);
@@ -191,7 +190,7 @@ const BottomSheet = ({ isOpen, onClose, children }) => {
 
 /* ===================== Main Component ===================== */
 export default function App() {
-  const STORAGE_VERSION = "v38"; 
+  const STORAGE_VERSION = "v42"; 
   
   const [assets, setAssets] = useState(() => JSON.parse(safeGetStorage(`pf_assets_${STORAGE_VERSION}`, "[]")).map(ensureNumericAsset));
   const [transactions, setTransactions] = useState(() => JSON.parse(safeGetStorage(`pf_transactions_${STORAGE_VERSION}`, "[]")));
@@ -220,7 +219,7 @@ export default function App() {
   }, []);
   
   const defaultWatched = [
-      { id: 'QQQ', symbol: 'NASDAQ', name: 'Nasdaq 100 (QQQ)', type: 'stock', image: 'https://s3-symbol-logo.tradingview.com/indices/nasdaq-100.svg' },
+      { id: 'QQQ', symbol: 'NASDAQ', name: 'Nasdaq 100 (QQQ)', type: 'stock', image: 'https://s3-symbol-logo.tradingview.com/nasdaq--big.svg' },
       { id: 'bitcoin', symbol: 'BTC', name: 'Bitcoin', type: 'crypto', image: 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png' }
   ];
   const [watchedAssets, setWatchedAssets] = useState(() => JSON.parse(safeGetStorage(`pf_watched_assets_${STORAGE_VERSION}`, JSON.stringify(defaultWatched))));
@@ -257,10 +256,19 @@ export default function App() {
     for (const tx of sortedTxs) {
       if (tx.type === 'deposit') { tradingBalance += tx.amount; totalDeposits += tx.amount; continue; }
       if (tx.type === 'withdraw') { tradingBalance -= tx.amount; totalWithdrawals += tx.amount; continue; }
+      
       const assetId = tx.assetId || `${tx.assetStub.type}:${tx.assetStub.symbol}`;
-      if (!newAssets[assetId]) { newAssets[assetId] = ensureNumericAsset({ ...tx.assetStub, shares: 0, investedUSD: 0, avgPrice: 0 }); }
+      if (!newAssets[assetId]) { 
+          newAssets[assetId] = ensureNumericAsset({ ...tx.assetStub, shares: 0, investedUSD: 0, avgPrice: 0 }); 
+          newAssets[assetId].purchaseDate = tx.date;
+      }
+      
       const asset = newAssets[assetId];
       if (tx.type === 'buy') {
+        if (tx.date < asset.purchaseDate) {
+            asset.purchaseDate = tx.date;
+        }
+
         tradingBalance -= tx.cost * usdIdr; const totalInvested = asset.investedUSD + tx.cost; const totalShares = asset.shares + tx.qty;
         asset.investedUSD = totalInvested; asset.shares = totalShares; asset.avgPrice = totalShares > 0 ? totalInvested / totalShares : 0;
       } else if (tx.type === 'sell' || tx.type === 'delete') {
@@ -287,6 +295,7 @@ export default function App() {
   useEffect(() => { safeSetStorage(`pf_price_history_${STORAGE_VERSION}`, JSON.stringify(priceHistory)); }, [priceHistory]);
   useEffect(() => { safeSetStorage(`pf_asset_display_as_${STORAGE_VERSION}`, assetDisplayAs); }, [assetDisplayAs]);
 
+  // Realtime Polling Optimizations
   useEffect(() => {
     const pollPrices = async () => {
       try {
@@ -296,7 +305,7 @@ export default function App() {
               setUsdIdr(dataIdr.tether.idr);
               safeSetStorage(`pf_usd_idr_rate_${STORAGE_VERSION}`, dataIdr.tether.idr.toString());
           }
-      } catch (e) { console.error("Polling IDR rate failed", e); }
+      } catch (e) {}
 
       if (assets.length === 0 && watchedAssets.length === 0) return;
 
@@ -313,10 +322,28 @@ export default function App() {
       
       if (allStockSymbols.length > 0) {
         try {
-            const res = await fetch(YAHOO_SPARK_API(allStockSymbols));
-            const wrapper = await res.json();
-            const data = JSON.parse(wrapper.contents); 
-            const spark = data?.spark?.result || [];
+            const url = `https://query1.finance.yahoo.com/v7/finance/spark?symbols=${allStockSymbols.join(',')}`;
+            let spark = [];
+            
+            try {
+                const res = await fetch(url);
+                if(!res.ok) throw new Error('Direct fail');
+                const data = await res.json();
+                spark = data?.spark?.result || [];
+            } catch(e0) {
+                try {
+                    const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+                    if(!res.ok) throw new Error('Raw fail');
+                    const data = await res.json();
+                    spark = data?.spark?.result || [];
+                } catch(e1) {
+                    try {
+                        const res = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`);
+                        const data = await res.json();
+                        spark = data?.spark?.result || [];
+                    } catch (e2) {}
+                }
+            }
             
             spark.forEach(item => {
                 const sym = item.symbol;
@@ -413,7 +440,7 @@ export default function App() {
       try {
         const q = query.trim();
         if (searchMode === 'crypto') {
-          const res = await fetch(`${COINGECKO_API}/search?query=${encodeURIComponent(q)}`);
+          const res = await fetchWithTimeout(`${COINGECKO_API}/search?query=${encodeURIComponent(q)}`, {}, 5000);
           if (!res.ok) throw new Error('Search API failed');
           const j = await res.json();
           setSuggestions((j.coins || []).slice(0, 10).map(c => ({ 
@@ -421,29 +448,60 @@ export default function App() {
               image: c.thumb, source: "coingecko", type: "crypto" 
           })));
         } else {
-          const res = await fetch(YAHOO_SEARCH_API(q));
-          if (!res.ok) throw new Error('Search API failed');
-          const wrapper = await res.json();
-          const j = JSON.parse(wrapper.contents);
-          
-          setSuggestions((j.quotes || []).filter(it => it.shortname || it.longname).map(it => ({ 
-              symbol: it.symbol.toUpperCase(), 
-              display: `${it.shortname || it.longname} (${it.symbol.toUpperCase()})`, 
-              exchange: it.exchange, 
-              id: it.symbol.toUpperCase(), 
-              source: "yahoo", 
-              type: "stock", 
-              image: `https://assets.parqet.com/logos/symbol/${it.symbol.toUpperCase()}?format=png`
-          })).slice(0, 10));
+            let results = [];
+            const yahooSearchUrl = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=10&newsCount=0`;
+            
+            try {
+                let data;
+                try {
+                    const res = await fetchWithTimeout(yahooSearchUrl, {}, 2000);
+                    if (res.ok) data = await res.json();
+                    else throw new Error('Direct failed');
+                } catch(e0) {
+                    try {
+                        const res = await fetchWithTimeout(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(yahooSearchUrl)}`, {}, 3000);
+                        if (res.ok) data = await res.json();
+                        else throw new Error('Codetabs failed');
+                    } catch(e1) {
+                        const res = await fetchWithTimeout(`https://api.allorigins.win/raw?url=${encodeURIComponent(yahooSearchUrl)}`, {}, 4000);
+                        if (res.ok) data = await res.json();
+                    }
+                }
+
+                if (data && data.quotes) {
+                    results = data.quotes
+                        .filter(it => ['EQUITY', 'ETF', 'MUTUALFUND', 'INDEX'].includes(it.quoteType))
+                        .map(it => {
+                            const isIndo = it.symbol.endsWith('.JK');
+                            const cleanSymbol = it.symbol.replace('.JK', '');
+                            const imgUrl = isIndo 
+                                ? `https://assets.stockbit.com/logos/companies/${cleanSymbol}.png` 
+                                : `https://assets.parqet.com/logos/symbol/${it.symbol}?format=png`;
+                            return {
+                                symbol: it.symbol,
+                                display: `${it.shortname || it.longname || it.symbol} (${it.symbol})`,
+                                exchange: it.exchDisp || it.exchange,
+                                id: it.symbol,
+                                source: "yahoo",
+                                type: "stock",
+                                image: imgUrl
+                            };
+                        });
+                }
+            } catch (e) {
+                console.error("Stock search failed:", e);
+            }
+            
+            setSuggestions(results.slice(0, 10));
         }
-      } catch (e) { console.error("Search failed:", e); setSuggestions([]); } finally { setIsSearching(false); }
-    }, 600); 
+      } catch (e) { console.error("Semua metode pencarian gagal:", e); setSuggestions([]); } finally { setIsSearching(false); }
+    }, 300); 
     return () => clearTimeout(searchTimeoutRef.current);
   }, [query, searchMode]);
 
   const addTransaction = (tx) => setTransactions(prev => [...prev, tx]);
   
-  const handleBuy = (assetStub, qty, priceUSD) => {
+  const handleBuy = (assetStub, qty, priceUSD, overrideDate) => {
     qty = toNum(qty); priceUSD = toNum(priceUSD);
     if (qty <= 0 || priceUSD < 0) { alert("Quantity must be greater than zero and price cannot be negative."); return false; }
     const costUSD = qty * priceUSD;
@@ -458,7 +516,9 @@ export default function App() {
     }
     
     const assetId = assetStub.id || `${assetStub.type}:${assetStub.symbol}`;
-    addTransaction({ id: `tx:${Date.now()}`, type: "buy", qty, pricePerUnit: priceUSD, cost: costUSD, date: assetStub.purchaseDate || Date.now(), symbol: assetStub.symbol, name: assetStub.name || assetStub.symbol, assetId, assetStub });
+    const txDate = overrideDate || assetStub.purchaseDate || Date.now();
+    
+    addTransaction({ id: `tx:${Date.now()}`, type: "buy", qty, pricePerUnit: priceUSD, cost: costUSD, date: txDate, symbol: assetStub.symbol, name: assetStub.name || assetStub.symbol, assetId, assetStub });
     if (isAssetDetailModalOpen) setAssetDetailModalOpen(false); return true;
   };
 
@@ -467,14 +527,14 @@ export default function App() {
     if (!asset || qty <= 0 || priceUSD < 0) { alert("Quantity must be > 0 and price >= 0"); return false; }
     if (qty > asset.shares) { alert("Cannot sell more than you own."); return false; }
     const proceedsUSD = qty * priceUSD; const costOfSold = qty * asset.avgPrice; const realized = proceedsUSD - costOfSold;
-    addTransaction({ id: `tx:${Date.now()}`, assetId: asset.id, type: "sell", qty, pricePerUnit: priceUSD, proceeds: proceedsUSD, costOfSold, realized, date: Date.now(), symbol: asset.symbol, name: asset.name });
+    addTransaction({ id: `tx:${Date.now()}`, assetId: asset.id, type: "sell", qty, pricePerUnit: priceUSD, proceeds: proceedsUSD, costOfSold, realized, date: Date.now(), symbol: asset.symbol, name: asset.name, image: asset.image });
     if (isAssetDetailModalOpen) setAssetDetailModalOpen(false); return true;
   };
 
   const handleDeleteAsset = (asset) => {
     if (!asset || !confirm(`Delete and liquidate ${asset.symbol} at market price?`)) return;
     const marketUSD = asset.shares * asset.lastPriceUSD; const realized = marketUSD - asset.investedUSD;
-    addTransaction({ id: `tx:${Date.now()}`, assetId: asset.id, type: "delete", qty: asset.shares, pricePerUnit: asset.lastPriceUSD, proceeds: marketUSD, costOfSold: asset.investedUSD, realized, date: Date.now(), symbol: asset.symbol, name: asset.name, note: "liquidated" });
+    addTransaction({ id: `tx:${Date.now()}`, assetId: asset.id, type: "delete", qty: asset.shares, pricePerUnit: asset.lastPriceUSD, proceeds: marketUSD, costOfSold: asset.investedUSD, realized, date: Date.now(), symbol: asset.symbol, name: asset.name, image: asset.image, note: "liquidated" });
     setAssetDetailModalOpen(false);
   };
   
@@ -501,20 +561,22 @@ export default function App() {
     const priceUSD = nlPriceCcy === 'IDR' ? priceIn / usdIdr : priceIn;
     const couponNominal = toNum(nlCoupon);
     const couponUSD = nlPriceCcy === 'IDR' ? couponNominal / usdIdr : couponNominal;
+    
+    const truePurchaseDate = nlPurchaseDate ? new Date(nlPurchaseDate).getTime() : Date.now();
 
     const newAssetStub = { 
         id: `nonliquid:${name.replace(/\s/g,'_')}`, 
         type: 'nonliquid', 
         symbol: name.slice(0,8).toUpperCase(), 
         name, 
-        purchaseDate: nlPurchaseDate ? new Date(nlPurchaseDate).getTime() : Date.now(), 
+        purchaseDate: truePurchaseDate, 
         nonLiquidYoy: toNum(nlYoy), 
         coupon: couponUSD, 
         incomeFrequency: nlIncomeFreq,
         description: nlDesc 
     };
     
-    if (handleBuy(newAssetStub, qty, priceUSD)) { 
+    if (handleBuy(newAssetStub, qty, priceUSD, truePurchaseDate)) { 
         setAddAssetModalOpen(false); setNlName(''); setNlQty(''); setNlPrice(''); setNlPurchaseDate(''); setNlCoupon(''); setNlYoy(''); setNlDesc(''); setNlIncomeFreq('None'); 
     }
   };
@@ -534,12 +596,40 @@ export default function App() {
   
   const handleExport = () => {
     if (transactions.length === 0) { alert("No transactions to export."); return; }
-    const formatCsvCell = (cellData) => { const stringData = String(cellData ?? ''); if (stringData.includes(',') || stringData.includes('"') || stringData.includes('\n')) { return `"${stringData.replace(/"/g, '""')}"`; } return stringData; };
+    
+    const formatCsvCell = (cellData) => { 
+        if (cellData === null || cellData === undefined) return '';
+        const stringData = String(cellData); 
+        if (stringData.includes(',') || stringData.includes('"') || stringData.includes('\n')) { 
+            return `"${stringData.replace(/"/g, '""')}"`; 
+        } 
+        return stringData; 
+    };
+
     const headers = ['id', 'date', 'type', 'symbol', 'name', 'qty', 'pricePerUnit', 'cost', 'proceeds', 'realized', 'amount', 'assetId', 'note', 'assetStub_id', 'assetStub_type', 'assetStub_symbol', 'assetStub_name', 'assetStub_image', 'assetStub_coingeckoId', 'assetStub_incomeFrequency', 'assetStub_coupon', 'assetStub_purchaseDate', 'assetStub_nonLiquidYoy', 'assetStub_description'];
     const headerRow = headers.join(',') + '\n';
-    const rows = transactions.map(tx => { const rowData = headers.map(header => { if (header.startsWith('assetStub_')) { const key = header.replace('assetStub_', ''); return tx.assetStub ? tx.assetStub[key] : ''; } return tx[header]; }); return rowData.map(formatCsvCell).join(','); }).join('\n');
+    
+    const rows = transactions.map(tx => { 
+        return headers.map(header => { 
+            let val;
+            if (header.startsWith('assetStub_')) { 
+                const key = header.replace('assetStub_', ''); 
+                val = tx.assetStub ? tx.assetStub[key] : ''; 
+            } else {
+                val = tx[header];
+            }
+
+            if (header === 'date' || header === 'assetStub_purchaseDate') {
+                if (val && typeof val === 'number') {
+                    val = new Date(val).toISOString();
+                }
+            }
+            return formatCsvCell(val);
+        }).join(','); 
+    }).join('\n');
+    
     const csvContent = headerRow + rows; const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a");
-    if (link.download !== undefined) { const url = URL.createObjectURL(blob); link.setAttribute("href", url); link.setAttribute("download", `transactions_${new Date().toISOString().split('T')[0]}.csv`); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
+    if (link.download !== undefined) { const url = URL.createObjectURL(blob); link.setAttribute("href", url); link.setAttribute("download", `portfolio_transactions_${new Date().toISOString().split('T')[0]}.csv`); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
     setManagePortfolioOpen(false);
   };
 
@@ -559,9 +649,7 @@ export default function App() {
             
             const firstLine = lines[0];
             let delimiter = ',';
-            if (firstLine.includes('\t')) {
-                delimiter = '\t';
-            }
+            if (firstLine.includes('\t')) delimiter = '\t';
 
             const headers = firstLine.split(delimiter).map(h => h.trim().replace(/^"|"$/g, ''));
             
@@ -575,8 +663,18 @@ export default function App() {
 
                 const tx = {};
                 headers.forEach((header, idx) => {
-                    if (values[idx] !== undefined) {
+                    if (values[idx] !== undefined && values[idx] !== '') {
                         tx[header] = values[idx];
+                    }
+                });
+
+                ['date', 'assetStub_purchaseDate'].forEach(dateField => {
+                    if (tx[dateField]) {
+                        if (typeof tx[dateField] === 'string' && tx[dateField].includes('T')) {
+                            tx[dateField] = new Date(tx[dateField]).getTime();
+                        } else {
+                            tx[dateField] = toNum(tx[dateField]); 
+                        }
                     }
                 });
 
@@ -590,7 +688,7 @@ export default function App() {
                         coingeckoId: tx.assetStub_coingeckoId || undefined,
                         incomeFrequency: tx.assetStub_incomeFrequency || 'None',
                         coupon: toNum(tx.assetStub_coupon || 0),
-                        purchaseDate: tx.assetStub_purchaseDate ? Number(tx.assetStub_purchaseDate) : Date.now(),
+                        purchaseDate: tx.assetStub_purchaseDate || tx.date || Date.now(),
                         nonLiquidYoy: toNum(tx.assetStub_nonLiquidYoy || 0),
                         description: tx.assetStub_description || ''
                     };
@@ -600,7 +698,7 @@ export default function App() {
                     if (key.startsWith('assetStub_')) delete tx[key];
                 });
 
-                const numericFields = ['date', 'qty', 'pricePerUnit', 'cost', 'proceeds', 'realized', 'amount'];
+                const numericFields = ['qty', 'pricePerUnit', 'cost', 'proceeds', 'realized', 'amount'];
                 numericFields.forEach(field => {
                     if (tx[field] !== undefined) {
                         tx[field] = toNum(tx[field]);
@@ -643,7 +741,6 @@ export default function App() {
               const img = new Image();
               img.onload = () => {
                   const canvas = document.createElement('canvas');
-                  // Compress & Resize for robust LocalStorage storage
                   const MAX_WIDTH = 400; 
                   const MAX_HEIGHT = 400;
                   let width = img.width;
@@ -660,7 +757,6 @@ export default function App() {
                   const ctx = canvas.getContext('2d');
                   ctx.drawImage(img, 0, 0, width, height);
 
-                  // Convert to optimized JPEG (quality 0.8)
                   const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
                   
                   setProfilePic(dataUrl);
@@ -681,14 +777,12 @@ export default function App() {
             const purchaseTime = a.purchaseDate || a.createdAt || Date.now();
             const nowTime = Date.now();
             
-            // 1. YoY Gain (Fractional/Exact Years Passed for precise calculation)
             const exactYearsPassed = Math.max(0, (nowTime - purchaseTime) / (1000 * 60 * 60 * 24 * 365.25));
             
             const initialPrice = a.avgPrice || 0;
             const currentPrice = initialPrice * (1 + ((a.nonLiquidYoy || 0) / 100) * exactYearsPassed);
             const capitalValueUSD = a.shares * currentPrice;
             
-            // 2. Income Calculation based on fixed nominal per frequency
             let accumulatedCouponUSD = 0;
             let nextIncomeDate = null;
             const freq = a.incomeFrequency || 'None';
@@ -703,7 +797,6 @@ export default function App() {
 
                 let tempDate = new Date(purchaseTime);
                 
-                // Hitung periode berlalu berdasarkan penambahan bulan
                 while(true) {
                     tempDate.setMonth(tempDate.getMonth() + monthsPerPeriod);
                     if (tempDate.getTime() <= nowTime) {
@@ -714,7 +807,6 @@ export default function App() {
                     }
                 }
                 
-                // Sesuai nominal yg diinput * qty, TANPA dipengaruhi harga beli (Invested)
                 const incomePerPeriod = a.coupon * a.shares; 
                 accumulatedCouponUSD = validPeriods * incomePerPeriod;
             }
@@ -737,13 +829,30 @@ export default function App() {
     const unrealizedPnlUSD = marketValueUSD - investedUSD;
     const unrealizedPnlPct = investedUSD > 0 ? (unrealizedPnlUSD / investedUSD) * 100 : 0;
     const totalEquity = (marketValueUSD * usdIdr) + tradingBalance;
+    
+    // Perbaikan Logika Win/Loss dengan lebih presisi
     const sells = transactions.filter(tx => tx.type === 'sell' || tx.type === 'delete');
-    const wins = sells.filter(tx => tx.realized > 0); const losses = sells.filter(tx => tx.realized <= 0);
-    const tradeStats = { trades: sells.length, wins: wins.length, losses: losses.length, winRate: sells.length > 0 ? (wins.length / sells.length) * 100 : 0, maxProfit: wins.length ? Math.max(0, ...wins.map(tx => tx.realized)) : 0, maxLoss: losses.length ? Math.min(0, ...losses.map(tx => tx.realized)) : 0, avgProfit: wins.length ? wins.reduce((s, tx) => s + tx.realized, 0) / wins.length : 0, avgLoss: losses.length ? losses.reduce((s, tx) => s + tx.realized, 0) / losses.length : 0, totalRealizedGain: realizedUSD };
+    const wins = sells.filter(tx => tx.realized > 0); 
+    const losses = sells.filter(tx => tx.realized < 0);
+    const totalTrades = sells.length;
+    
+    const tradeStats = { 
+        trades: totalTrades, 
+        wins: wins.length, 
+        losses: losses.length, 
+        winRate: totalTrades > 0 ? (wins.length / totalTrades) * 100 : 0, 
+        maxProfit: wins.length ? Math.max(...wins.map(tx => tx.realized)) : 0, 
+        maxLoss: losses.length ? Math.min(...losses.map(tx => tx.realized)) : 0, 
+        avgProfit: wins.length ? wins.reduce((s, tx) => s + tx.realized, 0) / wins.length : 0, 
+        avgLoss: losses.length ? losses.reduce((s, tx) => s + tx.realized, 0) / losses.length : 0, 
+        totalRealizedGain: realizedUSD 
+    };
+    
     const netDeposit = totalDeposits - totalWithdrawals; const totalPnlUSD = unrealizedPnlUSD + realizedUSD;
     const totalValueForBreakdown = tradingBalance + (marketValueUSD * usdIdr);
     const cashPct = totalValueForBreakdown > 0 ? (tradingBalance / totalValueForBreakdown) * 100 : 0;
     const investedPct = totalValueForBreakdown > 0 ? ((marketValueUSD * usdIdr) / totalValueForBreakdown) * 100 : 0;
+    
     return { rows, totals: { investedUSD, marketValueUSD, unrealizedPnlUSD, unrealizedPnlPct }, totalEquity, tradeStats, netDeposit, totalPnlUSD, cashPct, investedPct };
   }, [assets, tradingBalance, realizedUSD, totalDeposits, totalWithdrawals, transactions, usdIdr]);
 
@@ -754,7 +863,6 @@ export default function App() {
     return assetsToSort;
   }, [derivedData.rows, assetSortBy]);
 
-  // Realtime Equity Chart Mapping
   const equitySeries = useMemo(() => {
     const sortedTx = [...transactions].sort((a, b) => a.date - b.date);
     if (sortedTx.length === 0) return [{ t: Date.now() - 86400000, v: 0 }, { t: Date.now(), v: 0 }];
@@ -784,7 +892,6 @@ export default function App() {
         points.push({ t: tx.date, v: currentCash + (holdingsValueUSD * usdIdr) });
     }
     if (points.length === 0) return [{ t: Date.now() - 86400000, v: 0 }, { t: Date.now(), v: derivedData.totalEquity }];
-    // Ensure the last point tracks exactly up to current time with current realtime totalEquity
     return [{ t: points[0].t - 86400000, v: 0 }, ...points, { t: Date.now(), v: derivedData.totalEquity }];
   }, [transactions, assets, usdIdr, derivedData.totalEquity]);
 
@@ -804,7 +911,6 @@ export default function App() {
     setAssetDetailModalOpen(true);
   };
 
-  // Kalkulasi ukuran kelas teks untuk total equity secara dinamis berdasarkan panjang string nominal
   const totalEquityFontSizeClass = useMemo(() => {
     const textFormatted = formatCurrency(derivedData.totalEquity, false, displaySymbol, usdIdr);
     const length = textFormatted.length;
@@ -824,6 +930,7 @@ export default function App() {
         .flash-up { animation: flash-green 0.7s ease-out; }
         .flash-down { animation: flash-red 0.7s ease-out; }
         .tradingview-widget-container:fullscreen { background-color: #131722; }
+        .tradingview-widget-copyright { display: none !important; opacity: 0 !important; visibility: hidden !important; }
       `}</style>
       <div className="max-w-4xl mx-auto">
         <header className="p-4 flex justify-end items-center sticky top-0 bg-[#000000] z-10 w-full">
@@ -834,7 +941,7 @@ export default function App() {
                 
                 <button onClick={() => setProfileMenuOpen(true)} className="flex items-center justify-center outline-none">
                     {profilePic ? (
-                        <img src={profilePic} alt="Profile" className="w-[30px] h-[30px] rounded-full object-cover border border-white/20" />
+                        <img src={profilePic} alt="Profile" className="w-[26px] h-[26px] rounded-full object-cover border border-white/20" />
                     ) : (
                         <UserAvatar />
                     )}
@@ -883,10 +990,10 @@ export default function App() {
                         </div>
                     </div>
                     <div className="relative w-full h-4 bg-black/20 rounded-full my-2 flex text-[10px] font-bold text-white items-center">
-                        <div className="bg-sky-500 h-full flex items-center justify-center rounded-l-full overflow-hidden" style={{ width: `${derivedData.cashPct}%` }}>
+                        <div className="bg-blue-500 h-full flex items-center justify-center rounded-l-full overflow-hidden" style={{ width: `${derivedData.cashPct}%` }}>
                             {derivedData.cashPct > 15 && `${derivedData.cashPct.toFixed(0)}%`}
                         </div>
-                        <div className="bg-teal-500 h-full flex items-center justify-center rounded-r-full overflow-hidden" style={{ width: `${derivedData.investedPct}%` }}>
+                        <div className="bg-emerald-500 h-full flex items-center justify-center rounded-r-full overflow-hidden" style={{ width: `${derivedData.investedPct}%` }}>
                             {derivedData.investedPct > 15 && `${derivedData.investedPct.toFixed(0)}%`}
                         </div>
                     </div>
@@ -920,7 +1027,7 @@ export default function App() {
                         return (
                             <div key={w.id} onClick={() => handleWatchedAssetClick({...w, ...data})} className="flex-1 glass-card p-2 flex items-center justify-between cursor-pointer hover:border-white/20 transition-all overflow-hidden min-w-0">
                                 <div className="flex items-center gap-2 min-w-0 pr-2">
-                                    <img src={w.image} alt={w.name} className="w-6 h-6 rounded-full bg-zinc-800 object-cover shrink-0" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${w.symbol}&background=random&color=fff&rounded=true&bold=true`; }} />
+                                    <img src={w.image} alt={w.name} className="w-5 h-5 rounded-full bg-zinc-800 object-cover shrink-0 border border-white/5" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${w.symbol}&background=random&color=fff&rounded=true&bold=true`; }} />
                                     <div className="min-w-0">
                                         <p className="text-[11px] sm:text-xs font-semibold text-white truncate max-w-[70px] sm:max-w-[100px]">{w.symbol}</p>
                                         <p className="text-[9px] text-gray-400 truncate max-w-[70px] sm:max-w-[100px]">{w.name.replace(/\(.*?\)/,'').trim()}</p>
@@ -955,33 +1062,38 @@ export default function App() {
              {assetDisplayAs === 'card' ? (
                 sortedAssets.map(r => {
                     const pnlColor = r.pnlUSD >= 0 ? 'text-emerald-400' : 'text-red-400';
-                    const changeColor = r.change24hPct >= 0 ? 'textemerald-400' : 'text-red-400';
+                    const changeColor = r.change24hPct >= 0 ? 'text-emerald-400' : 'text-red-400';
                     const flashClass = priceFlashes[r.id] === 'up' ? 'flash-up' : priceFlashes[r.id] === 'down' ? 'flash-down' : '';
 
                     return (
-                        <div key={r.id} className="glass-card p-3 sm:p-4 cursor-pointer hover:border-white/20 transition-all min-w-0" onClick={() => { setSelectedAssetForDetail(r); setAssetDetailModalOpen(true); }}>
-                            <div className="flex justify-between items-center mb-3 min-w-0">
-                                <div className="min-w-0 flex-1 pr-2">
-                                    <h3 className="text-sm sm:text-lg font-bold text-white truncate">{r.symbol}</h3>
-                                    <p className="text-[9px] sm:text-xs text-gray-400 truncate w-full">{r.name}</p>
+                        <div key={r.id} className="glass-card p-2.5 sm:p-3 cursor-pointer hover:border-white/20 transition-all min-w-0" onClick={() => { setSelectedAssetForDetail(r); setAssetDetailModalOpen(true); }}>
+                            <div className="flex justify-between items-center mb-2 min-w-0">
+                                <div className="min-w-0 flex-1 pr-2 flex items-center gap-2 sm:gap-3">
+                                    {r.type !== 'nonliquid' && (
+                                        <img src={r.image} alt={r.symbol} className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-zinc-800 object-cover shrink-0 border border-white/5" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${r.symbol}&background=random&color=fff&rounded=true&bold=true`; }} />
+                                    )}
+                                    <div className="min-w-0 flex-1">
+                                        <h3 className="text-sm sm:text-base font-bold text-white truncate">{r.symbol}</h3>
+                                        <p className="text-[9px] sm:text-xs text-gray-400 truncate w-full">{r.name}</p>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-                                    <div className="w-12 h-5 sm:w-20 sm:h-8">
+                                <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                                    <div className="w-16 h-8 sm:w-20 sm:h-10">
                                         {r.type === 'nonliquid' ? 
                                             <div className="w-full h-full flex items-center justify-end"><span className="text-[10px] text-gray-500 italic">Alternative</span></div> 
                                             : <Sparkline data={priceHistory[r.id] || []} color={r.change24hPct >= 0 ? '#10B981' : '#EF4444'} />
                                         }
                                     </div>
-                                    <div className={`text-right p-1 rounded-md ${flashClass} shrink-0`}>
-                                        <p className="text-xs sm:text-base font-semibold text-white tabular-nums whitespace-nowrap">{formatCurrency(r.lastPriceUSD, true, displaySymbol, usdIdr)}</p>
-                                        <p className={`text-[9px] sm:text-xs font-semibold tabular-nums whitespace-nowrap ${changeColor}`}>
+                                    <div className={`text-right p-1 rounded-md ${flashClass} shrink-0 min-w-[70px]`}>
+                                        <p className="text-xs sm:text-sm font-semibold text-white tabular-nums whitespace-nowrap">{formatCurrency(r.lastPriceUSD, true, displaySymbol, usdIdr)}</p>
+                                        <p className={`text-[9px] sm:text-[10px] font-semibold tabular-nums whitespace-nowrap ${changeColor}`}>
                                             {r.type === 'nonliquid' ? '' : (r.change24hUSD >= 0 ? '+' : '')}{r.type === 'nonliquid' ? '-' : formatCurrencyShort(r.change24hUSD, true, displaySymbol, usdIdr)} {r.type === 'nonliquid' ? '' : `(${r.change24hPct?.toFixed(2) ?? '0.00'}%)`}
                                         </p>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-2 sm:gap-4 text-[10px] sm:text-xs pt-3 border-t border-white/10 min-w-0">
+                            <div className="grid grid-cols-2 gap-2 sm:gap-3 text-[10px] sm:text-xs pt-2 border-t border-white/10 min-w-0">
                                 <div className="space-y-1 min-w-0">
                                     <div className="flex justify-between items-center gap-1"><span className="text-gray-400 truncate pr-1">Qty</span><span className="font-medium text-gray-200 whitespace-nowrap">{formatQty(r.shares)}</span></div>
                                     <div className="flex justify-between items-center gap-1"><span className="text-gray-400 truncate pr-1">Invested</span><span className="font-medium text-gray-200 whitespace-nowrap">{formatCurrencyShort(r.investedUSD, true, displaySymbol, usdIdr)}</span></div>
@@ -1005,11 +1117,9 @@ export default function App() {
 
         </main>
         
-        {/* Hidden Inputs untuk Profile Pic */}
         <input type="file" accept="image/*" capture="user" ref={cameraInputRef} onChange={handleProfilePicChange} className="hidden" />
         <input type="file" accept="image/*" ref={galleryInputRef} onChange={handleProfilePicChange} className="hidden" />
 
-        {/* Profile Menu Bottom Sheet */}
         <BottomSheet isOpen={isProfileMenuOpen} onClose={() => setProfileMenuOpen(false)}>
             <div className="p-4 text-white text-sm">
                 <h3 className="text-base font-semibold mb-4 px-2">Profile Photo Menu</h3>
@@ -1032,7 +1142,6 @@ export default function App() {
             </div>
         </BottomSheet>
 
-        {/* View Photo Fullscreen Modal */}
         <Modal isOpen={isViewPhotoOpen} onClose={() => setIsViewPhotoOpen(false)} title="Profile Photo" size="lg">
             <div className="flex items-center justify-center p-2">
                 <img src={profilePic} alt="Profile Full" className="max-w-full max-h-[70vh] rounded-lg object-contain" />
@@ -1045,11 +1154,14 @@ export default function App() {
         <Modal title="Portfolio Growth" isOpen={isEquityModalOpen} onClose={() => setIsEquityModalOpen(false)} size="3xl"><EquityGrowthView equitySeries={equitySeries} displaySymbol={displaySymbol} usdIdr={usdIdr} totalEquity={derivedData.totalEquity} /></Modal>
         <Modal title="Portfolio Allocation" isOpen={isAllocationModalOpen} onClose={() => setIsAllocationModalOpen(false)}><PortfolioAllocation data={derivedData.rows} tradingBalance={financialSummaries.tradingBalance} displaySymbol={displaySymbol} usdIdr={usdIdr}/></Modal>
         <Modal title="Transaction History" isOpen={isHistoryModalOpen} onClose={() => setIsHistoryModalOpen(false)}><HistoryView transactions={transactions} usdIdr={usdIdr} displaySymbol={displaySymbol} onDeleteTransaction={handleDeleteTransaction} /></Modal>
-        <Modal title="Trade Performance" isOpen={isPerformanceModalOpen} onClose={() => setIsPerformanceModalOpen(false)} size="2xl">
+        
+        {/* Updated Trade Performance Modal - Data Driven logic */}
+        <Modal title="Trade Performance" isOpen={isPerformanceModalOpen} onClose={() => setIsPerformanceModalOpen(false)} size="3xl">
             <div className="max-h-[80vh] overflow-y-auto">
-                <TradeStatsView stats={derivedData.tradeStats} transactions={transactions} displaySymbol={displaySymbol} usdIdr={usdIdr} />
+                <TradeStatsView stats={derivedData.tradeStats} transactions={transactions} displaySymbol={displaySymbol} usdIdr={usdIdr} assets={assets} />
             </div>
         </Modal>
+        
         <Modal title="Asset Options" isOpen={isAssetOptionsOpen} onClose={() => setIsAssetOptionsOpen(false)} size="lg">
             <AssetOptionsPanel 
                 sortBy={assetSortBy}
@@ -1093,7 +1205,7 @@ const Sparkline = ({ data = [], color = '#10B981' }) => {
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
-      <polyline fill="none" stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" points={points} />
+      <polyline fill="none" stroke={color} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" points={points} />
       <polygon fill={`url(#${uniqueId})`} points={areaPoints} />
     </svg>
   );
@@ -1256,15 +1368,183 @@ const EquityGrowthView = ({ equitySeries, displaySymbol, usdIdr, totalEquity }) 
     }, [equitySeries, returnPeriod]);
     return ( <div className="p-1"> <div><p className="text-sm text-gray-400">Total Equity</p><p className="text-2xl sm:text-3xl font-bold text-white mb-1 truncate w-full">{formatCurrency(totalEquity, false, displaySymbol, usdIdr)}</p></div> <div className="mt-6"><AreaChart data={equitySeries} displaySymbol={displaySymbol} range={chartRange} setRange={setChartRange} /></div> <div className="mt-8 max-h-64 overflow-y-auto"> <div className="flex justify-between items-center mb-4 sticky top-0 bg-zinc-900/80 backdrop-blur-sm py-2"><h3 className="text-base font-semibold text-white">Total Equity Return</h3><div className="flex items-center gap-2 text-sm">{['Daily', 'Monthly', 'Yearly'].map(p => (<button key={p} onClick={() => setReturnPeriod(p)} className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs ${returnPeriod === p ? 'bg-zinc-700 text-white' : 'text-gray-400'}`}>{p}</button>))}</div></div> <table className="w-full text-xs sm:text-sm"> <thead className="text-left text-gray-500 text-xs"><tr><th className="p-2 font-normal">Date</th><th className="p-2 font-normal text-right">Equity</th><th className="p-2 font-normal text-right">P&L</th></tr></thead> <tbody>{equityReturnData.map((item, index) => (<tr key={index} className="border-t border-white/10"><td className="p-2 text-white">{item.date}</td><td className="p-2 text-white text-right tabular-nums whitespace-nowrap">{formatCurrencyShort(item.equity, false, displaySymbol, usdIdr)}</td><td className={`p-2 text-right tabular-nums whitespace-nowrap ${item.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{item.pnl >= 0 ? '+' : ''}{formatCurrencyShort(item.pnl, false, displaySymbol, usdIdr)} <br className="sm:hidden" />({item.pnlPct.toFixed(2)}%)</td></tr>))}</tbody> </table> </div> </div> );
 };
-const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr }) => {
+
+/* ================== UPDATED TRADE STATS VIEW ================== */
+const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr, assets }) => {
     const [chartRange, setChartRange] = useState("All");
-    const { maxProfitPct, maxLossPct } = useMemo(() => { const maxProfitTx = transactions.find(tx => tx.realized === stats.maxProfit); const profitPct = maxProfitTx && maxProfitTx.costOfSold > 0 ? (maxProfitTx.realized / maxProfitTx.costOfSold) * 100 : 0; const maxLossTx = transactions.find(tx => tx.realized === stats.maxLoss); const lossPct = maxLossTx && maxLossTx.costOfSold > 0 ? (maxLossTx.realized / maxLossTx.costOfSold) * 100 : 0; return { maxProfitPct: profitPct, maxLossPct: lossPct }; }, [transactions, stats.maxProfit, stats.maxLoss]);
-    const realizedGainSeries = useMemo(() => { const sorted = [...transactions.filter(t => t.type === 'sell' || t.type === 'delete')].sort((a, b) => a.date - b.date); let cumulativeGain = 0; const points = sorted.map(tx => { cumulativeGain += tx.realized || 0; return { t: tx.date, v: displaySymbol === '$' ? cumulativeGain : cumulativeGain * usdIdr }; }); if (points.length > 0) points.unshift({ t: points[0].t - 86400000, v: 0 }); return points.length ? points : [{ t: Date.now() - 1000, v: 0 }, {t: Date.now(), v:0}]; }, [transactions, displaySymbol, usdIdr]);
-    const sells = useMemo(() => transactions.filter(tx => tx.type === 'sell' || tx.type === 'delete'), [transactions]); const realizedGainOnly = useMemo(() => sells.filter(tx => tx.realized > 0).reduce((sum, tx) => sum + tx.realized, 0), [sells]); const realizedLossOnly = useMemo(() => sells.filter(tx => tx.realized < 0).reduce((sum, tx) => sum + (tx.realized < 0 ? tx.realized : 0), 0), [sells]);
-    const topGainers = useMemo(() => { const gainers = {}; sells.forEach(tx => { if (!gainers[tx.symbol]) gainers[tx.symbol] = { trades: 0, pnl: 0, cost: 0 }; gainers[tx.symbol].trades++; gainers[tx.symbol].pnl += tx.realized; gainers[tx.symbol].cost += tx.costOfSold || 0; }); return Object.entries(gainers).map(([symbol, data]) => ({ symbol, ...data, pnlPct: data.cost > 0 ? (data.pnl / data.cost) * 100 : 0 })).sort((a, b) => b.pnl - a.pnl).slice(0, 5); }, [sells]);
-    if (!stats) return <div className="p-4 text-center text-gray-500">No trade data available.</div>;
-    return ( <div className="p-4 space-y-6"> <div className="glass-card p-4"> <div className="flex items-center justify-between"> <div><p className="text-sm text-gray-400">Win Rate</p><p className="text-3xl font-bold text-white mt-1">{stats.winRate.toFixed(2)}%</p></div> <div className="relative w-24 h-24"><svg className="w-full h-full transform -rotate-90"><circle cx="50%" cy="50%" r="45%" stroke="rgba(255,255,255,0.1)" strokeWidth="8" fill="transparent" /><circle cx="50%" cy="50%" r="45%" stroke="#10B981" strokeWidth="8" fill="transparent" strokeDasharray={`${Math.PI * 2 * 45 * (stats.winRate / 100)}, ${Math.PI * 2 * 45}`} strokeLinecap="round"/></svg><div className="absolute inset-0 flex flex-col items-center justify-center text-xs text-center"><div className="font-semibold">{stats.trades}</div><div className="text-gray-400">Trades</div><div className="mt-1 flex gap-2"><div><span className="text-emerald-400">{stats.wins}</span> W</div><div><span className="text-red-400">{stats.losses}</span> L</div></div></div></div> </div> </div> <div className="grid grid-cols-2 gap-4"> <div className="glass-card p-3 min-w-0"><p className="text-sm text-gray-400 flex items-center gap-1"><ArrowUpIcon className="text-emerald-400 shrink-0"/>Max Profit</p><p className="text-base font-semibold text-white mt-1 whitespace-nowrap overflow-hidden text-ellipsis">{formatCurrencyShort(stats.maxProfit, true, displaySymbol, usdIdr)}</p><p className="text-[10px] sm:text-sm text-emerald-400">+{maxProfitPct.toFixed(2)}%</p></div> <div className="glass-card p-3 min-w-0"><p className="text-sm text-gray-400 flex items-center gap-1"><ArrowDownIcon className="text-red-400 shrink-0"/>Max Loss</p><p className="text-base font-semibold text-white mt-1 whitespace-nowrap overflow-hidden text-ellipsis">{formatCurrencyShort(stats.maxLoss, true, displaySymbol, usdIdr)}</p><p className="text-[10px] sm:text-sm text-red-400">{maxLossPct.toFixed(2)}%</p></div> <div className="glass-card p-3 min-w-0"><p className="text-sm text-gray-400 flex items-center gap-1"><AvgProfitIcon className="text-gray-400 w-4 h-4 shrink-0"/>Avg. Profit</p><p className="text-base font-semibold text-white mt-1 whitespace-nowrap overflow-hidden text-ellipsis">{formatCurrencyShort(stats.avgProfit, true, displaySymbol, usdIdr)}</p></div> <div className="glass-card p-3 min-w-0"><p className="text-sm text-gray-400 flex items-center gap-1"><AvgLossIcon className="text-gray-400 w-4 h-4 shrink-0"/>Avg. Loss</p><p className="text-base font-semibold text-white mt-1 whitespace-nowrap overflow-hidden text-ellipsis">{formatCurrencyShort(stats.avgLoss, true, displaySymbol, usdIdr)}</p></div> </div> <div className="glass-card p-4 min-w-0"> <h3 className="font-semibold text-white flex items-center gap-1">Total Realized Gain <InfoIcon className="text-gray-400 w-3 h-3" /></h3> <p className={`text-xl sm:text-2xl font-bold mt-1 whitespace-nowrap overflow-hidden text-ellipsis ${stats.totalRealizedGain >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{stats.totalRealizedGain >= 0 ? '+' : ''}{formatCurrency(stats.totalRealizedGain, true, displaySymbol, usdIdr)}</p> <div className="h-48 mt-2"><AreaChart data={realizedGainSeries} displaySymbol={displaySymbol} range={chartRange} setRange={setChartRange} showTimeframes={false}/></div> <div className="mt-2 text-[10px] sm:text-xs text-gray-400 border-t border-white/10 pt-2 space-y-1 min-w-0"> <div className="flex justify-between gap-1 w-full"><span className="shrink-0">Realized Gain</span> <span className="text-emerald-400 font-semibold whitespace-nowrap overflow-hidden text-ellipsis text-right">{formatCurrencyShort(realizedGainOnly, true, displaySymbol, usdIdr)}</span></div> <div className="flex justify-between gap-1 w-full"><span className="shrink-0">Realized Loss</span> <span className="text-red-400 font-semibold whitespace-nowrap overflow-hidden text-ellipsis text-right">{formatCurrencyShort(realizedLossOnly, true, displaySymbol, usdIdr)}</span></div> </div> </div> <div className="glass-card p-4"> <h3 className="font-semibold text-white mb-2">Top Gainer ({displaySymbol})</h3> <table className="w-full text-xs sm:text-sm"> <thead className="text-gray-400 text-xs font-light"><tr><th className="text-left font-normal py-1">Code</th><th className="text-center font-normal py-1">Trades</th><th className="text-right font-normal py-1">P&L</th></tr></thead> <tbody>{topGainers.map(g => (<tr key={g.symbol} className="border-t border-white/10"><td className="py-2 flex items-center gap-2 truncate max-w-[80px] sm:max-w-[150px]"><div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-zinc-700 flex items-center justify-center font-bold text-white text-[10px] sm:text-xs shrink-0">{g.symbol.charAt(0)}</div><span className="truncate">{g.symbol}</span></td><td className="text-center py-2">{g.trades}</td><td className={`text-right py-2 font-semibold tabular-nums whitespace-nowrap ${g.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{g.pnl >= 0 ? '+' : ''}{formatCurrencyShort(g.pnl, true, displaySymbol, usdIdr)} <br className="sm:hidden" />({g.pnlPct.toFixed(2)}%)</td></tr>))}</tbody> </table> </div> </div> );
+    
+    // Exact Win Rate Circle math
+    const radius = 45;
+    const circumference = 2 * Math.PI * radius; // ~282.74
+    const dashOffset = circumference * (stats.winRate / 100);
+
+    const { maxProfitPct, maxLossPct } = useMemo(() => { 
+        const maxProfitTx = transactions.find(tx => tx.realized === stats.maxProfit); 
+        const profitPct = maxProfitTx && maxProfitTx.costOfSold > 0 ? (maxProfitTx.realized / maxProfitTx.costOfSold) * 100 : 0; 
+        const maxLossTx = transactions.find(tx => tx.realized === stats.maxLoss); 
+        const lossPct = maxLossTx && maxLossTx.costOfSold > 0 ? (maxLossTx.realized / maxLossTx.costOfSold) * 100 : 0; 
+        return { maxProfitPct: profitPct, maxLossPct: lossPct }; 
+    }, [transactions, stats.maxProfit, stats.maxLoss]);
+    
+    const realizedGainSeries = useMemo(() => { 
+        const sorted = [...transactions.filter(t => t.type === 'sell' || t.type === 'delete')].sort((a, b) => a.date - b.date); 
+        let cumulativeGain = 0; 
+        const points = sorted.map(tx => { 
+            cumulativeGain += tx.realized || 0; 
+            return { t: tx.date, v: displaySymbol === '$' ? cumulativeGain : cumulativeGain * usdIdr }; 
+        }); 
+        if (points.length > 0) points.unshift({ t: points[0].t - 86400000, v: 0 }); 
+        return points.length ? points : [{ t: Date.now() - 1000, v: 0 }, {t: Date.now(), v:0}]; 
+    }, [transactions, displaySymbol, usdIdr]);
+    
+    const sells = useMemo(() => transactions.filter(tx => tx.type === 'sell' || tx.type === 'delete'), [transactions]); 
+    
+    const { topGainers, topLosers } = useMemo(() => { 
+        const gainers = {}; 
+        sells.forEach(tx => { 
+            if (!gainers[tx.symbol]) gainers[tx.symbol] = { trades: 0, pnl: 0, cost: 0, image: tx.image }; 
+            gainers[tx.symbol].trades++; 
+            gainers[tx.symbol].pnl += tx.realized; 
+            gainers[tx.symbol].cost += tx.costOfSold || 0;
+            if (tx.image) gainers[tx.symbol].image = tx.image;
+        }); 
+        
+        const arr = Object.entries(gainers).map(([symbol, data]) => ({ symbol, ...data, pnlPct: data.cost > 0 ? (data.pnl / data.cost) * 100 : 0 }));
+        return {
+            topGainers: arr.filter(g => g.pnl > 0).sort((a, b) => b.pnl - a.pnl).slice(0, 3),
+            topLosers: arr.filter(g => g.pnl < 0).sort((a, b) => a.pnl - b.pnl).slice(0, 3)
+        };
+    }, [sells]);
+
+    if (!stats || stats.trades === 0) return <div className="p-8 text-center text-gray-500">No trade data available yet. Start trading to see your performance.</div>;
+
+    return (
+        <div className="p-2 sm:p-4 text-gray-300 space-y-6">
+            <div className="flex flex-col md:flex-row gap-6 items-center border-b border-white/10 pb-6">
+                
+                {/* Donut Chart (Data Driven Presisi) */}
+                <div className="flex-shrink-0 relative w-32 h-32 flex items-center justify-center">
+                    <svg className="w-full h-full transform -rotate-90">
+                        {/* Lingkaran Dasar (Losses) -> Merah */}
+                        <circle cx="50%" cy="50%" r={`${radius}%`} stroke="#EF4444" strokeWidth="8" fill="transparent" />
+                        {/* Lingkaran Overlay (Wins) -> Hijau, Diukur dinamis */}
+                        <circle cx="50%" cy="50%" r={`${radius}%`} stroke="#10B981" strokeWidth="8" fill="transparent" strokeDasharray={`${dashOffset} ${circumference}`} strokeLinecap="round"/>
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                        <div className="text-xl font-bold text-white leading-tight">{stats.winRate.toFixed(1)}%</div>
+                        <div className="text-[9px] text-gray-400 mt-0.5">Win Rate</div>
+                        <div className="text-[10px] mt-1 space-x-1 font-medium bg-black/40 px-2 rounded-full border border-white/5">
+                            <span className="text-emerald-400" title={`${stats.wins} Winning Trades`}>{stats.wins}W</span>
+                            <span className="text-gray-500">/</span>
+                            <span className="text-red-400" title={`${stats.losses} Losing Trades`}>{stats.losses}L</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4 w-full">
+                    <div className="flex flex-col justify-between glass-card p-3 min-w-0">
+                        <span className="text-[10px] sm:text-xs text-gray-400 mb-1 flex items-center gap-1"><AvgProfitIcon className="w-3.5 h-3.5"/> Avg Profit</span>
+                        <span className="text-base sm:text-lg font-semibold text-emerald-400 truncate">+{formatCurrency(stats.avgProfit, true, displaySymbol, usdIdr)}</span>
+                    </div>
+                    <div className="flex flex-col justify-between glass-card p-3 min-w-0">
+                        <span className="text-[10px] sm:text-xs text-gray-400 mb-1 flex items-center gap-1"><ArrowUpIcon className="text-emerald-400"/> Max Profit</span>
+                        <div>
+                            <span className="text-base sm:text-lg font-semibold text-emerald-400 truncate block">+{formatCurrency(stats.maxProfit, true, displaySymbol, usdIdr)}</span>
+                            <span className="text-[9px] sm:text-[10px] text-emerald-400/80">+{maxProfitPct.toFixed(2)}%</span>
+                        </div>
+                    </div>
+                    <div className="flex flex-col justify-between glass-card p-3 min-w-0">
+                        <span className="text-[10px] sm:text-xs text-gray-400 mb-1 flex items-center gap-1"><AvgLossIcon className="w-3.5 h-3.5"/> Avg Loss</span>
+                        <span className="text-base sm:text-lg font-semibold text-red-400 truncate">{formatCurrency(stats.avgLoss, true, displaySymbol, usdIdr)}</span>
+                    </div>
+                     <div className="flex flex-col justify-between glass-card p-3 min-w-0">
+                        <span className="text-[10px] sm:text-xs text-gray-400 mb-1 flex items-center gap-1"><ArrowDownIcon className="text-red-400"/> Max Loss</span>
+                        <div>
+                            <span className="text-base sm:text-lg font-semibold text-red-400 truncate block">{formatCurrency(stats.maxLoss, true, displaySymbol, usdIdr)}</span>
+                            <span className="text-[9px] sm:text-[10px] text-red-400/80">{maxLossPct.toFixed(2)}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="border-b border-white/10 pb-6">
+                <div className="flex justify-between items-end mb-4">
+                    <div>
+                        <h3 className="text-sm text-gray-500 font-medium">Total Realized Gain</h3>
+                        <div className={`text-3xl font-bold mt-1 ${stats.totalRealizedGain >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            {stats.totalRealizedGain >= 0 ? '+' : ''}{formatCurrency(stats.totalRealizedGain, true, displaySymbol, usdIdr)}
+                        </div>
+                    </div>
+                </div>
+                <div className="h-48">
+                    <AreaChart data={realizedGainSeries} displaySymbol={displaySymbol} range={chartRange} setRange={setChartRange} showTimeframes={false}/>
+                </div>
+            </div>
+
+            {/* Dibagi Menjadi Dua Kolom: Gainers dan Losers */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div>
+                     <h3 className="text-sm text-gray-500 font-medium mb-3 flex items-center gap-2">
+                         Top Gainers
+                     </h3>
+                     <div className="space-y-1">
+                         {topGainers.map(g => {
+                             const assetMatch = assets.find(a => a.symbol === g.symbol);
+                             const imgSrc = assetMatch?.image || g.image || `https://ui-avatars.com/api/?name=${g.symbol}&background=random&color=fff&rounded=true&bold=true`;
+
+                             return (
+                                <div key={g.symbol} className="flex justify-between items-center group hover:bg-white/5 p-2 -mx-2 rounded-lg transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <img src={imgSrc} alt={g.symbol} className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center object-cover shrink-0 border border-white/5" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${g.symbol}&background=random&color=fff&rounded=true&bold=true`; }} />
+                                        <div>
+                                            <div className="font-semibold text-white text-sm">{g.symbol}</div>
+                                            <div className="text-[10px] text-gray-500">{g.trades} trades</div>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="font-semibold text-sm text-emerald-400">+{formatCurrencyShort(g.pnl, true, displaySymbol, usdIdr)}</div>
+                                        <div className="text-[10px] font-medium text-emerald-500/80">+{g.pnlPct.toFixed(2)}%</div>
+                                    </div>
+                                </div>
+                             );
+                         })}
+                         {topGainers.length === 0 && <div className="text-gray-500 text-sm italic py-2">No winning trades yet</div>}
+                     </div>
+                 </div>
+
+                 <div>
+                     <h3 className="text-sm text-gray-500 font-medium mb-3 flex items-center gap-2">
+                         Top Losers
+                     </h3>
+                     <div className="space-y-1">
+                         {topLosers.map(g => {
+                             const assetMatch = assets.find(a => a.symbol === g.symbol);
+                             const imgSrc = assetMatch?.image || g.image || `https://ui-avatars.com/api/?name=${g.symbol}&background=random&color=fff&rounded=true&bold=true`;
+
+                             return (
+                                <div key={g.symbol} className="flex justify-between items-center group hover:bg-white/5 p-2 -mx-2 rounded-lg transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <img src={imgSrc} alt={g.symbol} className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center object-cover shrink-0 border border-white/5" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${g.symbol}&background=random&color=fff&rounded=true&bold=true`; }} />
+                                        <div>
+                                            <div className="font-semibold text-white text-sm">{g.symbol}</div>
+                                            <div className="text-[10px] text-gray-500">{g.trades} trades</div>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="font-semibold text-sm text-red-400">{formatCurrencyShort(g.pnl, true, displaySymbol, usdIdr)}</div>
+                                        <div className="text-[10px] font-medium text-red-500/80">{g.pnlPct.toFixed(2)}%</div>
+                                    </div>
+                                </div>
+                             );
+                         })}
+                         {topLosers.length === 0 && <div className="text-gray-500 text-sm italic py-2">No losing trades yet</div>}
+                     </div>
+                 </div>
+            </div>
+        </div>
+    );
 };
+
 const HistoryView = ({ transactions, usdIdr, displaySymbol, onDeleteTransaction }) => ( <div className="p-1 max-h-[70vh] overflow-y-auto"> <table className="w-full text-[10px] sm:text-sm"> <thead className="text-left text-gray-500 text-xs sticky top-0 bg-zinc-900/80 backdrop-blur-sm z-10"> <tr><th className="p-2 sm:p-3">Time</th><th className="p-2 sm:p-3">Type</th><th className="p-2 sm:p-3">Detail</th><th className="p-2 sm:p-3 text-right">Nominal</th><th className="p-2 sm:p-3 text-right">Action</th></tr> </thead> <tbody> {[...transactions].sort((a,b) => b.date - a.date).map(tx => ( <tr key={tx.id} className="border-t border-white/10 hover:bg-white/5 transition-colors"> <td className="p-2 sm:p-3 text-gray-400 text-[9px] sm:text-xs">{new Date(tx.date).toLocaleDateString()}<br/>{new Date(tx.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td> <td className="p-2 sm:p-3 capitalize font-semibold">{tx.type}</td> <td className="p-2 sm:p-3 text-[9px] sm:text-xs truncate max-w-[80px] sm:max-w-[150px]">{tx.type === 'buy' || tx.type === 'sell' || tx.type === 'delete' ? (<><div><strong className="truncate block">{tx.symbol}</strong></div><div className="truncate">{formatQty(tx.qty)} @ {formatCurrencyShort(tx.pricePerUnit, true, displaySymbol, usdIdr)}</div></>) : (<span>-</span>)}</td> <td className="p-2 sm:p-3 text-right tabular-nums whitespace-nowrap">{formatCurrencyShort(tx.type === 'deposit' || tx.type === 'withdraw' ? tx.amount : (tx.cost || tx.proceeds || 0) * usdIdr, false, 'Rp', usdIdr)}</td> <td className="p-2 sm:p-3 text-right align-middle">
       <button onClick={(e) => { e.stopPropagation(); onDeleteTransaction(tx.id); }} className="text-red-500 hover:text-red-400 bg-red-500/10 hover:bg-red-500/20 p-1.5 sm:p-2 rounded-md inline-flex items-center justify-center cursor-pointer relative z-20">
           <TrashIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -1294,7 +1574,7 @@ const AddAssetForm = ({ searchMode, setSearchMode, query, setQuery, suggestions,
     return ( <div className="space-y-4"> <div className="flex border-b border-white/10">{[{ key: 'stock', label: 'Stock' }, { key:'crypto', label:'Crypto' }, { key:'nonliquid', label: 'Alternative Assets' }].map(item => (<button key={item.key} onClick={() => setSearchMode(item.key)} className={`px-3 py-2 text-sm font-medium ${searchMode === item.key ? 'text-white border-b-2 border-emerald-400' : 'text-gray-400'}`}>{item.label}</button>))}</div> {searchMode !== 'nonliquid' ? ( <div className="space-y-4"> <div className="relative">
       <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search by code or name..." className="w-full rounded bg-zinc-800 px-3 py-2 text-sm outline-none border border-zinc-700 text-white pr-10" />
       {isSearching && <div className="absolute right-3 top-2.5 w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>}
-      {suggestions.length > 0 && <div className="absolute z-50 mt-1 w-full glass-card max-h-56 overflow-auto">{suggestions.map((s, i) => (<div key={i} className="w-full px-3 py-2 text-left hover:bg-white/10 flex items-center gap-3"><button className="flex-1 flex items-center gap-3 text-left overflow-hidden" onClick={() => { setSelectedSuggestion(s); setQuery(s.display); setSuggestions([]); }}><img src={s.image} alt={s.symbol} className="w-6 h-6 rounded-full bg-zinc-700 object-cover shrink-0" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${s.symbol}&background=random&color=fff&rounded=true&bold=true`; }} /><div className="flex-1 min-w-0"><div className="font-medium text-gray-100 truncate w-full">{s.display}</div><div className="text-xs text-gray-400">{s.exchange || s.source}</div></div></button>
+      {suggestions.length > 0 && <div className="absolute z-50 mt-1 w-full glass-card max-h-56 overflow-auto">{suggestions.map((s, i) => (<div key={i} className="w-full px-3 py-2 text-left hover:bg-white/10 flex items-center gap-3"><button className="flex-1 flex items-center gap-3 text-left overflow-hidden" onClick={() => { setSelectedSuggestion(s); setQuery(s.display); setSuggestions([]); }}><img src={s.image} alt={s.symbol} className="w-5 h-5 rounded-full bg-zinc-700 object-cover shrink-0 border border-white/5" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${s.symbol}&background=random&color=fff&rounded=true&bold=true`; }} /><div className="flex-1 min-w-0"><div className="font-medium text-gray-100 truncate w-full">{s.display}</div><div className="text-xs text-gray-400">{s.exchange || s.source}</div></div></button>
         <button onClick={() => handleSetWatchedAsset({ id: s.id, symbol: s.symbol, name: s.display, type: s.type, image: s.image })} className="text-yellow-500 hover:text-yellow-400 p-1 shrink-0"><StarIcon isFilled={watchedAssets.some(w => w.id === s.id)} /></button>
     </div>))}</div>}</div> <div className="grid grid-cols-1 md:grid-cols-2 gap-3"><div><label className="text-xs text-gray-400">Qty</label><input value={shares} onChange={e => handleInputChange('shares', e.target.value)} className="w-full mt-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" type="text" /></div><div><label className="text-xs text-gray-400">Price ({displaySymbol})</label><input value={price} onChange={e => handleInputChange('price', e.target.value)} className="w-full mt-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" type="text" /></div></div> <div><label className="text-xs text-gray-400">Total Value ({displaySymbol})</label><input value={total} onChange={e => handleInputChange('total', e.target.value)} className="w-full mt-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" type="text" /></div> <div className="flex justify-end"><button onClick={() => addAssetWithInitial(shares, price)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 rounded font-semibold">Add Position</button></div> </div> ) : ( 
         <div className="space-y-4"> 
@@ -1337,7 +1617,6 @@ const AlternativeAssetDetails = ({ asset, usdIdr, displaySymbol }) => {
     const purchase = new Date(asset.purchaseDate || asset.createdAt);
     const now = new Date();
     
-    // Kalkulasi Holding Period (Tahun, Bulan, Hari)
     let years = now.getFullYear() - purchase.getFullYear();
     let months = now.getMonth() - purchase.getMonth();
     let days = now.getDate() - purchase.getDate();
@@ -1359,8 +1638,6 @@ const AlternativeAssetDetails = ({ asset, usdIdr, displaySymbol }) => {
     const validPeriods = asset.validPeriods || 0;
     
     const freq = asset.incomeFrequency || 'None';
-    
-    // Income yg diset user adalah nominal tetap PER PERIODE
     const incomePerPeriod = freq !== 'None' ? asset.coupon * asset.shares : 0;
     
     let periodsPerYear = 1;
@@ -1372,11 +1649,9 @@ const AlternativeAssetDetails = ({ asset, usdIdr, displaySymbol }) => {
 
     return (
         <div className="space-y-4">
-            {/* Logic Breakdown */}
             <div className="glass-card p-4 space-y-4 text-sm bg-zinc-900/50">
                 <h4 className="font-semibold text-white border-b border-white/10 pb-2">Valuation Details & Logic</h4>
                 
-                {/* Basic Info */}
                 <div className="grid grid-cols-2 gap-4">
                     <div><span className="text-gray-500 text-[10px] sm:text-xs block">Purchase Date</span><span className="text-gray-200 font-medium">{purchase.toLocaleDateString()}</span></div>
                     <div><span className="text-gray-500 text-[10px] sm:text-xs block">Holding Period</span><span className="text-gray-200 font-medium">{holdingPeriod}</span></div>
@@ -1384,7 +1659,6 @@ const AlternativeAssetDetails = ({ asset, usdIdr, displaySymbol }) => {
                     <div><span className="text-gray-500 text-[10px] sm:text-xs block">Avg Price / Unit</span><span className="text-gray-200 font-medium tabular-nums">{formatAmt(asset.avgPrice)}</span></div>
                 </div>
 
-                {/* Capital Growth */}
                 <div className="bg-white/5 rounded-lg p-3 border border-white/5">
                     <div className="font-medium text-emerald-400 mb-1 flex items-center gap-2">
                         <TrendingUpIcon className="w-4 h-4" /> Capital Growth Calculation
@@ -1402,7 +1676,6 @@ const AlternativeAssetDetails = ({ asset, usdIdr, displaySymbol }) => {
                     </div>
                 </div>
 
-                {/* Income Generation */}
                 <div className="bg-white/5 rounded-lg p-3 border border-white/5">
                     <div className="font-medium text-sky-400 mb-2 flex items-center gap-2">
                         <WalletIcon className="w-4 h-4" /> Income Generation Calculation
@@ -1435,7 +1708,6 @@ const AlternativeAssetDetails = ({ asset, usdIdr, displaySymbol }) => {
                     )}
                 </div>
                 
-                {/* Final Market Value */}
                 <div className="flex justify-between items-center p-3 bg-zinc-800/80 rounded-lg border border-white/10 mt-2">
                     <span className="text-sm font-semibold text-gray-300">Total Market Value</span>
                     <span className="text-lg font-bold text-emerald-400 tabular-nums">{formatAmt(asset.marketValueUSD)}</span>
@@ -1509,7 +1781,7 @@ const TradingViewWidget = ({ asset }) => {
         if (containerRef.current && typeof window.TradingView !== 'undefined' && asset) {
             containerRef.current.innerHTML = '';
             new window.TradingView.widget({
-                autosize: true, symbol: formatSymbolForTV(asset), interval: "D", timezone: "Asia/Jakarta", theme: "dark", style: "1", locale: "en", enable_publishing: false, allow_symbol_change: false, hide_side_toolbar: false, container_id: containerRef.current.id,
+                autosize: true, symbol: formatSymbolForTV(asset), interval: "D", timezone: "Asia/Jakarta", theme: "dark", style: "1", locale: "en", enable_publishing: false, allow_symbol_change: false, hide_side_toolbar: true, hide_top_toolbar: false, container_id: containerRef.current.id,
             });
         }
     };
@@ -1523,7 +1795,7 @@ const TradingViewWidget = ({ asset }) => {
   const uniqueId = `tradingview-widget-container-${asset.id || asset.symbol}`;
   
   return (
-    <div ref={widgetContainerRef} className="tradingview-widget-container relative bg-zinc-900 rounded-lg overflow-hidden aspect-[16/9]">
+    <div ref={widgetContainerRef} className="tradingview-widget-container relative bg-zinc-900 rounded-lg overflow-hidden h-[50vh] sm:h-[60vh] w-full min-h-[350px]">
       <button onClick={handleToggleFullscreen} className="absolute top-2 right-2 z-10 p-1.5 bg-zinc-800/70 rounded-md hover:bg-zinc-700 transition-colors" aria-label="Toggle Fullscreen">
           {isFullscreen ? <ExitFullscreenIcon className="text-gray-300" /> : <FullscreenIcon className="text-gray-300"/>}
       </button>
@@ -1539,15 +1811,15 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
     const { equityData, sectorData } = useMemo(() => {
         const tradingBalanceUSD = tradingBalance / usdIdr;
         
-        // Pastel Colors untuk Grafik
-        const colors = ["#86efac", "#93c5fd", "#c4b5fd", "#f9a8d4", "#fdba74", "#fde047", "#fca5a5"];
+        // Define specific ordered gradient colors
+        const greens = ["#6ee7b7", "#34d399", "#10b981", "#059669", "#047857", "#064e3b"]; 
+        const blues = ["#93c5fd", "#60a5fa", "#3b82f6", "#2563eb", "#1d4ed8", "#1e40af"];
 
-        // Set Warna Pastel untuk Tiap Sektor
         const secDataMap = {
-            'Cash': { value: tradingBalanceUSD, color: '#67e8f9', icon: <WalletIcon className="w-5 h-5" style={{color: '#67e8f9'}} /> },
-            'Equity': { value: 0, color: '#86efac', icon: <TrendingUpIcon className="w-5 h-5" style={{color: '#86efac'}} /> }, 
-            'Crypto': { value: 0, color: '#c4b5fd', icon: <CryptoIcon className="w-5 h-5" style={{color: '#c4b5fd'}} /> }, 
-            'Alternative Assets': { value: 0, color: '#fdba74', icon: <BuildingIcon className="w-5 h-5" style={{color: '#fdba74'}} /> }
+            'Cash': { value: tradingBalanceUSD, color: '#1e40af', icon: <WalletIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" /> },
+            'Equity': { value: 0, color: '#059669', icon: <TrendingUpIcon className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" /> }, 
+            'Crypto': { value: 0, color: '#3b82f6', icon: <CryptoIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-300" /> }, 
+            'Alternative Assets': { value: 0, color: '#10b981', icon: <BuildingIcon className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-300" /> }
         }; 
         fullAssetData.forEach(asset => { 
             if (asset.type === 'stock') secDataMap['Equity'].value += asset.marketValueUSD; 
@@ -1562,26 +1834,36 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
         ].filter(a => a.value > 0.01).sort((a, b) => b.value - a.value);
 
         let finalEquityData;
-        if (allAssets.length > 8) {
-            const top7 = allAssets.slice(0, 7);
-            const others = allAssets.slice(7);
+        if (allAssets.length > 12) {
+            const top11 = allAssets.slice(0, 11);
+            const others = allAssets.slice(11);
             const othersValue = others.reduce((sum, item) => sum + item.value, 0);
-            finalEquityData = [ ...top7, { name: 'Others', value: othersValue, type: 'other' } ];
+            finalEquityData = [ ...top11, { name: 'Others', value: othersValue, type: 'other' } ];
         } else {
             finalEquityData = allAssets;
         }
 
-        finalEquityData = finalEquityData.map((d, i) => {
+        const assetOnlyCount = finalEquityData.filter(a => a.type !== 'cash' && a.type !== 'other').length;
+        const half = Math.ceil(assetOnlyCount / 2);
+        let assetIndex = 0;
+
+        finalEquityData = finalEquityData.map((d) => {
             let icon, color;
             if (d.type === 'cash') {
-                icon = <WalletIcon className="w-5 h-5" style={{color: '#67e8f9'}} />;
-                color = '#67e8f9';
+                icon = <WalletIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />;
+                color = '#1e3a8a';
             } else if (d.type === 'other') {
-                icon = <MoreVerticalIcon className="w-5 h-5" style={{color: '#94a3b8'}} />;
-                color = '#94a3b8';
+                icon = <MoreVerticalIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />;
+                color = '#6b7280';
             } else {
-                icon = <img src={d.image || `https://ui-avatars.com/api/?name=${d.name}&background=random&color=fff&rounded=true`} alt={d.name} className="w-full h-full rounded-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${d.name}&background=random&color=fff&rounded=true&bold=true`; }} />;
-                color = colors[i % colors.length];
+                icon = <img src={d.image || `https://ui-avatars.com/api/?name=${d.name}&background=random&color=fff&rounded=true`} alt={d.name} className="w-full h-full rounded-full object-cover border border-white/5" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${d.name}&background=random&color=fff&rounded=true&bold=true`; }} />;
+                
+                if (assetIndex < half) {
+                    color = greens[Math.min(assetIndex, greens.length - 1)];
+                } else {
+                    color = blues[Math.min(assetIndex - half, blues.length - 1)];
+                }
+                assetIndex++;
             }
             return { ...d, icon, color };
         });
@@ -1623,14 +1905,10 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
                 return (
                     <div key={d.name} className={`p-2 rounded-lg transition-colors duration-300 ${hoveredSegment === d.name ? 'bg-black/20' : ''}`} onMouseOver={() => setHoveredSegment(d.name)} onMouseOut={() => setHoveredSegment(null)}>
                         <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm min-w-0">
-                            {/* Kiri: Logo Utuh Vertikal */}
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-zinc-800/80 flex items-center justify-center font-bold text-white text-xs flex-shrink-0 border border-white/5">
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-zinc-800/80 flex items-center justify-center font-bold text-white text-xs flex-shrink-0 border border-white/5">
                                 {d.icon}
                             </div>
-                            
-                            {/* Kanan: Nama, Rp, % (Atas) & Bar (Bawah) */}
                             <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                {/* Baris Atas */}
                                 <div className="flex justify-between items-baseline w-full mb-1.5">
                                     <div className="flex items-baseline gap-2 truncate pr-2">
                                         <span className="font-semibold text-white truncate text-sm">{d.name}</span>
@@ -1638,7 +1916,6 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
                                     </div>
                                     <span className="text-white font-bold text-[10px] sm:text-xs shrink-0">{percentage.toFixed(1)}%</span>
                                 </div>
-                                {/* Baris Bawah (Progress Bar) */}
                                 <div className="w-full bg-zinc-700/50 rounded-full h-1.5 sm:h-2 overflow-hidden">
                                     <div className="h-full rounded-full transition-all duration-500" style={{ width: `${percentage}%`, backgroundColor: d.color }}></div>
                                 </div>
@@ -1705,5 +1982,6 @@ const AssetTableView = ({ rows, displaySymbol, usdIdr, onRowClick }) => {
         </div>
     );
 }
+
 
 
