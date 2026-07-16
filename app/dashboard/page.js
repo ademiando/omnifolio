@@ -108,7 +108,6 @@ function formatCurrencyCompactNoSymbol(value, valueIsUSD, displaySymbol, usdIdr)
   return new Intl.NumberFormat(isRupiah ? 'id-ID' : 'en-US', { style: 'decimal', minimumFractionDigits: isRupiah ? 0 : 2, maximumFractionDigits: isRupiah ? 0 : 2 }).format(displayValue);
 }
 
-// BUG FIX: Fungsi formatCurrencyCompact yang sebelumnya terhapus sudah ditambahkan kembali.
 function formatCurrencyCompact(value, valueIsUSD, displaySymbol, usdIdr) {
     const noSym = formatCurrencyCompactNoSymbol(value, valueIsUSD, displaySymbol, usdIdr);
     if (noSym === '0') return displaySymbol === '$' ? '$0' : 'Rp 0';
@@ -160,7 +159,8 @@ const Modal = ({ children, isOpen, onClose, title, size = "2xl" }) => {
   return (
     <div 
       className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4 transition-opacity duration-300 opacity-100 overflow-y-auto" 
-      onPointerDown={(e) => {
+      // FIX 1: Diganti dari onPointerDown menjadi onClick untuk mencegah Ghost Click ke elemen di bawahnya
+      onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
@@ -188,7 +188,8 @@ const BottomSheet = ({ isOpen, onClose, children }) => {
   return (
     <div 
         className="fixed inset-0 bg-black/70 z-[100] transition-opacity flex flex-col justify-end" 
-        onPointerDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
+        // FIX 1: Diganti dari onPointerDown menjadi onClick
+        onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
         <div className={`w-full max-w-4xl mx-auto glass-card rounded-t-2xl shadow-lg transition-transform duration-300 ${isOpen ? 'translate-y-0' : 'translate-y-full'}`} onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 bg-zinc-700 rounded-full mx-auto my-3"></div>
@@ -200,7 +201,7 @@ const BottomSheet = ({ isOpen, onClose, children }) => {
 
 /* ===================== Main Component ===================== */
 export default function App() {
-  const STORAGE_VERSION = "v46"; 
+  const STORAGE_VERSION = "v47"; // Bump version untuk keamanan cache
   
   const [assets, setAssets] = useState(() => JSON.parse(safeGetStorage(`pf_assets_${STORAGE_VERSION}`, "[]")).map(ensureNumericAsset));
   const [transactions, setTransactions] = useState(() => JSON.parse(safeGetStorage(`pf_transactions_${STORAGE_VERSION}`, "[]")));
@@ -260,9 +261,34 @@ export default function App() {
   const importInputRef = useRef(null);
   const prevAssetsRef = useRef();
   
+  // FIX 2: Perbaikan logika saldo tunai (Cash Balance) agar tidak terpengaruh naik turun kurs USD saat ini
   const recalculateStateFromTransactions = (txs) => {
+    let needsPatch = false;
+    
+    // Auto-patch: Kunci nominal transaksi lama yang belum punya IDR ter-lock menggunakan rate saat ini
+    const patchedTxs = txs.map(tx => {
+        let newTx = { ...tx };
+        if (newTx.type === 'buy' && newTx.costIDR === undefined && newTx.cost !== undefined) {
+            newTx.costIDR = newTx.cost * usdIdr;
+            needsPatch = true;
+        }
+        if ((newTx.type === 'sell' || newTx.type === 'delete') && newTx.proceedsIDR === undefined && newTx.proceeds !== undefined) {
+            newTx.proceedsIDR = newTx.proceeds * usdIdr;
+            needsPatch = true;
+        }
+        return newTx;
+    });
+
+    if (needsPatch) {
+        // Jika ada data lama yang harus di-patch, simpan lalu update state untuk diproses ulang dengan aman
+        safeSetStorage(`pf_transactions_${STORAGE_VERSION}`, JSON.stringify(patchedTxs));
+        setTimeout(() => setTransactions(patchedTxs), 0);
+        return; 
+    }
+
     let newAssets = {}; let realizedUSD = 0; let tradingBalance = 0; let totalDeposits = 0; let totalWithdrawals = 0;
-    const sortedTxs = [...txs].sort((a, b) => a.date - b.date);
+    const sortedTxs = [...patchedTxs].sort((a, b) => a.date - b.date);
+    
     for (const tx of sortedTxs) {
       if (tx.type === 'deposit') { tradingBalance += tx.amount; totalDeposits += tx.amount; continue; }
       if (tx.type === 'withdraw') { tradingBalance -= tx.amount; totalWithdrawals += tx.amount; continue; }
@@ -279,10 +305,14 @@ export default function App() {
             asset.purchaseDate = tx.date;
         }
 
-        tradingBalance -= tx.cost * usdIdr; const totalInvested = asset.investedUSD + tx.cost; const totalShares = asset.shares + tx.qty;
+        // Mengurangi cash menggunakan costIDR yang sudah terkunci di masa lalu
+        tradingBalance -= tx.costIDR; 
+        const totalInvested = asset.investedUSD + tx.cost; const totalShares = asset.shares + tx.qty;
         asset.investedUSD = totalInvested; asset.shares = totalShares; asset.avgPrice = totalShares > 0 ? totalInvested / totalShares : 0;
       } else if (tx.type === 'sell' || tx.type === 'delete') {
-        tradingBalance += tx.proceeds * usdIdr; realizedUSD += tx.realized; const costOfSold = asset.avgPrice * tx.qty;
+        // Menambah cash menggunakan proceedsIDR yang sudah terkunci di masa lalu
+        tradingBalance += tx.proceedsIDR; 
+        realizedUSD += tx.realized; const costOfSold = asset.avgPrice * tx.qty;
         asset.investedUSD -= costOfSold; asset.shares -= tx.qty;
       }
     }
@@ -453,7 +483,6 @@ export default function App() {
 
   const searchTimeoutRef = useRef(null);
   
-  // BUG FIX: Search dirubah agar langsung menembak API tanpa proxy untuk menghindari lag/gagal.
   useEffect(() => {
     if (!query || query.trim().length < 2) { setSuggestions([]); setIsSearching(false); return; }
     setIsSearching(true);
@@ -501,21 +530,18 @@ export default function App() {
             };
 
             try {
-                // Prioritas 1: API Direct Yahoo Finance (Paling Cepat & Responsif)
                 const resYahoo = await fetch(`https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=10`);
                 if (!resYahoo.ok) throw new Error("Yahoo Direct Failed");
                 const dataYahoo = await resYahoo.json();
                 results = formatYahooData(dataYahoo);
             } catch (e1) {
                 try {
-                    // Prioritas 2: API Direct TradingView (Sangat Cepat & Tanpa CORS issue)
                     const resTV = await fetch(`https://symbol-search.tradingview.com/symbol_search/v3/?text=${encodeURIComponent(q)}&hl=1&exchange=&type=stock,fund,dr,index&lang=en`);
                     if (!resTV.ok) throw new Error("TV Direct Failed");
                     const dataTV = await resTV.json();
                     results = formatTVData(dataTV);
                 } catch(e2) {
                     try {
-                        // Prioritas 3 (Darurat): Proxy API (Bisa lag jika server proxy sibuk)
                         const resProxy = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=10`)}`);
                         const dataProxy = await resProxy.json();
                         results = formatYahooData(dataProxy);
@@ -532,7 +558,7 @@ export default function App() {
       } finally { 
           setIsSearching(false); 
       }
-    }, 300); // Waktu tunggu dikurangi agar pencarian terasa instan
+    }, 300); 
     
     return () => clearTimeout(searchTimeoutRef.current);
   }, [query, searchMode]);
@@ -554,8 +580,9 @@ export default function App() {
     
     const assetId = assetStub.id || `${assetStub.type}:${assetStub.symbol}`;
     const txDate = overrideDate || assetStub.purchaseDate || Date.now();
+    const costIDR = costUSD * usdIdr; // FIX 2: Kunci pengeluaran IDR saat pembelian terjadi
     
-    addTransaction({ id: `tx:${Date.now()}`, type: "buy", qty, pricePerUnit: priceUSD, cost: costUSD, date: txDate, symbol: assetStub.symbol, name: assetStub.name || assetStub.symbol, assetId, assetStub });
+    addTransaction({ id: `tx:${Date.now()}`, type: "buy", qty, pricePerUnit: priceUSD, cost: costUSD, costIDR, date: txDate, symbol: assetStub.symbol, name: assetStub.name || assetStub.symbol, assetId, assetStub });
     if (isAssetDetailModalOpen) setAssetDetailModalOpen(false); return true;
   };
 
@@ -563,15 +590,20 @@ export default function App() {
     qty = toNum(qty); priceUSD = toNum(priceUSD);
     if (!asset || qty <= 0 || priceUSD < 0) { alert("Quantity must be > 0 and price >= 0"); return false; }
     if (qty > asset.shares) { alert("Cannot sell more than you own."); return false; }
+    
     const proceedsUSD = qty * priceUSD; const costOfSold = qty * asset.avgPrice; const realized = proceedsUSD - costOfSold;
-    addTransaction({ id: `tx:${Date.now()}`, assetId: asset.id, type: "sell", qty, pricePerUnit: priceUSD, proceeds: proceedsUSD, costOfSold, realized, date: Date.now(), symbol: asset.symbol, name: asset.name, image: asset.image });
+    const proceedsIDR = proceedsUSD * usdIdr; // FIX 2: Kunci pendapatan IDR saat penjualan terjadi
+
+    addTransaction({ id: `tx:${Date.now()}`, assetId: asset.id, type: "sell", qty, pricePerUnit: priceUSD, proceeds: proceedsUSD, proceedsIDR, costOfSold, realized, date: Date.now(), symbol: asset.symbol, name: asset.name, image: asset.image });
     if (isAssetDetailModalOpen) setAssetDetailModalOpen(false); return true;
   };
 
   const handleDeleteAsset = (asset) => {
     if (!asset || !confirm(`Delete and liquidate ${asset.symbol} at market price?`)) return;
     const marketUSD = asset.shares * asset.lastPriceUSD; const realized = marketUSD - asset.investedUSD;
-    addTransaction({ id: `tx:${Date.now()}`, assetId: asset.id, type: "delete", qty: asset.shares, pricePerUnit: asset.lastPriceUSD, proceeds: marketUSD, costOfSold: asset.investedUSD, realized, date: Date.now(), symbol: asset.symbol, name: asset.name, image: asset.image, note: "liquidated" });
+    const proceedsIDR = marketUSD * usdIdr; // FIX 2: Kunci pendapatan IDR saat aset di-liquidasi
+
+    addTransaction({ id: `tx:${Date.now()}`, assetId: asset.id, type: "delete", qty: asset.shares, pricePerUnit: asset.lastPriceUSD, proceeds: marketUSD, proceedsIDR, costOfSold: asset.investedUSD, realized, date: Date.now(), symbol: asset.symbol, name: asset.name, image: asset.image, note: "liquidated" });
     setAssetDetailModalOpen(false);
   };
   
@@ -643,7 +675,7 @@ export default function App() {
         return stringData; 
     };
 
-    const headers = ['id', 'date', 'type', 'symbol', 'name', 'qty', 'pricePerUnit', 'cost', 'proceeds', 'realized', 'amount', 'assetId', 'note', 'assetStub_id', 'assetStub_type', 'assetStub_symbol', 'assetStub_name', 'assetStub_image', 'assetStub_coingeckoId', 'assetStub_incomeFrequency', 'assetStub_coupon', 'assetStub_purchaseDate', 'assetStub_nonLiquidYoy', 'assetStub_description'];
+    const headers = ['id', 'date', 'type', 'symbol', 'name', 'qty', 'pricePerUnit', 'cost', 'costIDR', 'proceeds', 'proceedsIDR', 'realized', 'amount', 'assetId', 'note', 'assetStub_id', 'assetStub_type', 'assetStub_symbol', 'assetStub_name', 'assetStub_image', 'assetStub_coingeckoId', 'assetStub_incomeFrequency', 'assetStub_coupon', 'assetStub_purchaseDate', 'assetStub_nonLiquidYoy', 'assetStub_description'];
     const headerRow = headers.join(',') + '\n';
     
     const rows = transactions.map(tx => { 
@@ -735,7 +767,7 @@ export default function App() {
                     if (key.startsWith('assetStub_')) delete tx[key];
                 });
 
-                const numericFields = ['qty', 'pricePerUnit', 'cost', 'proceeds', 'realized', 'amount'];
+                const numericFields = ['qty', 'pricePerUnit', 'cost', 'costIDR', 'proceeds', 'proceedsIDR', 'realized', 'amount'];
                 numericFields.forEach(field => {
                     if (tx[field] !== undefined) {
                         tx[field] = toNum(tx[field]);
@@ -899,6 +931,7 @@ export default function App() {
     return assetsToSort;
   }, [derivedData.rows, assetSortBy]);
 
+  // FIX 2: Perbaiki kalkulasi garfik Equity (Total Growth) agar juga memakai IDR terkunci di masa lalu
   const equitySeries = useMemo(() => {
     const sortedTx = [...transactions].sort((a, b) => a.date - b.date);
     if (sortedTx.length === 0) return [{ t: Date.now() - 86400000, v: 0 }, { t: Date.now(), v: 0 }];
@@ -907,13 +940,14 @@ export default function App() {
         if (tx.type === 'deposit') currentCash += tx.amount;
         else if (tx.type === 'withdraw') currentCash -= tx.amount;
         else if (tx.type === 'buy') {
-            currentCash -= tx.cost * usdIdr;
+            // Gunakan costIDR jika ada (fix masa depan & data ter-patch), jika tidak jatuh ke current rate (fallback aman)
+            currentCash -= (tx.costIDR !== undefined ? tx.costIDR : (tx.cost * usdIdr));
             const asset = currentHoldings[tx.assetId] || { shares: 0, avgPrice: 0, invested: 0 };
             const newInvested = asset.invested + tx.cost; const newShares = asset.shares + tx.qty;
             asset.invested = newInvested; asset.shares = newShares; asset.avgPrice = newShares > 0 ? newInvested / newShares : 0;
             currentHoldings[tx.assetId] = asset;
         } else if (tx.type === 'sell' || tx.type === 'delete') {
-            currentCash += tx.proceeds * usdIdr;
+            currentCash += (tx.proceedsIDR !== undefined ? tx.proceedsIDR : (tx.proceeds * usdIdr));
             if (currentHoldings[tx.assetId]) {
                 const asset = currentHoldings[tx.assetId];
                 asset.invested -= asset.avgPrice * tx.qty; asset.shares -= tx.qty;
