@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -13,8 +14,8 @@ const InfoIcon = ({className}) => <svg className={className} width="1em" height=
 const FullscreenIcon = ({className}) => (<svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>);
 const ExitFullscreenIcon = ({ className }) => (<svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 0-2-2h-3M3 16h3a2 2 0 0 0 2 2v3"/></svg>);
 const PencilIcon = (props) => (<svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>);
-const AvgProfitIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20V16"/></svg>;
-const AvgLossIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4v10"/><path d="M18 4v16"/><path d="M6 4v8"/></svg>;
+const AvgProfitIcon = ({className}) => <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20V16"/></svg>;
+const AvgLossIcon = ({className}) => <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4v10"/><path d="M18 4v16"/><path d="M6 4v8"/></svg>;
 const SearchIcon = (props) => (<svg {...props} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" ><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>);
 const StarIcon = ({ isFilled, ...props }) => (<svg {...props} width="20" height="20" viewBox="0 0 24 24" fill={isFilled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>);
 
@@ -151,7 +152,6 @@ function formatCurrencyCompactNoSymbol(value, valueIsUSD, displaySymbol, usdIdr)
   return new Intl.NumberFormat(isRupiah ? 'id-ID' : 'en-US', { style: 'decimal', minimumFractionDigits: isRupiah ? 0 : 2, maximumFractionDigits: isRupiah ? 0 : 2 }).format(displayValue);
 }
 
-
 function formatQty(v) {
   const n = Number(v || 0);
   if (n === 0) return "0";
@@ -207,7 +207,7 @@ const BottomSheet = ({ isOpen, onClose, children }) => {
 
 /* ===================== Main Component ===================== */
 export default function App() {
-  const STORAGE_VERSION = "v41"; // Bumped version for fresh state formatting if needed
+  const STORAGE_VERSION = "v42"; 
   
   const [assets, setAssets] = useState(() => JSON.parse(safeGetStorage(`pf_assets_${STORAGE_VERSION}`, "[]")).map(ensureNumericAsset));
   const [transactions, setTransactions] = useState(() => JSON.parse(safeGetStorage(`pf_transactions_${STORAGE_VERSION}`, "[]")));
@@ -277,13 +277,11 @@ export default function App() {
       const assetId = tx.assetId || `${tx.assetStub.type}:${tx.assetStub.symbol}`;
       if (!newAssets[assetId]) { 
           newAssets[assetId] = ensureNumericAsset({ ...tx.assetStub, shares: 0, investedUSD: 0, avgPrice: 0 }); 
-          // Default purchaseDate ke transaksi buy pertama
           newAssets[assetId].purchaseDate = tx.date;
       }
       
       const asset = newAssets[assetId];
       if (tx.type === 'buy') {
-        // Jika ada transaksi buy yang lebih lama, gunakan itu sebagai tanggal beli awal untuk hitungan Hold Period
         if (tx.date < asset.purchaseDate) {
             asset.purchaseDate = tx.date;
         }
@@ -314,6 +312,7 @@ export default function App() {
   useEffect(() => { safeSetStorage(`pf_price_history_${STORAGE_VERSION}`, JSON.stringify(priceHistory)); }, [priceHistory]);
   useEffect(() => { safeSetStorage(`pf_asset_display_as_${STORAGE_VERSION}`, assetDisplayAs); }, [assetDisplayAs]);
 
+  // Realtime Polling Optimizations
   useEffect(() => {
     const pollPrices = async () => {
       try {
@@ -344,14 +343,23 @@ export default function App() {
             let spark = [];
             
             try {
-                const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
-                if(!res.ok) throw new Error('Raw fail');
+                const res = await fetch(url);
+                if(!res.ok) throw new Error('Direct fail');
                 const data = await res.json();
                 spark = data?.spark?.result || [];
-            } catch(e1) {
-                const res = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`);
-                const data = await res.json();
-                spark = data?.spark?.result || [];
+            } catch(e0) {
+                try {
+                    const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+                    if(!res.ok) throw new Error('Raw fail');
+                    const data = await res.json();
+                    spark = data?.spark?.result || [];
+                } catch(e1) {
+                    try {
+                        const res = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`);
+                        const data = await res.json();
+                        spark = data?.spark?.result || [];
+                    } catch (e2) {}
+                }
             }
             
             spark.forEach(item => {
@@ -457,14 +465,12 @@ export default function App() {
               image: c.thumb, source: "coingecko", type: "crypto" 
           })));
         } else {
-            // Pencarian Saham yang Super Cepat & Komprehensif
             let results = [];
             
             try {
-                // Utamakan TradingView via proxy ultra cepat untuk mendapatkan Logoid asli
-                const tvUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(TV_SEARCH_API(q))}`;
+                const tvUrl = TV_SEARCH_API(q);
                 const res = await fetchWithTimeout(tvUrl, {}, 3000);
-                if (!res.ok) throw new Error("TV fail");
+                if (!res.ok) throw new Error("TV direct fail");
                 const data = await res.json();
                 
                 if (data && data.length > 0) {
@@ -472,60 +478,61 @@ export default function App() {
                         const yahooSymbol = getYahooSymbol(it.symbol, it.exchange, it.country);
                         const isIndo = it.country === 'ID' || it.exchange === 'IDX';
                         const cleanSymbol = it.symbol.replace('.JK', '');
-                        
-                        // Sistem Logo Cerdas: 
-                        // 1. TradingView Logoid (Global)
-                        // 2. Stockbit Database (Paling Lengkap & Jernih Khusus IDX/Indonesia)
-                        // 3. Parqet Database (Saham US)
                         const imgUrl = it.logoid 
                             ? `https://s3-symbol-logo.tradingview.com/${it.logoid}--big.svg`
                             : (isIndo ? `https://assets.stockbit.com/logos/companies/${cleanSymbol}.png` : `https://assets.parqet.com/logos/symbol/${it.symbol}?format=png`);
-                        
-                        return {
-                            symbol: yahooSymbol, 
-                            display: `${it.description} (${it.symbol})`, 
-                            exchange: it.exchange || it.country, 
-                            id: yahooSymbol, 
-                            source: "tradingview", 
-                            type: "stock", 
-                            image: imgUrl
-                        };
+                        return { symbol: yahooSymbol, display: `${it.description} (${it.symbol})`, exchange: it.exchange || it.country, id: yahooSymbol, source: "tradingview", type: "stock", image: imgUrl };
                     });
-                } else {
-                    throw new Error("Empty TV");
-                }
+                } else { throw new Error("Empty TV"); }
             } catch (e1) {
-                // Fallback sangat tangguh menggunakan Yahoo Finance Search
-                const yahooUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://query2.finance.yahoo.com/v1/finance/search?q=${q}`)}`;
-                const res = await fetchWithTimeout(yahooUrl, {}, 4000);
-                const data = await res.json();
-                
-                if (data && data.quotes) {
-                    results = data.quotes.filter(it => it.shortname || it.longname).map(it => {
-                         const isIndo = it.symbol.endsWith('.JK');
-                         const cleanSymbol = it.symbol.replace('.JK', '');
-                         
-                         // Sama seperti di atas, sisipkan Stockbit untuk saham Indonesia
-                         const imgUrl = isIndo 
-                            ? `https://assets.stockbit.com/logos/companies/${cleanSymbol}.png` 
-                            : `https://assets.parqet.com/logos/symbol/${it.symbol}?format=png`;
-                            
-                         return {
-                             symbol: it.symbol.toUpperCase(), 
-                             display: `${it.shortname || it.longname} (${it.symbol.toUpperCase()})`, 
-                             exchange: it.exchange, 
-                             id: it.symbol.toUpperCase(), 
-                             source: "yahoo", 
-                             type: "stock", 
-                             image: imgUrl
+                try {
+                    const tvUrlProxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(TV_SEARCH_API(q))}`;
+                    const res = await fetchWithTimeout(tvUrlProxy, {}, 3000);
+                    const data = await res.json();
+                    
+                    if (data && data.length > 0) {
+                        results = data.map(it => {
+                            const yahooSymbol = getYahooSymbol(it.symbol, it.exchange, it.country);
+                            const isIndo = it.country === 'ID' || it.exchange === 'IDX';
+                            const cleanSymbol = it.symbol.replace('.JK', '');
+                            const imgUrl = it.logoid 
+                                ? `https://s3-symbol-logo.tradingview.com/${it.logoid}--big.svg`
+                                : (isIndo ? `https://assets.stockbit.com/logos/companies/${cleanSymbol}.png` : `https://assets.parqet.com/logos/symbol/${it.symbol}?format=png`);
+                            return { symbol: yahooSymbol, display: `${it.description} (${it.symbol})`, exchange: it.exchange || it.country, id: yahooSymbol, source: "tradingview", type: "stock", image: imgUrl };
+                        });
+                    } else { throw new Error("Empty Proxy TV"); }
+                } catch (e2) {
+                    const yahooUrl = `https://query2.finance.yahoo.com/v1/finance/search?q=${q}`;
+                    try {
+                        const res = await fetchWithTimeout(yahooUrl, {}, 3000);
+                        const data = await res.json();
+                        if (data && data.quotes) {
+                            results = data.quotes.filter(it => it.shortname || it.longname).map(it => {
+                                 const isIndo = it.symbol.endsWith('.JK');
+                                 const cleanSymbol = it.symbol.replace('.JK', '');
+                                 const imgUrl = isIndo ? `https://assets.stockbit.com/logos/companies/${cleanSymbol}.png` : `https://assets.parqet.com/logos/symbol/${it.symbol}?format=png`;
+                                 return { symbol: it.symbol.toUpperCase(), display: `${it.shortname || it.longname} (${it.symbol.toUpperCase()})`, exchange: it.exchange, id: it.symbol.toUpperCase(), source: "yahoo", type: "stock", image: imgUrl }
+                            });
+                        }
+                    } catch(e3) {
+                         const yahooProxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(yahooUrl)}`;
+                         const res = await fetchWithTimeout(yahooProxy, {}, 4000);
+                         const data = await res.json();
+                         if (data && data.quotes) {
+                              results = data.quotes.filter(it => it.shortname || it.longname).map(it => {
+                                 const isIndo = it.symbol.endsWith('.JK');
+                                 const cleanSymbol = it.symbol.replace('.JK', '');
+                                 const imgUrl = isIndo ? `https://assets.stockbit.com/logos/companies/${cleanSymbol}.png` : `https://assets.parqet.com/logos/symbol/${it.symbol}?format=png`;
+                                 return { symbol: it.symbol.toUpperCase(), display: `${it.shortname || it.longname} (${it.symbol.toUpperCase()})`, exchange: it.exchange, id: it.symbol.toUpperCase(), source: "yahoo", type: "stock", image: imgUrl }
+                              });
                          }
-                    });
+                    }
                 }
             }
             setSuggestions(results.slice(0, 10));
         }
       } catch (e) { console.error("Semua metode pencarian gagal:", e); setSuggestions([]); } finally { setIsSearching(false); }
-    }, 400); // Trigger lebih cepat
+    }, 300); 
     return () => clearTimeout(searchTimeoutRef.current);
   }, [query, searchMode]);
 
@@ -546,7 +553,6 @@ export default function App() {
     }
     
     const assetId = assetStub.id || `${assetStub.type}:${assetStub.symbol}`;
-    // Jika overrideDate ada (seperti saat input alternative asset), gunakan itu
     const txDate = overrideDate || assetStub.purchaseDate || Date.now();
     
     addTransaction({ id: `tx:${Date.now()}`, type: "buy", qty, pricePerUnit: priceUSD, cost: costUSD, date: txDate, symbol: assetStub.symbol, name: assetStub.name || assetStub.symbol, assetId, assetStub });
@@ -558,14 +564,14 @@ export default function App() {
     if (!asset || qty <= 0 || priceUSD < 0) { alert("Quantity must be > 0 and price >= 0"); return false; }
     if (qty > asset.shares) { alert("Cannot sell more than you own."); return false; }
     const proceedsUSD = qty * priceUSD; const costOfSold = qty * asset.avgPrice; const realized = proceedsUSD - costOfSold;
-    addTransaction({ id: `tx:${Date.now()}`, assetId: asset.id, type: "sell", qty, pricePerUnit: priceUSD, proceeds: proceedsUSD, costOfSold, realized, date: Date.now(), symbol: asset.symbol, name: asset.name });
+    addTransaction({ id: `tx:${Date.now()}`, assetId: asset.id, type: "sell", qty, pricePerUnit: priceUSD, proceeds: proceedsUSD, costOfSold, realized, date: Date.now(), symbol: asset.symbol, name: asset.name, image: asset.image });
     if (isAssetDetailModalOpen) setAssetDetailModalOpen(false); return true;
   };
 
   const handleDeleteAsset = (asset) => {
     if (!asset || !confirm(`Delete and liquidate ${asset.symbol} at market price?`)) return;
     const marketUSD = asset.shares * asset.lastPriceUSD; const realized = marketUSD - asset.investedUSD;
-    addTransaction({ id: `tx:${Date.now()}`, assetId: asset.id, type: "delete", qty: asset.shares, pricePerUnit: asset.lastPriceUSD, proceeds: marketUSD, costOfSold: asset.investedUSD, realized, date: Date.now(), symbol: asset.symbol, name: asset.name, note: "liquidated" });
+    addTransaction({ id: `tx:${Date.now()}`, assetId: asset.id, type: "delete", qty: asset.shares, pricePerUnit: asset.lastPriceUSD, proceeds: marketUSD, costOfSold: asset.investedUSD, realized, date: Date.now(), symbol: asset.symbol, name: asset.name, image: asset.image, note: "liquidated" });
     setAssetDetailModalOpen(false);
   };
   
@@ -625,7 +631,6 @@ export default function App() {
     setBalanceModalOpen(false);
   };
   
-  // Format Ekspor CSV Diperbarui (Format Tanggal Aman)
   const handleExport = () => {
     if (transactions.length === 0) { alert("No transactions to export."); return; }
     
@@ -651,7 +656,6 @@ export default function App() {
                 val = tx[header];
             }
 
-            // Konversi Date ke ISO String agar aman dibuka di Excel
             if (header === 'date' || header === 'assetStub_purchaseDate') {
                 if (val && typeof val === 'number') {
                     val = new Date(val).toISOString();
@@ -668,7 +672,6 @@ export default function App() {
 
   const handleImportClick = () => { importInputRef.current.click(); };
 
-  // Format Impor CSV Diperbarui (Parsing ISO String Cerdas)
   const handleFileImport = (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -702,13 +705,12 @@ export default function App() {
                     }
                 });
 
-                // Tangkap string ISO Date dan konversi kembali ke Timestamp
                 ['date', 'assetStub_purchaseDate'].forEach(dateField => {
                     if (tx[dateField]) {
                         if (typeof tx[dateField] === 'string' && tx[dateField].includes('T')) {
                             tx[dateField] = new Date(tx[dateField]).getTime();
                         } else {
-                            tx[dateField] = toNum(tx[dateField]); // Fallback versi lawas
+                            tx[dateField] = toNum(tx[dateField]); 
                         }
                     }
                 });
@@ -776,7 +778,6 @@ export default function App() {
               const img = new Image();
               img.onload = () => {
                   const canvas = document.createElement('canvas');
-                  // Compress & Resize for robust LocalStorage storage
                   const MAX_WIDTH = 400; 
                   const MAX_HEIGHT = 400;
                   let width = img.width;
@@ -793,7 +794,6 @@ export default function App() {
                   const ctx = canvas.getContext('2d');
                   ctx.drawImage(img, 0, 0, width, height);
 
-                  // Convert to optimized JPEG (quality 0.8)
                   const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
                   
                   setProfilePic(dataUrl);
@@ -814,14 +814,12 @@ export default function App() {
             const purchaseTime = a.purchaseDate || a.createdAt || Date.now();
             const nowTime = Date.now();
             
-            // 1. YoY Gain (Fractional/Exact Years Passed for precise calculation)
             const exactYearsPassed = Math.max(0, (nowTime - purchaseTime) / (1000 * 60 * 60 * 24 * 365.25));
             
             const initialPrice = a.avgPrice || 0;
             const currentPrice = initialPrice * (1 + ((a.nonLiquidYoy || 0) / 100) * exactYearsPassed);
             const capitalValueUSD = a.shares * currentPrice;
             
-            // 2. Income Calculation based on fixed nominal per frequency
             let accumulatedCouponUSD = 0;
             let nextIncomeDate = null;
             const freq = a.incomeFrequency || 'None';
@@ -836,7 +834,6 @@ export default function App() {
 
                 let tempDate = new Date(purchaseTime);
                 
-                // Hitung periode berlalu berdasarkan penambahan bulan
                 while(true) {
                     tempDate.setMonth(tempDate.getMonth() + monthsPerPeriod);
                     if (tempDate.getTime() <= nowTime) {
@@ -847,7 +844,6 @@ export default function App() {
                     }
                 }
                 
-                // Sesuai nominal yg diinput * qty, TANPA dipengaruhi harga beli (Invested)
                 const incomePerPeriod = a.coupon * a.shares; 
                 accumulatedCouponUSD = validPeriods * incomePerPeriod;
             }
@@ -887,7 +883,6 @@ export default function App() {
     return assetsToSort;
   }, [derivedData.rows, assetSortBy]);
 
-  // Realtime Equity Chart Mapping
   const equitySeries = useMemo(() => {
     const sortedTx = [...transactions].sort((a, b) => a.date - b.date);
     if (sortedTx.length === 0) return [{ t: Date.now() - 86400000, v: 0 }, { t: Date.now(), v: 0 }];
@@ -917,7 +912,6 @@ export default function App() {
         points.push({ t: tx.date, v: currentCash + (holdingsValueUSD * usdIdr) });
     }
     if (points.length === 0) return [{ t: Date.now() - 86400000, v: 0 }, { t: Date.now(), v: derivedData.totalEquity }];
-    // Ensure the last point tracks exactly up to current time with current realtime totalEquity
     return [{ t: points[0].t - 86400000, v: 0 }, ...points, { t: Date.now(), v: derivedData.totalEquity }];
   }, [transactions, assets, usdIdr, derivedData.totalEquity]);
 
@@ -937,7 +931,6 @@ export default function App() {
     setAssetDetailModalOpen(true);
   };
 
-  // Kalkulasi ukuran kelas teks untuk total equity secara dinamis berdasarkan panjang string nominal
   const totalEquityFontSizeClass = useMemo(() => {
     const textFormatted = formatCurrency(derivedData.totalEquity, false, displaySymbol, usdIdr);
     const length = textFormatted.length;
@@ -1016,10 +1009,10 @@ export default function App() {
                         </div>
                     </div>
                     <div className="relative w-full h-4 bg-black/20 rounded-full my-2 flex text-[10px] font-bold text-white items-center">
-                        <div className="bg-sky-500 h-full flex items-center justify-center rounded-l-full overflow-hidden" style={{ width: `${derivedData.cashPct}%` }}>
+                        <div className="bg-blue-500 h-full flex items-center justify-center rounded-l-full overflow-hidden" style={{ width: `${derivedData.cashPct}%` }}>
                             {derivedData.cashPct > 15 && `${derivedData.cashPct.toFixed(0)}%`}
                         </div>
-                        <div className="bg-teal-500 h-full flex items-center justify-center rounded-r-full overflow-hidden" style={{ width: `${derivedData.investedPct}%` }}>
+                        <div className="bg-emerald-500 h-full flex items-center justify-center rounded-r-full overflow-hidden" style={{ width: `${derivedData.investedPct}%` }}>
                             {derivedData.investedPct > 15 && `${derivedData.investedPct.toFixed(0)}%`}
                         </div>
                     </div>
@@ -1053,7 +1046,7 @@ export default function App() {
                         return (
                             <div key={w.id} onClick={() => handleWatchedAssetClick({...w, ...data})} className="flex-1 glass-card p-2 flex items-center justify-between cursor-pointer hover:border-white/20 transition-all overflow-hidden min-w-0">
                                 <div className="flex items-center gap-2 min-w-0 pr-2">
-                                    <img src={w.image} alt={w.name} className="w-5 h-5 rounded-full bg-zinc-800 object-cover shrink-0" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${w.symbol}&background=random&color=fff&rounded=true&bold=true`; }} />
+                                    <img src={w.image} alt={w.name} className="w-5 h-5 rounded-full bg-zinc-800 object-cover shrink-0 border border-white/5" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${w.symbol}&background=random&color=fff&rounded=true&bold=true`; }} />
                                     <div className="min-w-0">
                                         <p className="text-[11px] sm:text-xs font-semibold text-white truncate max-w-[70px] sm:max-w-[100px]">{w.symbol}</p>
                                         <p className="text-[9px] text-gray-400 truncate max-w-[70px] sm:max-w-[100px]">{w.name.replace(/\(.*?\)/,'').trim()}</p>
@@ -1096,7 +1089,7 @@ export default function App() {
                             <div className="flex justify-between items-center mb-3 min-w-0">
                                 <div className="min-w-0 flex-1 pr-2 flex items-center gap-2 sm:gap-3">
                                     {r.type !== 'nonliquid' && (
-                                        <img src={r.image} alt={r.symbol} className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-zinc-800 object-cover shrink-0" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${r.symbol}&background=random&color=fff&rounded=true&bold=true`; }} />
+                                        <img src={r.image} alt={r.symbol} className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-zinc-800 object-cover shrink-0 border border-white/5" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${r.symbol}&background=random&color=fff&rounded=true&bold=true`; }} />
                                     )}
                                     <div className="min-w-0 flex-1">
                                         <h3 className="text-sm sm:text-base font-bold text-white truncate">{r.symbol}</h3>
@@ -1143,11 +1136,9 @@ export default function App() {
 
         </main>
         
-        {/* Hidden Inputs untuk Profile Pic */}
         <input type="file" accept="image/*" capture="user" ref={cameraInputRef} onChange={handleProfilePicChange} className="hidden" />
         <input type="file" accept="image/*" ref={galleryInputRef} onChange={handleProfilePicChange} className="hidden" />
 
-        {/* Profile Menu Bottom Sheet */}
         <BottomSheet isOpen={isProfileMenuOpen} onClose={() => setProfileMenuOpen(false)}>
             <div className="p-4 text-white text-sm">
                 <h3 className="text-base font-semibold mb-4 px-2">Profile Photo Menu</h3>
@@ -1170,7 +1161,6 @@ export default function App() {
             </div>
         </BottomSheet>
 
-        {/* View Photo Fullscreen Modal */}
         <Modal isOpen={isViewPhotoOpen} onClose={() => setIsViewPhotoOpen(false)} title="Profile Photo" size="lg">
             <div className="flex items-center justify-center p-2">
                 <img src={profilePic} alt="Profile Full" className="max-w-full max-h-[70vh] rounded-lg object-contain" />
@@ -1183,11 +1173,14 @@ export default function App() {
         <Modal title="Portfolio Growth" isOpen={isEquityModalOpen} onClose={() => setIsEquityModalOpen(false)} size="3xl"><EquityGrowthView equitySeries={equitySeries} displaySymbol={displaySymbol} usdIdr={usdIdr} totalEquity={derivedData.totalEquity} /></Modal>
         <Modal title="Portfolio Allocation" isOpen={isAllocationModalOpen} onClose={() => setIsAllocationModalOpen(false)}><PortfolioAllocation data={derivedData.rows} tradingBalance={financialSummaries.tradingBalance} displaySymbol={displaySymbol} usdIdr={usdIdr}/></Modal>
         <Modal title="Transaction History" isOpen={isHistoryModalOpen} onClose={() => setIsHistoryModalOpen(false)}><HistoryView transactions={transactions} usdIdr={usdIdr} displaySymbol={displaySymbol} onDeleteTransaction={handleDeleteTransaction} /></Modal>
-        <Modal title="Trade Performance" isOpen={isPerformanceModalOpen} onClose={() => setIsPerformanceModalOpen(false)} size="2xl">
+        
+        {/* Updated Trade Performance Modal - Grid Aligned & Asset Icons */}
+        <Modal title="Trade Performance" isOpen={isPerformanceModalOpen} onClose={() => setIsPerformanceModalOpen(false)} size="3xl">
             <div className="max-h-[80vh] overflow-y-auto">
-                <TradeStatsView stats={derivedData.tradeStats} transactions={transactions} displaySymbol={displaySymbol} usdIdr={usdIdr} />
+                <TradeStatsView stats={derivedData.tradeStats} transactions={transactions} displaySymbol={displaySymbol} usdIdr={usdIdr} assets={assets} />
             </div>
         </Modal>
+        
         <Modal title="Asset Options" isOpen={isAssetOptionsOpen} onClose={() => setIsAssetOptionsOpen(false)} size="lg">
             <AssetOptionsPanel 
                 sortBy={assetSortBy}
@@ -1394,15 +1387,159 @@ const EquityGrowthView = ({ equitySeries, displaySymbol, usdIdr, totalEquity }) 
     }, [equitySeries, returnPeriod]);
     return ( <div className="p-1"> <div><p className="text-sm text-gray-400">Total Equity</p><p className="text-2xl sm:text-3xl font-bold text-white mb-1 truncate w-full">{formatCurrency(totalEquity, false, displaySymbol, usdIdr)}</p></div> <div className="mt-6"><AreaChart data={equitySeries} displaySymbol={displaySymbol} range={chartRange} setRange={setChartRange} /></div> <div className="mt-8 max-h-64 overflow-y-auto"> <div className="flex justify-between items-center mb-4 sticky top-0 bg-zinc-900/80 backdrop-blur-sm py-2"><h3 className="text-base font-semibold text-white">Total Equity Return</h3><div className="flex items-center gap-2 text-sm">{['Daily', 'Monthly', 'Yearly'].map(p => (<button key={p} onClick={() => setReturnPeriod(p)} className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs ${returnPeriod === p ? 'bg-zinc-700 text-white' : 'text-gray-400'}`}>{p}</button>))}</div></div> <table className="w-full text-xs sm:text-sm"> <thead className="text-left text-gray-500 text-xs"><tr><th className="p-2 font-normal">Date</th><th className="p-2 font-normal text-right">Equity</th><th className="p-2 font-normal text-right">P&L</th></tr></thead> <tbody>{equityReturnData.map((item, index) => (<tr key={index} className="border-t border-white/10"><td className="p-2 text-white">{item.date}</td><td className="p-2 text-white text-right tabular-nums whitespace-nowrap">{formatCurrencyShort(item.equity, false, displaySymbol, usdIdr)}</td><td className={`p-2 text-right tabular-nums whitespace-nowrap ${item.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{item.pnl >= 0 ? '+' : ''}{formatCurrencyShort(item.pnl, false, displaySymbol, usdIdr)} <br className="sm:hidden" />({item.pnlPct.toFixed(2)}%)</td></tr>))}</tbody> </table> </div> </div> );
 };
-const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr }) => {
+
+/* ================== UPDATED TRADE STATS VIEW ================== */
+const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr, assets }) => {
     const [chartRange, setChartRange] = useState("All");
-    const { maxProfitPct, maxLossPct } = useMemo(() => { const maxProfitTx = transactions.find(tx => tx.realized === stats.maxProfit); const profitPct = maxProfitTx && maxProfitTx.costOfSold > 0 ? (maxProfitTx.realized / maxProfitTx.costOfSold) * 100 : 0; const maxLossTx = transactions.find(tx => tx.realized === stats.maxLoss); const lossPct = maxLossTx && maxLossTx.costOfSold > 0 ? (maxLossTx.realized / maxLossTx.costOfSold) * 100 : 0; return { maxProfitPct: profitPct, maxLossPct: lossPct }; }, [transactions, stats.maxProfit, stats.maxLoss]);
-    const realizedGainSeries = useMemo(() => { const sorted = [...transactions.filter(t => t.type === 'sell' || t.type === 'delete')].sort((a, b) => a.date - b.date); let cumulativeGain = 0; const points = sorted.map(tx => { cumulativeGain += tx.realized || 0; return { t: tx.date, v: displaySymbol === '$' ? cumulativeGain : cumulativeGain * usdIdr }; }); if (points.length > 0) points.unshift({ t: points[0].t - 86400000, v: 0 }); return points.length ? points : [{ t: Date.now() - 1000, v: 0 }, {t: Date.now(), v:0}]; }, [transactions, displaySymbol, usdIdr]);
-    const sells = useMemo(() => transactions.filter(tx => tx.type === 'sell' || tx.type === 'delete'), [transactions]); const realizedGainOnly = useMemo(() => sells.filter(tx => tx.realized > 0).reduce((sum, tx) => sum + tx.realized, 0), [sells]); const realizedLossOnly = useMemo(() => sells.filter(tx => tx.realized < 0).reduce((sum, tx) => sum + (tx.realized < 0 ? tx.realized : 0), 0), [sells]);
-    const topGainers = useMemo(() => { const gainers = {}; sells.forEach(tx => { if (!gainers[tx.symbol]) gainers[tx.symbol] = { trades: 0, pnl: 0, cost: 0 }; gainers[tx.symbol].trades++; gainers[tx.symbol].pnl += tx.realized; gainers[tx.symbol].cost += tx.costOfSold || 0; }); return Object.entries(gainers).map(([symbol, data]) => ({ symbol, ...data, pnlPct: data.cost > 0 ? (data.pnl / data.cost) * 100 : 0 })).sort((a, b) => b.pnl - a.pnl).slice(0, 5); }, [sells]);
-    if (!stats) return <div className="p-4 text-center text-gray-500">No trade data available.</div>;
-    return ( <div className="p-4 space-y-6"> <div className="glass-card p-4"> <div className="flex items-center justify-between"> <div><p className="text-sm text-gray-400">Win Rate</p><p className="text-3xl font-bold text-white mt-1">{stats.winRate.toFixed(2)}%</p></div> <div className="relative w-24 h-24"><svg className="w-full h-full transform -rotate-90"><circle cx="50%" cy="50%" r="45%" stroke="rgba(255,255,255,0.1)" strokeWidth="8" fill="transparent" /><circle cx="50%" cy="50%" r="45%" stroke="#10B981" strokeWidth="8" fill="transparent" strokeDasharray={`${Math.PI * 2 * 45 * (stats.winRate / 100)}, ${Math.PI * 2 * 45}`} strokeLinecap="round"/></svg><div className="absolute inset-0 flex flex-col items-center justify-center text-xs text-center"><div className="font-semibold">{stats.trades}</div><div className="text-gray-400">Trades</div><div className="mt-1 flex gap-2"><div><span className="text-emerald-400">{stats.wins}</span> W</div><div><span className="text-red-400">{stats.losses}</span> L</div></div></div></div> </div> </div> <div className="grid grid-cols-2 gap-4"> <div className="glass-card p-3 min-w-0"><p className="text-sm text-gray-400 flex items-center gap-1"><ArrowUpIcon className="text-emerald-400 shrink-0"/>Max Profit</p><p className="text-base font-semibold text-white mt-1 whitespace-nowrap overflow-hidden text-ellipsis">{formatCurrencyShort(stats.maxProfit, true, displaySymbol, usdIdr)}</p><p className="text-[10px] sm:text-sm text-emerald-400">+{maxProfitPct.toFixed(2)}%</p></div> <div className="glass-card p-3 min-w-0"><p className="text-sm text-gray-400 flex items-center gap-1"><ArrowDownIcon className="text-red-400 shrink-0"/>Max Loss</p><p className="text-base font-semibold text-white mt-1 whitespace-nowrap overflow-hidden text-ellipsis">{formatCurrencyShort(stats.maxLoss, true, displaySymbol, usdIdr)}</p><p className="text-[10px] sm:text-sm text-red-400">{maxLossPct.toFixed(2)}%</p></div> <div className="glass-card p-3 min-w-0"><p className="text-sm text-gray-400 flex items-center gap-1"><AvgProfitIcon className="text-gray-400 w-4 h-4 shrink-0"/>Avg. Profit</p><p className="text-base font-semibold text-white mt-1 whitespace-nowrap overflow-hidden text-ellipsis">{formatCurrencyShort(stats.avgProfit, true, displaySymbol, usdIdr)}</p></div> <div className="glass-card p-3 min-w-0"><p className="text-sm text-gray-400 flex items-center gap-1"><AvgLossIcon className="text-gray-400 w-4 h-4 shrink-0"/>Avg. Loss</p><p className="text-base font-semibold text-white mt-1 whitespace-nowrap overflow-hidden text-ellipsis">{formatCurrencyShort(stats.avgLoss, true, displaySymbol, usdIdr)}</p></div> </div> <div className="glass-card p-4 min-w-0"> <h3 className="font-semibold text-white flex items-center gap-1">Total Realized Gain <InfoIcon className="text-gray-400 w-3 h-3" /></h3> <p className={`text-xl sm:text-2xl font-bold mt-1 whitespace-nowrap overflow-hidden text-ellipsis ${stats.totalRealizedGain >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{stats.totalRealizedGain >= 0 ? '+' : ''}{formatCurrency(stats.totalRealizedGain, true, displaySymbol, usdIdr)}</p> <div className="h-48 mt-2"><AreaChart data={realizedGainSeries} displaySymbol={displaySymbol} range={chartRange} setRange={setChartRange} showTimeframes={false}/></div> <div className="mt-2 text-[10px] sm:text-xs text-gray-400 border-t border-white/10 pt-2 space-y-1 min-w-0"> <div className="flex justify-between gap-1 w-full"><span className="shrink-0">Realized Gain</span> <span className="text-emerald-400 font-semibold whitespace-nowrap overflow-hidden text-ellipsis text-right">{formatCurrencyShort(realizedGainOnly, true, displaySymbol, usdIdr)}</span></div> <div className="flex justify-between gap-1 w-full"><span className="shrink-0">Realized Loss</span> <span className="text-red-400 font-semibold whitespace-nowrap overflow-hidden text-ellipsis text-right">{formatCurrencyShort(realizedLossOnly, true, displaySymbol, usdIdr)}</span></div> </div> </div> <div className="glass-card p-4"> <h3 className="font-semibold text-white mb-2">Top Gainer ({displaySymbol})</h3> <table className="w-full text-xs sm:text-sm"> <thead className="text-gray-400 text-xs font-light"><tr><th className="text-left font-normal py-1">Code</th><th className="text-center font-normal py-1">Trades</th><th className="text-right font-normal py-1">P&L</th></tr></thead> <tbody>{topGainers.map(g => (<tr key={g.symbol} className="border-t border-white/10"><td className="py-2 flex items-center gap-2 truncate max-w-[80px] sm:max-w-[150px]"><div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-zinc-700 flex items-center justify-center font-bold text-white text-[10px] sm:text-xs shrink-0">{g.symbol.charAt(0)}</div><span className="truncate">{g.symbol}</span></td><td className="text-center py-2">{g.trades}</td><td className={`text-right py-2 font-semibold tabular-nums whitespace-nowrap ${g.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{g.pnl >= 0 ? '+' : ''}{formatCurrencyShort(g.pnl, true, displaySymbol, usdIdr)} <br className="sm:hidden" />({g.pnlPct.toFixed(2)}%)</td></tr>))}</tbody> </table> </div> </div> );
+    
+    const { maxProfitPct, maxLossPct } = useMemo(() => { 
+        const maxProfitTx = transactions.find(tx => tx.realized === stats.maxProfit); 
+        const profitPct = maxProfitTx && maxProfitTx.costOfSold > 0 ? (maxProfitTx.realized / maxProfitTx.costOfSold) * 100 : 0; 
+        const maxLossTx = transactions.find(tx => tx.realized === stats.maxLoss); 
+        const lossPct = maxLossTx && maxLossTx.costOfSold > 0 ? (maxLossTx.realized / maxLossTx.costOfSold) * 100 : 0; 
+        return { maxProfitPct: profitPct, maxLossPct: lossPct }; 
+    }, [transactions, stats.maxProfit, stats.maxLoss]);
+    
+    const realizedGainSeries = useMemo(() => { 
+        const sorted = [...transactions.filter(t => t.type === 'sell' || t.type === 'delete')].sort((a, b) => a.date - b.date); 
+        let cumulativeGain = 0; 
+        const points = sorted.map(tx => { 
+            cumulativeGain += tx.realized || 0; 
+            return { t: tx.date, v: displaySymbol === '$' ? cumulativeGain : cumulativeGain * usdIdr }; 
+        }); 
+        if (points.length > 0) points.unshift({ t: points[0].t - 86400000, v: 0 }); 
+        return points.length ? points : [{ t: Date.now() - 1000, v: 0 }, {t: Date.now(), v:0}]; 
+    }, [transactions, displaySymbol, usdIdr]);
+    
+    const sells = useMemo(() => transactions.filter(tx => tx.type === 'sell' || tx.type === 'delete'), [transactions]); 
+    
+    // Penambahan pencarian image aset ke dalam gainers
+    const topGainers = useMemo(() => { 
+        const gainers = {}; 
+        sells.forEach(tx => { 
+            if (!gainers[tx.symbol]) gainers[tx.symbol] = { trades: 0, pnl: 0, cost: 0, image: tx.image }; 
+            gainers[tx.symbol].trades++; 
+            gainers[tx.symbol].pnl += tx.realized; 
+            gainers[tx.symbol].cost += tx.costOfSold || 0;
+            if (tx.image) gainers[tx.symbol].image = tx.image; // Terus update jika transksi punya aset (jaga jaga image terbaru)
+        }); 
+        return Object.entries(gainers).map(([symbol, data]) => ({ symbol, ...data, pnlPct: data.cost > 0 ? (data.pnl / data.cost) * 100 : 0 })).sort((a, b) => b.pnl - a.pnl).slice(0, 5); 
+    }, [sells]);
+
+    if (!stats || stats.trades === 0) return <div className="p-8 text-center text-gray-500">No trade data available yet. Start trading to see your performance.</div>;
+
+    return (
+        <div className="p-2 sm:p-4 text-gray-300 space-y-6">
+            {/* Top Section: Overview (Win Rate + Key Stats) */}
+            <div className="flex flex-col md:flex-row gap-6 items-center border-b border-white/10 pb-6">
+                
+                {/* Donut for Win Rate (Already includes Total Trades Info) */}
+                <div className="flex-shrink-0 relative w-32 h-32 flex items-center justify-center">
+                    <svg className="w-full h-full transform -rotate-90">
+                        <circle cx="50%" cy="50%" r="45%" stroke="rgba(255,255,255,0.05)" strokeWidth="10" fill="transparent" />
+                        <circle cx="50%" cy="50%" r="45%" stroke="#10B981" strokeWidth="10" fill="transparent" strokeDasharray={`${Math.PI * 2 * 45 * (stats.winRate / 100)}, ${Math.PI * 2 * 45}`} strokeLinecap="round"/>
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                        <div className="text-xl font-bold text-white leading-tight">{stats.winRate.toFixed(1)}%</div>
+                        <div className="text-[9px] text-gray-400 mt-0.5">Win Rate</div>
+                        <div className="text-[10px] mt-1 space-x-1 font-medium bg-black/40 px-2 rounded-full border border-white/5">
+                            <span className="text-emerald-400">{stats.wins}W</span>
+                            <span className="text-gray-500">/</span>
+                            <span className="text-red-400">{stats.losses}L</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Main Stats Grid - Now perfectly aligned (sejajar) side-by-side!
+                  Karena Total Trades dihilangkan dari grid, sekarang 4 item bisa sejajar sempurna (grid-cols-4)
+                */}
+                <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4 w-full">
+                    {/* Avg Profit */}
+                    <div className="flex flex-col justify-between glass-card p-3 min-w-0">
+                        <span className="text-[10px] sm:text-xs text-gray-400 mb-1 flex items-center gap-1"><AvgProfitIcon className="w-3.5 h-3.5"/> Avg Profit</span>
+                        <span className="text-base sm:text-lg font-semibold text-emerald-400 truncate">{formatCurrencyCompact(stats.avgProfit, true, displaySymbol, usdIdr)}</span>
+                    </div>
+                    {/* Max Profit */}
+                    <div className="flex flex-col justify-between glass-card p-3 min-w-0">
+                        <span className="text-[10px] sm:text-xs text-gray-400 mb-1 flex items-center gap-1"><ArrowUpIcon className="text-emerald-400"/> Max Profit</span>
+                        <div>
+                            <span className="text-base sm:text-lg font-semibold text-white truncate block">{formatCurrencyCompact(stats.maxProfit, true, displaySymbol, usdIdr)}</span>
+                            <span className="text-[9px] sm:text-[10px] text-emerald-400">+{maxProfitPct.toFixed(2)}%</span>
+                        </div>
+                    </div>
+                    {/* Avg Loss */}
+                    <div className="flex flex-col justify-between glass-card p-3 min-w-0">
+                        <span className="text-[10px] sm:text-xs text-gray-400 mb-1 flex items-center gap-1"><AvgLossIcon className="w-3.5 h-3.5"/> Avg Loss</span>
+                        <span className="text-base sm:text-lg font-semibold text-red-400 truncate">{formatCurrencyCompact(stats.avgLoss, true, displaySymbol, usdIdr)}</span>
+                    </div>
+                     {/* Max Loss */}
+                     <div className="flex flex-col justify-between glass-card p-3 min-w-0">
+                        <span className="text-[10px] sm:text-xs text-gray-400 mb-1 flex items-center gap-1"><ArrowDownIcon className="text-red-400"/> Max Loss</span>
+                        <div>
+                            <span className="text-base sm:text-lg font-semibold text-white truncate block">{formatCurrencyCompact(stats.maxLoss, true, displaySymbol, usdIdr)}</span>
+                            <span className="text-[9px] sm:text-[10px] text-red-400">{maxLossPct.toFixed(2)}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Middle Section: Realized Gain Chart */}
+            <div className="border-b border-white/10 pb-6">
+                <div className="flex justify-between items-end mb-4">
+                    <div>
+                        <h3 className="text-sm text-gray-500 font-medium">Total Realized Gain</h3>
+                        <div className={`text-3xl font-bold mt-1 ${stats.totalRealizedGain >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            {stats.totalRealizedGain >= 0 ? '+' : ''}{formatCurrency(stats.totalRealizedGain, true, displaySymbol, usdIdr)}
+                        </div>
+                    </div>
+                </div>
+                <div className="h-48">
+                    <AreaChart data={realizedGainSeries} displaySymbol={displaySymbol} range={chartRange} setRange={setChartRange} showTimeframes={false}/>
+                </div>
+            </div>
+
+            {/* Bottom Section: Top Gainers (Now with Asset Images) */}
+            <div>
+                 <h3 className="text-sm text-gray-500 font-medium mb-3">Top Performers</h3>
+                 <div className="space-y-1">
+                     {topGainers.map(g => {
+                         // Mencari kecocokan aset di state terkini untuk mendapatkan ikon live
+                         const assetMatch = assets.find(a => a.symbol === g.symbol);
+                         // Fallback logika: Image langsung dari asset match -> Image dari transaction (yg disimpan di atas) -> Avatar generate nama
+                         const imgSrc = assetMatch?.image || g.image || `https://ui-avatars.com/api/?name=${g.symbol}&background=random&color=fff&rounded=true&bold=true`;
+
+                         return (
+                            <div key={g.symbol} className="flex justify-between items-center group hover:bg-white/5 p-2 -mx-2 rounded-lg transition-colors">
+                                <div className="flex items-center gap-3">
+                                    <img 
+                                        src={imgSrc}
+                                        alt={g.symbol}
+                                        className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center object-cover shrink-0 border border-white/5"
+                                        onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${g.symbol}&background=random&color=fff&rounded=true&bold=true`; }}
+                                    />
+                                    <div>
+                                        <div className="font-semibold text-white text-sm">{g.symbol}</div>
+                                        <div className="text-[10px] text-gray-500">{g.trades} trades</div>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <div className={`font-semibold text-sm ${g.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                        {g.pnl >= 0 ? '+' : ''}{formatCurrencyShort(g.pnl, true, displaySymbol, usdIdr)}
+                                    </div>
+                                    <div className={`text-[10px] font-medium ${g.pnlPct >= 0 ? 'text-emerald-500/80' : 'text-red-500/80'}`}>
+                                        {g.pnlPct >= 0 ? '+' : ''}{g.pnlPct.toFixed(2)}%
+                                    </div>
+                                </div>
+                            </div>
+                         );
+                     })}
+                     {topGainers.length === 0 && <div className="text-gray-500 text-sm italic">No data yet</div>}
+                 </div>
+            </div>
+        </div>
+    );
 };
+
 const HistoryView = ({ transactions, usdIdr, displaySymbol, onDeleteTransaction }) => ( <div className="p-1 max-h-[70vh] overflow-y-auto"> <table className="w-full text-[10px] sm:text-sm"> <thead className="text-left text-gray-500 text-xs sticky top-0 bg-zinc-900/80 backdrop-blur-sm z-10"> <tr><th className="p-2 sm:p-3">Time</th><th className="p-2 sm:p-3">Type</th><th className="p-2 sm:p-3">Detail</th><th className="p-2 sm:p-3 text-right">Nominal</th><th className="p-2 sm:p-3 text-right">Action</th></tr> </thead> <tbody> {[...transactions].sort((a,b) => b.date - a.date).map(tx => ( <tr key={tx.id} className="border-t border-white/10 hover:bg-white/5 transition-colors"> <td className="p-2 sm:p-3 text-gray-400 text-[9px] sm:text-xs">{new Date(tx.date).toLocaleDateString()}<br/>{new Date(tx.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td> <td className="p-2 sm:p-3 capitalize font-semibold">{tx.type}</td> <td className="p-2 sm:p-3 text-[9px] sm:text-xs truncate max-w-[80px] sm:max-w-[150px]">{tx.type === 'buy' || tx.type === 'sell' || tx.type === 'delete' ? (<><div><strong className="truncate block">{tx.symbol}</strong></div><div className="truncate">{formatQty(tx.qty)} @ {formatCurrencyShort(tx.pricePerUnit, true, displaySymbol, usdIdr)}</div></>) : (<span>-</span>)}</td> <td className="p-2 sm:p-3 text-right tabular-nums whitespace-nowrap">{formatCurrencyShort(tx.type === 'deposit' || tx.type === 'withdraw' ? tx.amount : (tx.cost || tx.proceeds || 0) * usdIdr, false, 'Rp', usdIdr)}</td> <td className="p-2 sm:p-3 text-right align-middle">
       <button onClick={(e) => { e.stopPropagation(); onDeleteTransaction(tx.id); }} className="text-red-500 hover:text-red-400 bg-red-500/10 hover:bg-red-500/20 p-1.5 sm:p-2 rounded-md inline-flex items-center justify-center cursor-pointer relative z-20">
           <TrashIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -1432,7 +1569,7 @@ const AddAssetForm = ({ searchMode, setSearchMode, query, setQuery, suggestions,
     return ( <div className="space-y-4"> <div className="flex border-b border-white/10">{[{ key: 'stock', label: 'Stock' }, { key:'crypto', label:'Crypto' }, { key:'nonliquid', label: 'Alternative Assets' }].map(item => (<button key={item.key} onClick={() => setSearchMode(item.key)} className={`px-3 py-2 text-sm font-medium ${searchMode === item.key ? 'text-white border-b-2 border-emerald-400' : 'text-gray-400'}`}>{item.label}</button>))}</div> {searchMode !== 'nonliquid' ? ( <div className="space-y-4"> <div className="relative">
       <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search by code or name..." className="w-full rounded bg-zinc-800 px-3 py-2 text-sm outline-none border border-zinc-700 text-white pr-10" />
       {isSearching && <div className="absolute right-3 top-2.5 w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>}
-      {suggestions.length > 0 && <div className="absolute z-50 mt-1 w-full glass-card max-h-56 overflow-auto">{suggestions.map((s, i) => (<div key={i} className="w-full px-3 py-2 text-left hover:bg-white/10 flex items-center gap-3"><button className="flex-1 flex items-center gap-3 text-left overflow-hidden" onClick={() => { setSelectedSuggestion(s); setQuery(s.display); setSuggestions([]); }}><img src={s.image} alt={s.symbol} className="w-5 h-5 rounded-full bg-zinc-700 object-cover shrink-0" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${s.symbol}&background=random&color=fff&rounded=true&bold=true`; }} /><div className="flex-1 min-w-0"><div className="font-medium text-gray-100 truncate w-full">{s.display}</div><div className="text-xs text-gray-400">{s.exchange || s.source}</div></div></button>
+      {suggestions.length > 0 && <div className="absolute z-50 mt-1 w-full glass-card max-h-56 overflow-auto">{suggestions.map((s, i) => (<div key={i} className="w-full px-3 py-2 text-left hover:bg-white/10 flex items-center gap-3"><button className="flex-1 flex items-center gap-3 text-left overflow-hidden" onClick={() => { setSelectedSuggestion(s); setQuery(s.display); setSuggestions([]); }}><img src={s.image} alt={s.symbol} className="w-5 h-5 rounded-full bg-zinc-700 object-cover shrink-0 border border-white/5" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${s.symbol}&background=random&color=fff&rounded=true&bold=true`; }} /><div className="flex-1 min-w-0"><div className="font-medium text-gray-100 truncate w-full">{s.display}</div><div className="text-xs text-gray-400">{s.exchange || s.source}</div></div></button>
         <button onClick={() => handleSetWatchedAsset({ id: s.id, symbol: s.symbol, name: s.display, type: s.type, image: s.image })} className="text-yellow-500 hover:text-yellow-400 p-1 shrink-0"><StarIcon isFilled={watchedAssets.some(w => w.id === s.id)} /></button>
     </div>))}</div>}</div> <div className="grid grid-cols-1 md:grid-cols-2 gap-3"><div><label className="text-xs text-gray-400">Qty</label><input value={shares} onChange={e => handleInputChange('shares', e.target.value)} className="w-full mt-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" type="text" /></div><div><label className="text-xs text-gray-400">Price ({displaySymbol})</label><input value={price} onChange={e => handleInputChange('price', e.target.value)} className="w-full mt-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" type="text" /></div></div> <div><label className="text-xs text-gray-400">Total Value ({displaySymbol})</label><input value={total} onChange={e => handleInputChange('total', e.target.value)} className="w-full mt-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" type="text" /></div> <div className="flex justify-end"><button onClick={() => addAssetWithInitial(shares, price)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 rounded font-semibold">Add Position</button></div> </div> ) : ( 
         <div className="space-y-4"> 
@@ -1475,7 +1612,6 @@ const AlternativeAssetDetails = ({ asset, usdIdr, displaySymbol }) => {
     const purchase = new Date(asset.purchaseDate || asset.createdAt);
     const now = new Date();
     
-    // Kalkulasi Holding Period (Tahun, Bulan, Hari)
     let years = now.getFullYear() - purchase.getFullYear();
     let months = now.getMonth() - purchase.getMonth();
     let days = now.getDate() - purchase.getDate();
@@ -1497,8 +1633,6 @@ const AlternativeAssetDetails = ({ asset, usdIdr, displaySymbol }) => {
     const validPeriods = asset.validPeriods || 0;
     
     const freq = asset.incomeFrequency || 'None';
-    
-    // Income yg diset user adalah nominal tetap PER PERIODE
     const incomePerPeriod = freq !== 'None' ? asset.coupon * asset.shares : 0;
     
     let periodsPerYear = 1;
@@ -1510,11 +1644,9 @@ const AlternativeAssetDetails = ({ asset, usdIdr, displaySymbol }) => {
 
     return (
         <div className="space-y-4">
-            {/* Logic Breakdown */}
             <div className="glass-card p-4 space-y-4 text-sm bg-zinc-900/50">
                 <h4 className="font-semibold text-white border-b border-white/10 pb-2">Valuation Details & Logic</h4>
                 
-                {/* Basic Info */}
                 <div className="grid grid-cols-2 gap-4">
                     <div><span className="text-gray-500 text-[10px] sm:text-xs block">Purchase Date</span><span className="text-gray-200 font-medium">{purchase.toLocaleDateString()}</span></div>
                     <div><span className="text-gray-500 text-[10px] sm:text-xs block">Holding Period</span><span className="text-gray-200 font-medium">{holdingPeriod}</span></div>
@@ -1522,7 +1654,6 @@ const AlternativeAssetDetails = ({ asset, usdIdr, displaySymbol }) => {
                     <div><span className="text-gray-500 text-[10px] sm:text-xs block">Avg Price / Unit</span><span className="text-gray-200 font-medium tabular-nums">{formatAmt(asset.avgPrice)}</span></div>
                 </div>
 
-                {/* Capital Growth */}
                 <div className="bg-white/5 rounded-lg p-3 border border-white/5">
                     <div className="font-medium text-emerald-400 mb-1 flex items-center gap-2">
                         <TrendingUpIcon className="w-4 h-4" /> Capital Growth Calculation
@@ -1540,7 +1671,6 @@ const AlternativeAssetDetails = ({ asset, usdIdr, displaySymbol }) => {
                     </div>
                 </div>
 
-                {/* Income Generation */}
                 <div className="bg-white/5 rounded-lg p-3 border border-white/5">
                     <div className="font-medium text-sky-400 mb-2 flex items-center gap-2">
                         <WalletIcon className="w-4 h-4" /> Income Generation Calculation
@@ -1573,7 +1703,6 @@ const AlternativeAssetDetails = ({ asset, usdIdr, displaySymbol }) => {
                     )}
                 </div>
                 
-                {/* Final Market Value */}
                 <div className="flex justify-between items-center p-3 bg-zinc-800/80 rounded-lg border border-white/10 mt-2">
                     <span className="text-sm font-semibold text-gray-300">Total Market Value</span>
                     <span className="text-lg font-bold text-emerald-400 tabular-nums">{formatAmt(asset.marketValueUSD)}</span>
@@ -1677,26 +1806,16 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
     const { equityData, sectorData } = useMemo(() => {
         const tradingBalanceUSD = tradingBalance / usdIdr;
         
-        // Pilihan warna kombinasi hanya dengan Sky Blue & Teal Green (Soft)
-        const colors = [
-            "#2dd4bf", // teal-400
-            "#38bdf8", // sky-400
-            "#14b8a6", // teal-500
-            "#0ea5e9", // sky-500
-            "#5eead4", // teal-300
-            "#7dd3fc", // sky-300
-            "#0d9488", // teal-600
-            "#0284c7", // sky-600
-            "#99f6e4", // teal-200
-            "#bae6fd"  // sky-200
+        const groupedColors = [
+            "#064e3b", "#0f766e", "#059669", "#10b981", "#34d399", "#6ee7b7", "#a7f3d0", 
+            "#1e3a8a", "#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe"  
         ];
 
-        // Sektor Data menggunakan base warna yang sama (Soft Sky & Soft Teal)
         const secDataMap = {
-            'Cash': { value: tradingBalanceUSD, color: '#38bdf8', icon: <WalletIcon className="w-4 h-4 sm:w-5 sm:h-5 text-sky-400" /> },
-            'Equity': { value: 0, color: '#2dd4bf', icon: <TrendingUpIcon className="w-4 h-4 sm:w-5 sm:h-5 text-teal-400" /> }, 
-            'Crypto': { value: 0, color: '#7dd3fc', icon: <CryptoIcon className="w-4 h-4 sm:w-5 sm:h-5 text-sky-300" /> }, 
-            'Alternative Assets': { value: 0, color: '#5eead4', icon: <BuildingIcon className="w-4 h-4 sm:w-5 sm:h-5 text-teal-300" /> }
+            'Cash': { value: tradingBalanceUSD, color: '#1e40af', icon: <WalletIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" /> },
+            'Equity': { value: 0, color: '#059669', icon: <TrendingUpIcon className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" /> }, 
+            'Crypto': { value: 0, color: '#3b82f6', icon: <CryptoIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-300" /> }, 
+            'Alternative Assets': { value: 0, color: '#10b981', icon: <BuildingIcon className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-300" /> }
         }; 
         fullAssetData.forEach(asset => { 
             if (asset.type === 'stock') secDataMap['Equity'].value += asset.marketValueUSD; 
@@ -1711,11 +1830,11 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
         ].filter(a => a.value > 0.01).sort((a, b) => b.value - a.value);
 
         let finalEquityData;
-        if (allAssets.length > 8) {
-            const top7 = allAssets.slice(0, 7);
-            const others = allAssets.slice(7);
+        if (allAssets.length > 12) {
+            const top11 = allAssets.slice(0, 11);
+            const others = allAssets.slice(11);
             const othersValue = others.reduce((sum, item) => sum + item.value, 0);
-            finalEquityData = [ ...top7, { name: 'Others', value: othersValue, type: 'other' } ];
+            finalEquityData = [ ...top11, { name: 'Others', value: othersValue, type: 'other' } ];
         } else {
             finalEquityData = allAssets;
         }
@@ -1723,14 +1842,14 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
         finalEquityData = finalEquityData.map((d, i) => {
             let icon, color;
             if (d.type === 'cash') {
-                icon = <WalletIcon className="w-4 h-4 sm:w-5 sm:h-5 text-sky-400" />;
-                color = '#38bdf8';
+                icon = <WalletIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />;
+                color = '#1e40af';
             } else if (d.type === 'other') {
                 icon = <MoreVerticalIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />;
                 color = '#9ca3af';
             } else {
-                icon = <img src={d.image || `https://ui-avatars.com/api/?name=${d.name}&background=random&color=fff&rounded=true`} alt={d.name} className="w-full h-full rounded-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${d.name}&background=random&color=fff&rounded=true&bold=true`; }} />;
-                color = colors[i % colors.length];
+                icon = <img src={d.image || `https://ui-avatars.com/api/?name=${d.name}&background=random&color=fff&rounded=true`} alt={d.name} className="w-full h-full rounded-full object-cover border border-white/5" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${d.name}&background=random&color=fff&rounded=true&bold=true`; }} />;
+                color = groupedColors[i % groupedColors.length];
             }
             return { ...d, icon, color };
         });
@@ -1849,5 +1968,3 @@ const AssetTableView = ({ rows, displaySymbol, usdIdr, onRowClick }) => {
         </div>
     );
 }
-
-
