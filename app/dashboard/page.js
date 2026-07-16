@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -950,6 +949,7 @@ export default function App() {
         .flash-up { animation: flash-green 0.7s ease-out; }
         .flash-down { animation: flash-red 0.7s ease-out; }
         .tradingview-widget-container:fullscreen { background-color: #131722; }
+        .tradingview-widget-copyright { display: none !important; opacity: 0 !important; visibility: hidden !important; }
       `}</style>
       <div className="max-w-4xl mx-auto">
         <header className="p-4 flex justify-end items-center sticky top-0 bg-[#000000] z-10 w-full">
@@ -1097,7 +1097,7 @@ export default function App() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-                                    <div className="w-12 h-5 sm:w-20 sm:h-8">
+                                    <div className="w-12 h-14 sm:w-16 sm:h-16">
                                         {r.type === 'nonliquid' ? 
                                             <div className="w-full h-full flex items-center justify-end"><span className="text-[10px] text-gray-500 italic">Alternative</span></div> 
                                             : <Sparkline data={priceHistory[r.id] || []} color={r.change24hPct >= 0 ? '#10B981' : '#EF4444'} />
@@ -1413,7 +1413,6 @@ const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr, assets }) 
     
     const sells = useMemo(() => transactions.filter(tx => tx.type === 'sell' || tx.type === 'delete'), [transactions]); 
     
-    // Penambahan pencarian image aset ke dalam gainers
     const topGainers = useMemo(() => { 
         const gainers = {}; 
         sells.forEach(tx => { 
@@ -1421,7 +1420,7 @@ const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr, assets }) 
             gainers[tx.symbol].trades++; 
             gainers[tx.symbol].pnl += tx.realized; 
             gainers[tx.symbol].cost += tx.costOfSold || 0;
-            if (tx.image) gainers[tx.symbol].image = tx.image; // Terus update jika transksi punya aset (jaga jaga image terbaru)
+            if (tx.image) gainers[tx.symbol].image = tx.image;
         }); 
         return Object.entries(gainers).map(([symbol, data]) => ({ symbol, ...data, pnlPct: data.cost > 0 ? (data.pnl / data.cost) * 100 : 0 })).sort((a, b) => b.pnl - a.pnl).slice(0, 5); 
     }, [sells]);
@@ -1430,14 +1429,15 @@ const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr, assets }) 
 
     return (
         <div className="p-2 sm:p-4 text-gray-300 space-y-6">
-            {/* Top Section: Overview (Win Rate + Key Stats) */}
             <div className="flex flex-col md:flex-row gap-6 items-center border-b border-white/10 pb-6">
                 
-                {/* Donut for Win Rate (Already includes Total Trades Info) */}
+                {/* Donut for Win Rate (Disesuaikan berdasarkan data yang sebenarnya) */}
                 <div className="flex-shrink-0 relative w-32 h-32 flex items-center justify-center">
                     <svg className="w-full h-full transform -rotate-90">
-                        <circle cx="50%" cy="50%" r="45%" stroke="rgba(255,255,255,0.05)" strokeWidth="10" fill="transparent" />
-                        <circle cx="50%" cy="50%" r="45%" stroke="#10B981" strokeWidth="10" fill="transparent" strokeDasharray={`${Math.PI * 2 * 45 * (stats.winRate / 100)}, ${Math.PI * 2 * 45}`} strokeLinecap="round"/>
+                        {/* Base Loss Background */}
+                        <circle cx="50%" cy="50%" r="45%" stroke="#EF4444" strokeWidth="10" fill="transparent" />
+                        {/* Overlay Win Rate */}
+                        <circle cx="50%" cy="50%" r="45%" stroke="#10B981" strokeWidth="10" fill="transparent" strokeDasharray={`${Math.PI * 2 * 45 * (stats.winRate / 100)} ${Math.PI * 2 * 45}`} strokeLinecap="round"/>
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
                         <div className="text-xl font-bold text-white leading-tight">{stats.winRate.toFixed(1)}%</div>
@@ -1450,9 +1450,6 @@ const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr, assets }) 
                     </div>
                 </div>
 
-                {/* Main Stats Grid - Now perfectly aligned (sejajar) side-by-side!
-                  Karena Total Trades dihilangkan dari grid, sekarang 4 item bisa sejajar sempurna (grid-cols-4)
-                */}
                 <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4 w-full">
                     {/* Avg Profit */}
                     <div className="flex flex-col justify-between glass-card p-3 min-w-0">
@@ -1483,7 +1480,6 @@ const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr, assets }) 
                 </div>
             </div>
 
-            {/* Middle Section: Realized Gain Chart */}
             <div className="border-b border-white/10 pb-6">
                 <div className="flex justify-between items-end mb-4">
                     <div>
@@ -1498,14 +1494,11 @@ const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr, assets }) 
                 </div>
             </div>
 
-            {/* Bottom Section: Top Gainers (Now with Asset Images) */}
             <div>
                  <h3 className="text-sm text-gray-500 font-medium mb-3">Top Performers</h3>
                  <div className="space-y-1">
                      {topGainers.map(g => {
-                         // Mencari kecocokan aset di state terkini untuk mendapatkan ikon live
                          const assetMatch = assets.find(a => a.symbol === g.symbol);
-                         // Fallback logika: Image langsung dari asset match -> Image dari transaction (yg disimpan di atas) -> Avatar generate nama
                          const imgSrc = assetMatch?.image || g.image || `https://ui-avatars.com/api/?name=${g.symbol}&background=random&color=fff&rounded=true&bold=true`;
 
                          return (
@@ -1776,7 +1769,7 @@ const TradingViewWidget = ({ asset }) => {
         if (containerRef.current && typeof window.TradingView !== 'undefined' && asset) {
             containerRef.current.innerHTML = '';
             new window.TradingView.widget({
-                autosize: true, symbol: formatSymbolForTV(asset), interval: "D", timezone: "Asia/Jakarta", theme: "dark", style: "1", locale: "en", enable_publishing: false, allow_symbol_change: false, hide_side_toolbar: false, container_id: containerRef.current.id,
+                autosize: true, symbol: formatSymbolForTV(asset), interval: "D", timezone: "Asia/Jakarta", theme: "dark", style: "1", locale: "en", enable_publishing: false, allow_symbol_change: false, hide_side_toolbar: true, hide_top_toolbar: false, container_id: containerRef.current.id,
             });
         }
     };
@@ -1790,7 +1783,7 @@ const TradingViewWidget = ({ asset }) => {
   const uniqueId = `tradingview-widget-container-${asset.id || asset.symbol}`;
   
   return (
-    <div ref={widgetContainerRef} className="tradingview-widget-container relative bg-zinc-900 rounded-lg overflow-hidden aspect-[16/9]">
+    <div ref={widgetContainerRef} className="tradingview-widget-container relative bg-zinc-900 rounded-lg overflow-hidden h-[50vh] sm:h-[60vh] w-full min-h-[350px]">
       <button onClick={handleToggleFullscreen} className="absolute top-2 right-2 z-10 p-1.5 bg-zinc-800/70 rounded-md hover:bg-zinc-700 transition-colors" aria-label="Toggle Fullscreen">
           {isFullscreen ? <ExitFullscreenIcon className="text-gray-300" /> : <FullscreenIcon className="text-gray-300"/>}
       </button>
@@ -1806,10 +1799,9 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
     const { equityData, sectorData } = useMemo(() => {
         const tradingBalanceUSD = tradingBalance / usdIdr;
         
-        const groupedColors = [
-            "#064e3b", "#0f766e", "#059669", "#10b981", "#34d399", "#6ee7b7", "#a7f3d0", 
-            "#1e3a8a", "#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe"  
-        ];
+        // Define specific ordered gradient colors
+        const greens = ["#6ee7b7", "#34d399", "#10b981", "#059669", "#047857", "#064e3b"]; 
+        const blues = ["#93c5fd", "#60a5fa", "#3b82f6", "#2563eb", "#1d4ed8", "#1e40af"];
 
         const secDataMap = {
             'Cash': { value: tradingBalanceUSD, color: '#1e40af', icon: <WalletIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" /> },
@@ -1839,17 +1831,27 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
             finalEquityData = allAssets;
         }
 
-        finalEquityData = finalEquityData.map((d, i) => {
+        const assetOnlyCount = finalEquityData.filter(a => a.type !== 'cash' && a.type !== 'other').length;
+        const half = Math.ceil(assetOnlyCount / 2);
+        let assetIndex = 0;
+
+        finalEquityData = finalEquityData.map((d) => {
             let icon, color;
             if (d.type === 'cash') {
                 icon = <WalletIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />;
-                color = '#1e40af';
+                color = '#1e3a8a';
             } else if (d.type === 'other') {
                 icon = <MoreVerticalIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />;
-                color = '#9ca3af';
+                color = '#6b7280';
             } else {
                 icon = <img src={d.image || `https://ui-avatars.com/api/?name=${d.name}&background=random&color=fff&rounded=true`} alt={d.name} className="w-full h-full rounded-full object-cover border border-white/5" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${d.name}&background=random&color=fff&rounded=true&bold=true`; }} />;
-                color = groupedColors[i % groupedColors.length];
+                
+                if (assetIndex < half) {
+                    color = greens[Math.min(assetIndex, greens.length - 1)];
+                } else {
+                    color = blues[Math.min(assetIndex - half, blues.length - 1)];
+                }
+                assetIndex++;
             }
             return { ...d, icon, color };
         });
@@ -1968,3 +1970,4 @@ const AssetTableView = ({ rows, displaySymbol, usdIdr, onRowClick }) => {
         </div>
     );
 }
+
