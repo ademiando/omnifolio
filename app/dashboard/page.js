@@ -865,13 +865,30 @@ export default function App() {
     const unrealizedPnlUSD = marketValueUSD - investedUSD;
     const unrealizedPnlPct = investedUSD > 0 ? (unrealizedPnlUSD / investedUSD) * 100 : 0;
     const totalEquity = (marketValueUSD * usdIdr) + tradingBalance;
+    
+    // Perbaikan Logika Win/Loss dengan lebih presisi
     const sells = transactions.filter(tx => tx.type === 'sell' || tx.type === 'delete');
-    const wins = sells.filter(tx => tx.realized > 0); const losses = sells.filter(tx => tx.realized <= 0);
-    const tradeStats = { trades: sells.length, wins: wins.length, losses: losses.length, winRate: sells.length > 0 ? (wins.length / sells.length) * 100 : 0, maxProfit: wins.length ? Math.max(0, ...wins.map(tx => tx.realized)) : 0, maxLoss: losses.length ? Math.min(0, ...losses.map(tx => tx.realized)) : 0, avgProfit: wins.length ? wins.reduce((s, tx) => s + tx.realized, 0) / wins.length : 0, avgLoss: losses.length ? losses.reduce((s, tx) => s + tx.realized, 0) / losses.length : 0, totalRealizedGain: realizedUSD };
+    const wins = sells.filter(tx => tx.realized > 0); 
+    const losses = sells.filter(tx => tx.realized < 0);
+    const totalTrades = sells.length;
+    
+    const tradeStats = { 
+        trades: totalTrades, 
+        wins: wins.length, 
+        losses: losses.length, 
+        winRate: totalTrades > 0 ? (wins.length / totalTrades) * 100 : 0, 
+        maxProfit: wins.length ? Math.max(...wins.map(tx => tx.realized)) : 0, 
+        maxLoss: losses.length ? Math.min(...losses.map(tx => tx.realized)) : 0, 
+        avgProfit: wins.length ? wins.reduce((s, tx) => s + tx.realized, 0) / wins.length : 0, 
+        avgLoss: losses.length ? losses.reduce((s, tx) => s + tx.realized, 0) / losses.length : 0, 
+        totalRealizedGain: realizedUSD 
+    };
+    
     const netDeposit = totalDeposits - totalWithdrawals; const totalPnlUSD = unrealizedPnlUSD + realizedUSD;
     const totalValueForBreakdown = tradingBalance + (marketValueUSD * usdIdr);
     const cashPct = totalValueForBreakdown > 0 ? (tradingBalance / totalValueForBreakdown) * 100 : 0;
     const investedPct = totalValueForBreakdown > 0 ? ((marketValueUSD * usdIdr) / totalValueForBreakdown) * 100 : 0;
+    
     return { rows, totals: { investedUSD, marketValueUSD, unrealizedPnlUSD, unrealizedPnlPct }, totalEquity, tradeStats, netDeposit, totalPnlUSD, cashPct, investedPct };
   }, [assets, tradingBalance, realizedUSD, totalDeposits, totalWithdrawals, transactions, usdIdr]);
 
@@ -1085,8 +1102,8 @@ export default function App() {
                     const flashClass = priceFlashes[r.id] === 'up' ? 'flash-up' : priceFlashes[r.id] === 'down' ? 'flash-down' : '';
 
                     return (
-                        <div key={r.id} className="glass-card p-3 sm:p-4 cursor-pointer hover:border-white/20 transition-all min-w-0" onClick={() => { setSelectedAssetForDetail(r); setAssetDetailModalOpen(true); }}>
-                            <div className="flex justify-between items-center mb-3 min-w-0">
+                        <div key={r.id} className="glass-card p-2.5 sm:p-3 cursor-pointer hover:border-white/20 transition-all min-w-0" onClick={() => { setSelectedAssetForDetail(r); setAssetDetailModalOpen(true); }}>
+                            <div className="flex justify-between items-center mb-2 min-w-0">
                                 <div className="min-w-0 flex-1 pr-2 flex items-center gap-2 sm:gap-3">
                                     {r.type !== 'nonliquid' && (
                                         <img src={r.image} alt={r.symbol} className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-zinc-800 object-cover shrink-0 border border-white/5" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${r.symbol}&background=random&color=fff&rounded=true&bold=true`; }} />
@@ -1096,14 +1113,14 @@ export default function App() {
                                         <p className="text-[9px] sm:text-xs text-gray-400 truncate w-full">{r.name}</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-                                    <div className="w-12 h-14 sm:w-16 sm:h-16">
+                                <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                                    <div className="w-16 h-8 sm:w-20 sm:h-10">
                                         {r.type === 'nonliquid' ? 
                                             <div className="w-full h-full flex items-center justify-end"><span className="text-[10px] text-gray-500 italic">Alternative</span></div> 
                                             : <Sparkline data={priceHistory[r.id] || []} color={r.change24hPct >= 0 ? '#10B981' : '#EF4444'} />
                                         }
                                     </div>
-                                    <div className={`text-right p-1 rounded-md ${flashClass} shrink-0`}>
+                                    <div className={`text-right p-1 rounded-md ${flashClass} shrink-0 min-w-[70px]`}>
                                         <p className="text-xs sm:text-sm font-semibold text-white tabular-nums whitespace-nowrap">{formatCurrency(r.lastPriceUSD, true, displaySymbol, usdIdr)}</p>
                                         <p className={`text-[9px] sm:text-[10px] font-semibold tabular-nums whitespace-nowrap ${changeColor}`}>
                                             {r.type === 'nonliquid' ? '' : (r.change24hUSD >= 0 ? '+' : '')}{r.type === 'nonliquid' ? '-' : formatCurrencyShort(r.change24hUSD, true, displaySymbol, usdIdr)} {r.type === 'nonliquid' ? '' : `(${r.change24hPct?.toFixed(2) ?? '0.00'}%)`}
@@ -1112,7 +1129,7 @@ export default function App() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-2 sm:gap-4 text-[10px] sm:text-xs pt-3 border-t border-white/10 min-w-0">
+                            <div className="grid grid-cols-2 gap-2 sm:gap-3 text-[10px] sm:text-xs pt-2 border-t border-white/10 min-w-0">
                                 <div className="space-y-1 min-w-0">
                                     <div className="flex justify-between items-center gap-1"><span className="text-gray-400 truncate pr-1">Qty</span><span className="font-medium text-gray-200 whitespace-nowrap">{formatQty(r.shares)}</span></div>
                                     <div className="flex justify-between items-center gap-1"><span className="text-gray-400 truncate pr-1">Invested</span><span className="font-medium text-gray-200 whitespace-nowrap">{formatCurrencyShort(r.investedUSD, true, displaySymbol, usdIdr)}</span></div>
@@ -1174,7 +1191,7 @@ export default function App() {
         <Modal title="Portfolio Allocation" isOpen={isAllocationModalOpen} onClose={() => setIsAllocationModalOpen(false)}><PortfolioAllocation data={derivedData.rows} tradingBalance={financialSummaries.tradingBalance} displaySymbol={displaySymbol} usdIdr={usdIdr}/></Modal>
         <Modal title="Transaction History" isOpen={isHistoryModalOpen} onClose={() => setIsHistoryModalOpen(false)}><HistoryView transactions={transactions} usdIdr={usdIdr} displaySymbol={displaySymbol} onDeleteTransaction={handleDeleteTransaction} /></Modal>
         
-        {/* Updated Trade Performance Modal - Grid Aligned & Asset Icons */}
+        {/* Updated Trade Performance Modal - Data Driven logic */}
         <Modal title="Trade Performance" isOpen={isPerformanceModalOpen} onClose={() => setIsPerformanceModalOpen(false)} size="3xl">
             <div className="max-h-[80vh] overflow-y-auto">
                 <TradeStatsView stats={derivedData.tradeStats} transactions={transactions} displaySymbol={displaySymbol} usdIdr={usdIdr} assets={assets} />
@@ -1224,7 +1241,7 @@ const Sparkline = ({ data = [], color = '#10B981' }) => {
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
-      <polyline fill="none" stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" points={points} />
+      <polyline fill="none" stroke={color} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" points={points} />
       <polygon fill={`url(#${uniqueId})`} points={areaPoints} />
     </svg>
   );
@@ -1392,6 +1409,11 @@ const EquityGrowthView = ({ equitySeries, displaySymbol, usdIdr, totalEquity }) 
 const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr, assets }) => {
     const [chartRange, setChartRange] = useState("All");
     
+    // Exact Win Rate Circle math
+    const radius = 45;
+    const circumference = 2 * Math.PI * radius; // ~282.74
+    const dashOffset = circumference * (stats.winRate / 100);
+
     const { maxProfitPct, maxLossPct } = useMemo(() => { 
         const maxProfitTx = transactions.find(tx => tx.realized === stats.maxProfit); 
         const profitPct = maxProfitTx && maxProfitTx.costOfSold > 0 ? (maxProfitTx.realized / maxProfitTx.costOfSold) * 100 : 0; 
@@ -1413,7 +1435,7 @@ const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr, assets }) 
     
     const sells = useMemo(() => transactions.filter(tx => tx.type === 'sell' || tx.type === 'delete'), [transactions]); 
     
-    const topGainers = useMemo(() => { 
+    const { topGainers, topLosers } = useMemo(() => { 
         const gainers = {}; 
         sells.forEach(tx => { 
             if (!gainers[tx.symbol]) gainers[tx.symbol] = { trades: 0, pnl: 0, cost: 0, image: tx.image }; 
@@ -1422,7 +1444,12 @@ const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr, assets }) 
             gainers[tx.symbol].cost += tx.costOfSold || 0;
             if (tx.image) gainers[tx.symbol].image = tx.image;
         }); 
-        return Object.entries(gainers).map(([symbol, data]) => ({ symbol, ...data, pnlPct: data.cost > 0 ? (data.pnl / data.cost) * 100 : 0 })).sort((a, b) => b.pnl - a.pnl).slice(0, 5); 
+        
+        const arr = Object.entries(gainers).map(([symbol, data]) => ({ symbol, ...data, pnlPct: data.cost > 0 ? (data.pnl / data.cost) * 100 : 0 }));
+        return {
+            topGainers: arr.filter(g => g.pnl > 0).sort((a, b) => b.pnl - a.pnl).slice(0, 3),
+            topLosers: arr.filter(g => g.pnl < 0).sort((a, b) => a.pnl - b.pnl).slice(0, 3)
+        };
     }, [sells]);
 
     if (!stats || stats.trades === 0) return <div className="p-8 text-center text-gray-500">No trade data available yet. Start trading to see your performance.</div>;
@@ -1431,50 +1458,46 @@ const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr, assets }) 
         <div className="p-2 sm:p-4 text-gray-300 space-y-6">
             <div className="flex flex-col md:flex-row gap-6 items-center border-b border-white/10 pb-6">
                 
-                {/* Donut for Win Rate (Disesuaikan berdasarkan data yang sebenarnya) */}
+                {/* Donut Chart (Data Driven Presisi) */}
                 <div className="flex-shrink-0 relative w-32 h-32 flex items-center justify-center">
                     <svg className="w-full h-full transform -rotate-90">
-                        {/* Base Loss Background */}
-                        <circle cx="50%" cy="50%" r="45%" stroke="#EF4444" strokeWidth="10" fill="transparent" />
-                        {/* Overlay Win Rate */}
-                        <circle cx="50%" cy="50%" r="45%" stroke="#10B981" strokeWidth="10" fill="transparent" strokeDasharray={`${Math.PI * 2 * 45 * (stats.winRate / 100)} ${Math.PI * 2 * 45}`} strokeLinecap="round"/>
+                        {/* Lingkaran Dasar (Losses) -> Merah */}
+                        <circle cx="50%" cy="50%" r={`${radius}%`} stroke="#EF4444" strokeWidth="8" fill="transparent" />
+                        {/* Lingkaran Overlay (Wins) -> Hijau, Diukur dinamis */}
+                        <circle cx="50%" cy="50%" r={`${radius}%`} stroke="#10B981" strokeWidth="8" fill="transparent" strokeDasharray={`${dashOffset} ${circumference}`} strokeLinecap="round"/>
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
                         <div className="text-xl font-bold text-white leading-tight">{stats.winRate.toFixed(1)}%</div>
                         <div className="text-[9px] text-gray-400 mt-0.5">Win Rate</div>
                         <div className="text-[10px] mt-1 space-x-1 font-medium bg-black/40 px-2 rounded-full border border-white/5">
-                            <span className="text-emerald-400">{stats.wins}W</span>
+                            <span className="text-emerald-400" title={`${stats.wins} Winning Trades`}>{stats.wins}W</span>
                             <span className="text-gray-500">/</span>
-                            <span className="text-red-400">{stats.losses}L</span>
+                            <span className="text-red-400" title={`${stats.losses} Losing Trades`}>{stats.losses}L</span>
                         </div>
                     </div>
                 </div>
 
                 <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4 w-full">
-                    {/* Avg Profit */}
                     <div className="flex flex-col justify-between glass-card p-3 min-w-0">
                         <span className="text-[10px] sm:text-xs text-gray-400 mb-1 flex items-center gap-1"><AvgProfitIcon className="w-3.5 h-3.5"/> Avg Profit</span>
-                        <span className="text-base sm:text-lg font-semibold text-emerald-400 truncate">{formatCurrencyCompact(stats.avgProfit, true, displaySymbol, usdIdr)}</span>
+                        <span className="text-base sm:text-lg font-semibold text-emerald-400 truncate">+{formatCurrencyCompact(stats.avgProfit, true, displaySymbol, usdIdr)}</span>
                     </div>
-                    {/* Max Profit */}
                     <div className="flex flex-col justify-between glass-card p-3 min-w-0">
                         <span className="text-[10px] sm:text-xs text-gray-400 mb-1 flex items-center gap-1"><ArrowUpIcon className="text-emerald-400"/> Max Profit</span>
                         <div>
-                            <span className="text-base sm:text-lg font-semibold text-white truncate block">{formatCurrencyCompact(stats.maxProfit, true, displaySymbol, usdIdr)}</span>
-                            <span className="text-[9px] sm:text-[10px] text-emerald-400">+{maxProfitPct.toFixed(2)}%</span>
+                            <span className="text-base sm:text-lg font-semibold text-emerald-400 truncate block">+{formatCurrencyCompact(stats.maxProfit, true, displaySymbol, usdIdr)}</span>
+                            <span className="text-[9px] sm:text-[10px] text-emerald-400/80">+{maxProfitPct.toFixed(2)}%</span>
                         </div>
                     </div>
-                    {/* Avg Loss */}
                     <div className="flex flex-col justify-between glass-card p-3 min-w-0">
                         <span className="text-[10px] sm:text-xs text-gray-400 mb-1 flex items-center gap-1"><AvgLossIcon className="w-3.5 h-3.5"/> Avg Loss</span>
                         <span className="text-base sm:text-lg font-semibold text-red-400 truncate">{formatCurrencyCompact(stats.avgLoss, true, displaySymbol, usdIdr)}</span>
                     </div>
-                     {/* Max Loss */}
                      <div className="flex flex-col justify-between glass-card p-3 min-w-0">
                         <span className="text-[10px] sm:text-xs text-gray-400 mb-1 flex items-center gap-1"><ArrowDownIcon className="text-red-400"/> Max Loss</span>
                         <div>
-                            <span className="text-base sm:text-lg font-semibold text-white truncate block">{formatCurrencyCompact(stats.maxLoss, true, displaySymbol, usdIdr)}</span>
-                            <span className="text-[9px] sm:text-[10px] text-red-400">{maxLossPct.toFixed(2)}%</span>
+                            <span className="text-base sm:text-lg font-semibold text-red-400 truncate block">{formatCurrencyCompact(stats.maxLoss, true, displaySymbol, usdIdr)}</span>
+                            <span className="text-[9px] sm:text-[10px] text-red-400/80">{maxLossPct.toFixed(2)}%</span>
                         </div>
                     </div>
                 </div>
@@ -1494,39 +1517,64 @@ const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr, assets }) 
                 </div>
             </div>
 
-            <div>
-                 <h3 className="text-sm text-gray-500 font-medium mb-3">Top Performers</h3>
-                 <div className="space-y-1">
-                     {topGainers.map(g => {
-                         const assetMatch = assets.find(a => a.symbol === g.symbol);
-                         const imgSrc = assetMatch?.image || g.image || `https://ui-avatars.com/api/?name=${g.symbol}&background=random&color=fff&rounded=true&bold=true`;
+            {/* Dibagi Menjadi Dua Kolom: Gainers dan Losers */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div>
+                     <h3 className="text-sm text-gray-500 font-medium mb-3 flex items-center gap-2">
+                         <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Top Gainers
+                     </h3>
+                     <div className="space-y-1">
+                         {topGainers.map(g => {
+                             const assetMatch = assets.find(a => a.symbol === g.symbol);
+                             const imgSrc = assetMatch?.image || g.image || `https://ui-avatars.com/api/?name=${g.symbol}&background=random&color=fff&rounded=true&bold=true`;
 
-                         return (
-                            <div key={g.symbol} className="flex justify-between items-center group hover:bg-white/5 p-2 -mx-2 rounded-lg transition-colors">
-                                <div className="flex items-center gap-3">
-                                    <img 
-                                        src={imgSrc}
-                                        alt={g.symbol}
-                                        className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center object-cover shrink-0 border border-white/5"
-                                        onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${g.symbol}&background=random&color=fff&rounded=true&bold=true`; }}
-                                    />
-                                    <div>
-                                        <div className="font-semibold text-white text-sm">{g.symbol}</div>
-                                        <div className="text-[10px] text-gray-500">{g.trades} trades</div>
+                             return (
+                                <div key={g.symbol} className="flex justify-between items-center group hover:bg-white/5 p-2 -mx-2 rounded-lg transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <img src={imgSrc} alt={g.symbol} className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center object-cover shrink-0 border border-white/5" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${g.symbol}&background=random&color=fff&rounded=true&bold=true`; }} />
+                                        <div>
+                                            <div className="font-semibold text-white text-sm">{g.symbol}</div>
+                                            <div className="text-[10px] text-gray-500">{g.trades} trades</div>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="font-semibold text-sm text-emerald-400">+{formatCurrencyShort(g.pnl, true, displaySymbol, usdIdr)}</div>
+                                        <div className="text-[10px] font-medium text-emerald-500/80">+{g.pnlPct.toFixed(2)}%</div>
                                     </div>
                                 </div>
-                                <div className="text-right">
-                                    <div className={`font-semibold text-sm ${g.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                        {g.pnl >= 0 ? '+' : ''}{formatCurrencyShort(g.pnl, true, displaySymbol, usdIdr)}
+                             );
+                         })}
+                         {topGainers.length === 0 && <div className="text-gray-500 text-sm italic py-2">No winning trades yet</div>}
+                     </div>
+                 </div>
+
+                 <div>
+                     <h3 className="text-sm text-gray-500 font-medium mb-3 flex items-center gap-2">
+                         <span className="w-2 h-2 rounded-full bg-red-500"></span> Top Losers
+                     </h3>
+                     <div className="space-y-1">
+                         {topLosers.map(g => {
+                             const assetMatch = assets.find(a => a.symbol === g.symbol);
+                             const imgSrc = assetMatch?.image || g.image || `https://ui-avatars.com/api/?name=${g.symbol}&background=random&color=fff&rounded=true&bold=true`;
+
+                             return (
+                                <div key={g.symbol} className="flex justify-between items-center group hover:bg-white/5 p-2 -mx-2 rounded-lg transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <img src={imgSrc} alt={g.symbol} className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center object-cover shrink-0 border border-white/5" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${g.symbol}&background=random&color=fff&rounded=true&bold=true`; }} />
+                                        <div>
+                                            <div className="font-semibold text-white text-sm">{g.symbol}</div>
+                                            <div className="text-[10px] text-gray-500">{g.trades} trades</div>
+                                        </div>
                                     </div>
-                                    <div className={`text-[10px] font-medium ${g.pnlPct >= 0 ? 'text-emerald-500/80' : 'text-red-500/80'}`}>
-                                        {g.pnlPct >= 0 ? '+' : ''}{g.pnlPct.toFixed(2)}%
+                                    <div className="text-right">
+                                        <div className="font-semibold text-sm text-red-400">{formatCurrencyShort(g.pnl, true, displaySymbol, usdIdr)}</div>
+                                        <div className="text-[10px] font-medium text-red-500/80">{g.pnlPct.toFixed(2)}%</div>
                                     </div>
                                 </div>
-                            </div>
-                         );
-                     })}
-                     {topGainers.length === 0 && <div className="text-gray-500 text-sm italic">No data yet</div>}
+                             );
+                         })}
+                         {topLosers.length === 0 && <div className="text-gray-500 text-sm italic py-2">No losing trades yet</div>}
+                     </div>
                  </div>
             </div>
         </div>
@@ -1970,4 +2018,5 @@ const AssetTableView = ({ rows, displaySymbol, usdIdr, onRowClick }) => {
         </div>
     );
 }
+
 
