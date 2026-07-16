@@ -17,6 +17,7 @@ const AvgLossIcon = ({className}) => <svg className={className} width="24" heigh
 const SearchIcon = (props) => (<svg {...props} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" ><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>);
 const StarIcon = ({ isFilled, ...props }) => (<svg {...props} width="20" height="20" viewBox="0 0 24 24" fill={isFilled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>);
 
+// Sector Allocation Icons
 const WalletIcon = ({className}) => (<svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"></path><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"></path><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z"></path></svg>);
 const TrendingUpIcon = ({className}) => (<svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>);
 const BuildingIcon = ({className}) => (<svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><path d="M9 22v-4h6v4"></path><path d="M8 6h.01"></path><path d="M16 6h.01"></path><path d="M12 6h.01"></path><path d="M12 10h.01"></path><path d="M12 14h.01"></path><path d="M16 10h.01"></path><path d="M16 14h.01"></path><path d="M8 10h.01"></path><path d="M8 14h.01"></path></svg>);
@@ -158,7 +159,7 @@ const Modal = ({ children, isOpen, onClose, title, size = "2xl" }) => {
   return (
     <div 
       className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4 transition-opacity duration-300 opacity-100 overflow-y-auto" 
-      // FIX 1: Menggunakan onClick murni, aman dari efek klik tembus (ghost click) ke layer belakang.
+      // FIX 1: Diganti dari onPointerDown menjadi onClick untuk mencegah Ghost Click ke elemen di bawahnya
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -187,7 +188,7 @@ const BottomSheet = ({ isOpen, onClose, children }) => {
   return (
     <div 
         className="fixed inset-0 bg-black/70 z-[100] transition-opacity flex flex-col justify-end" 
-        // FIX 1: Menggunakan onClick murni untuk background bottom sheet
+        // FIX 1: Diganti dari onPointerDown menjadi onClick
         onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
         <div className={`w-full max-w-4xl mx-auto glass-card rounded-t-2xl shadow-lg transition-transform duration-300 ${isOpen ? 'translate-y-0' : 'translate-y-full'}`} onClick={e => e.stopPropagation()}>
@@ -200,7 +201,7 @@ const BottomSheet = ({ isOpen, onClose, children }) => {
 
 /* ===================== Main Component ===================== */
 export default function App() {
-  const STORAGE_VERSION = "v48"; 
+  const STORAGE_VERSION = "v47"; // Bump version untuk keamanan cache
   
   const [assets, setAssets] = useState(() => JSON.parse(safeGetStorage(`pf_assets_${STORAGE_VERSION}`, "[]")).map(ensureNumericAsset));
   const [transactions, setTransactions] = useState(() => JSON.parse(safeGetStorage(`pf_transactions_${STORAGE_VERSION}`, "[]")));
@@ -208,9 +209,6 @@ export default function App() {
   const [displaySymbol, setDisplaySymbol] = useState(() => safeGetStorage(`pf_display_sym_${STORAGE_VERSION}`, "Rp"));
   const [usdIdr, setUsdIdr] = useState(() => Number(safeGetStorage(`pf_usd_idr_rate_${STORAGE_VERSION}`, "16200")));
   const [profilePic, setProfilePic] = useState(() => safeGetStorage(`pf_profile_pic_${STORAGE_VERSION}`, null));
-
-  // State baru untuk Snapshot Engine Riwayat Equity (Daily, Monthly, Yearly)
-  const [equityHistory, setEquityHistory] = useState(() => JSON.parse(safeGetStorage(`pf_equity_hist_${STORAGE_VERSION}`, '{"daily":{},"monthly":{},"yearly":{}}')));
 
   const [isProfileMenuOpen, setProfileMenuOpen] = useState(false);
   const [isViewPhotoOpen, setIsViewPhotoOpen] = useState(false);
@@ -263,10 +261,11 @@ export default function App() {
   const importInputRef = useRef(null);
   const prevAssetsRef = useRef();
   
+  // FIX 2: Perbaikan logika saldo tunai (Cash Balance) agar tidak terpengaruh naik turun kurs USD saat ini
   const recalculateStateFromTransactions = (txs) => {
     let needsPatch = false;
     
-    // FIX 2: Autopatch histori transaksi lama - Pastikan Cost dan Proceeds di-lock nilainya ke IDR saat transaksi dibuat
+    // Auto-patch: Kunci nominal transaksi lama yang belum punya IDR ter-lock menggunakan rate saat ini
     const patchedTxs = txs.map(tx => {
         let newTx = { ...tx };
         if (newTx.type === 'buy' && newTx.costIDR === undefined && newTx.cost !== undefined) {
@@ -281,6 +280,7 @@ export default function App() {
     });
 
     if (needsPatch) {
+        // Jika ada data lama yang harus di-patch, simpan lalu update state untuk diproses ulang dengan aman
         safeSetStorage(`pf_transactions_${STORAGE_VERSION}`, JSON.stringify(patchedTxs));
         setTimeout(() => setTransactions(patchedTxs), 0);
         return; 
@@ -305,12 +305,12 @@ export default function App() {
             asset.purchaseDate = tx.date;
         }
 
-        // Cash dipotong sesuai IDR yang terkunci pada hari pembelian
+        // Mengurangi cash menggunakan costIDR yang sudah terkunci di masa lalu
         tradingBalance -= tx.costIDR; 
         const totalInvested = asset.investedUSD + tx.cost; const totalShares = asset.shares + tx.qty;
         asset.investedUSD = totalInvested; asset.shares = totalShares; asset.avgPrice = totalShares > 0 ? totalInvested / totalShares : 0;
       } else if (tx.type === 'sell' || tx.type === 'delete') {
-        // Cash bertambah sesuai IDR yang terkunci pada hari penjualan
+        // Menambah cash menggunakan proceedsIDR yang sudah terkunci di masa lalu
         tradingBalance += tx.proceedsIDR; 
         realizedUSD += tx.realized; const costOfSold = asset.avgPrice * tx.qty;
         asset.investedUSD -= costOfSold; asset.shares -= tx.qty;
@@ -580,7 +580,7 @@ export default function App() {
     
     const assetId = assetStub.id || `${assetStub.type}:${assetStub.symbol}`;
     const txDate = overrideDate || assetStub.purchaseDate || Date.now();
-    const costIDR = costUSD * usdIdr; 
+    const costIDR = costUSD * usdIdr; // FIX 2: Kunci pengeluaran IDR saat pembelian terjadi
     
     addTransaction({ id: `tx:${Date.now()}`, type: "buy", qty, pricePerUnit: priceUSD, cost: costUSD, costIDR, date: txDate, symbol: assetStub.symbol, name: assetStub.name || assetStub.symbol, assetId, assetStub });
     if (isAssetDetailModalOpen) setAssetDetailModalOpen(false); return true;
@@ -592,7 +592,7 @@ export default function App() {
     if (qty > asset.shares) { alert("Cannot sell more than you own."); return false; }
     
     const proceedsUSD = qty * priceUSD; const costOfSold = qty * asset.avgPrice; const realized = proceedsUSD - costOfSold;
-    const proceedsIDR = proceedsUSD * usdIdr; 
+    const proceedsIDR = proceedsUSD * usdIdr; // FIX 2: Kunci pendapatan IDR saat penjualan terjadi
 
     addTransaction({ id: `tx:${Date.now()}`, assetId: asset.id, type: "sell", qty, pricePerUnit: priceUSD, proceeds: proceedsUSD, proceedsIDR, costOfSold, realized, date: Date.now(), symbol: asset.symbol, name: asset.name, image: asset.image });
     if (isAssetDetailModalOpen) setAssetDetailModalOpen(false); return true;
@@ -601,7 +601,7 @@ export default function App() {
   const handleDeleteAsset = (asset) => {
     if (!asset || !confirm(`Delete and liquidate ${asset.symbol} at market price?`)) return;
     const marketUSD = asset.shares * asset.lastPriceUSD; const realized = marketUSD - asset.investedUSD;
-    const proceedsIDR = marketUSD * usdIdr; 
+    const proceedsIDR = marketUSD * usdIdr; // FIX 2: Kunci pendapatan IDR saat aset di-liquidasi
 
     addTransaction({ id: `tx:${Date.now()}`, assetId: asset.id, type: "delete", qty: asset.shares, pricePerUnit: asset.lastPriceUSD, proceeds: marketUSD, proceedsIDR, costOfSold: asset.investedUSD, realized, date: Date.now(), symbol: asset.symbol, name: asset.name, image: asset.image, note: "liquidated" });
     setAssetDetailModalOpen(false);
@@ -924,46 +924,6 @@ export default function App() {
     return { rows, totals: { investedUSD, marketValueUSD, unrealizedPnlUSD, unrealizedPnlPct }, totalEquity, tradeStats, netDeposit, totalPnlUSD, cashPct, investedPct };
   }, [assets, tradingBalance, realizedUSD, totalDeposits, totalWithdrawals, transactions, usdIdr]);
 
-  // FIX 3: SNAPSHOT ENGINE (Merekam Nilai Equity Secara Valid)
-  useEffect(() => {
-    if (!derivedData.totalEquity || derivedData.totalEquity <= 0) return;
-
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, '0');
-    const d = String(now.getDate()).padStart(2, '0');
-
-    const todayStr = `${y}-${m}-${d}`;
-    const monthStr = `${y}-${m}`;
-    const yearStr = `${y}`;
-
-    setEquityHistory(prev => {
-        const next = { daily: { ...prev.daily }, monthly: { ...prev.monthly }, yearly: { ...prev.yearly } };
-        const eq = derivedData.totalEquity;
-
-        // Jangan render ulang memori jika perubahannya 0
-        if (prev.daily[todayStr] !== undefined && Math.abs(prev.daily[todayStr] - eq) < 0.01) { return prev; }
-
-        // Update nilai terbaru untuk hari/bulan/tahun ini
-        next.daily[todayStr] = eq;
-        next.monthly[monthStr] = eq;
-        next.yearly[yearStr] = eq;
-
-        // Pruning (Pembersihan Otomatis)
-        const dKeys = Object.keys(next.daily).sort();
-        while (dKeys.length > 31) delete next.daily[dKeys.shift()]; // Simpan 31 Hari
-
-        const mKeys = Object.keys(next.monthly).sort();
-        while (mKeys.length > 12) delete next.monthly[mKeys.shift()]; // Simpan 12 Bulan
-
-        return next;
-    });
-  }, [derivedData.totalEquity]);
-
-  useEffect(() => {
-      safeSetStorage(`pf_equity_hist_${STORAGE_VERSION}`, JSON.stringify(equityHistory));
-  }, [equityHistory]);
-
   const sortedAssets = useMemo(() => {
     const assetsToSort = [...derivedData.rows];
     if (assetSortBy === 'allocation') { return assetsToSort.sort((a,b) => b.marketValueUSD - a.marketValueUSD); }
@@ -971,6 +931,7 @@ export default function App() {
     return assetsToSort;
   }, [derivedData.rows, assetSortBy]);
 
+  // FIX 2: Perbaiki kalkulasi garfik Equity (Total Growth) agar juga memakai IDR terkunci di masa lalu
   const equitySeries = useMemo(() => {
     const sortedTx = [...transactions].sort((a, b) => a.date - b.date);
     if (sortedTx.length === 0) return [{ t: Date.now() - 86400000, v: 0 }, { t: Date.now(), v: 0 }];
@@ -979,6 +940,7 @@ export default function App() {
         if (tx.type === 'deposit') currentCash += tx.amount;
         else if (tx.type === 'withdraw') currentCash -= tx.amount;
         else if (tx.type === 'buy') {
+            // Gunakan costIDR jika ada (fix masa depan & data ter-patch), jika tidak jatuh ke current rate (fallback aman)
             currentCash -= (tx.costIDR !== undefined ? tx.costIDR : (tx.cost * usdIdr));
             const asset = currentHoldings[tx.assetId] || { shares: 0, avgPrice: 0, invested: 0 };
             const newInvested = asset.invested + tx.cost; const newShares = asset.shares + tx.qty;
@@ -1259,12 +1221,7 @@ export default function App() {
         <AssetDetailModal isOpen={isAssetDetailModalOpen} onClose={() => setAssetDetailModalOpen(false)} asset={selectedAssetForDetail} onBuy={handleBuy} onSell={handleSell} onDelete={handleDeleteAsset} usdIdr={usdIdr} displaySymbol={displaySymbol} />
         <Modal title="Add New Asset" isOpen={isAddAssetModalOpen} onClose={() => setAddAssetModalOpen(false)} size="lg"><AddAssetForm {...{searchMode, setSearchMode, query, setQuery, suggestions, setSuggestions, setSelectedSuggestion, isSearching, setIsSearching, addAssetWithInitial, addNonLiquidAsset, nlName, setNlName, nlQty, setNlQty, nlPrice, setNlPrice, nlPriceCcy, setNlPriceCcy, nlPurchaseDate, setNlPurchaseDate, nlCoupon, setNlCoupon, nlYoy, setNlYoy, nlDesc, setNlDesc, nlIncomeFreq, setNlIncomeFreq, displaySymbol, handleSetWatchedAsset, watchedAssets}} /></Modal>
         <Modal title={`${balanceModalMode} Balance`} isOpen={isBalanceModalOpen} onClose={() => setBalanceModalOpen(false)} size="lg"><BalanceManager onConfirm={balanceModalMode === 'Add' ? handleAddBalance : handleWithdraw} displaySymbol={displaySymbol} /></Modal>
-        
-        {/* Modal Diupdate: Mengoper state equityHistory ke dalam EquityGrowthView */}
-        <Modal title="Portfolio Growth" isOpen={isEquityModalOpen} onClose={() => setIsEquityModalOpen(false)} size="3xl">
-            <EquityGrowthView equitySeries={equitySeries} displaySymbol={displaySymbol} usdIdr={usdIdr} totalEquity={derivedData.totalEquity} equityHistory={equityHistory} />
-        </Modal>
-
+        <Modal title="Portfolio Growth" isOpen={isEquityModalOpen} onClose={() => setIsEquityModalOpen(false)} size="3xl"><EquityGrowthView equitySeries={equitySeries} displaySymbol={displaySymbol} usdIdr={usdIdr} totalEquity={derivedData.totalEquity} /></Modal>
         <Modal title="Portfolio Allocation" isOpen={isAllocationModalOpen} onClose={() => setIsAllocationModalOpen(false)}><PortfolioAllocation data={derivedData.rows} tradingBalance={financialSummaries.tradingBalance} displaySymbol={displaySymbol} usdIdr={usdIdr}/></Modal>
         <Modal title="Transaction History" isOpen={isHistoryModalOpen} onClose={() => setIsHistoryModalOpen(false)}><HistoryView transactions={transactions} usdIdr={usdIdr} displaySymbol={displaySymbol} onDeleteTransaction={handleDeleteTransaction} /></Modal>
         
@@ -1458,85 +1415,27 @@ const AreaChart = ({ data: chartData, simplified = false, displaySymbol, range, 
 };
 
 /* ===================== Sub-Components & Pages ===================== */
-// FIX 3: EquityGrowthView sekarang mengambil data dari Snapshot Engine (equityHistory)
-const EquityGrowthView = ({ equitySeries, displaySymbol, usdIdr, totalEquity, equityHistory }) => {
-    const [chartRange, setChartRange] = useState("All"); 
-    const [returnPeriod, setReturnPeriod] = useState('Daily');
-
+const EquityGrowthView = ({ equitySeries, displaySymbol, usdIdr, totalEquity }) => {
+    const [chartRange, setChartRange] = useState("All"); const [returnPeriod, setReturnPeriod] = useState('Monthly');
     const equityReturnData = useMemo(() => {
-        let sourceData = {};
-        if (returnPeriod === 'Daily') sourceData = equityHistory.daily || {};
-        else if (returnPeriod === 'Monthly') sourceData = equityHistory.monthly || {};
-        else sourceData = equityHistory.yearly || {};
-
-        const sortedKeys = Object.keys(sourceData).sort(); 
-        const result = [];
-
-        for (let i = 0; i < sortedKeys.length; i++) {
-            const key = sortedKeys[i];
-            const currentEq = sourceData[key];
-            const prevEq = i > 0 ? sourceData[sortedKeys[i - 1]] : currentEq; 
-
-            const pnl = currentEq - prevEq;
-            const pnlPct = prevEq > 0 ? (pnl / prevEq) * 100 : 0;
-
-            let dateLabel = key;
-            if (returnPeriod === 'Monthly') {
-                 const [y, m] = key.split('-');
-                 const date = new Date(y, m - 1);
-                 dateLabel = date.toLocaleString('default', { month: 'short', year: 'numeric' });
-            } else if (returnPeriod === 'Daily') {
-                 const [y, m, d] = key.split('-');
-                 const date = new Date(y, m - 1, d);
-                 dateLabel = date.toLocaleString('default', { month: 'short', day: 'numeric', year: 'numeric' });
-            }
-
-            result.push({ date: dateLabel, equity: currentEq, pnl, pnlPct, rawKey: key });
+        if (equitySeries.length < 2) return []; let periodData = {};
+        for (let i = 1; i < equitySeries.length; i++) {
+            const currentDate = new Date(equitySeries[i].t); let key;
+            if(returnPeriod === 'Daily'){ key = currentDate.toISOString().split('T')[0]; } 
+            else if(returnPeriod === 'Monthly'){ key = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`; } 
+            else { key = `${currentDate.getFullYear()}`; }
+            if (!periodData[key]) { periodData[key] = { startEquity: equitySeries[i-1].v, endEquity: equitySeries[i].v, endDate: currentDate }; } 
+            else { periodData[key].endEquity = equitySeries[i].v; periodData[key].endDate = currentDate; }
         }
-        return result.sort((a,b) => b.rawKey.localeCompare(a.rawKey)); 
-    }, [equityHistory, returnPeriod]);
-
-    return ( 
-        <div className="p-1"> 
-            <div>
-                <p className="text-sm text-gray-400">Total Equity</p>
-                <p className="text-2xl sm:text-3xl font-bold text-white mb-1 truncate w-full">{formatCurrency(totalEquity, false, displaySymbol, usdIdr)}</p>
-            </div> 
-            <div className="mt-6">
-                <AreaChart data={equitySeries} displaySymbol={displaySymbol} range={chartRange} setRange={setChartRange} />
-            </div> 
-            <div className="mt-8 max-h-64 overflow-y-auto"> 
-                <div className="flex justify-between items-center mb-4 sticky top-0 bg-zinc-900/80 backdrop-blur-sm py-2">
-                    <h3 className="text-base font-semibold text-white">Total Equity Return</h3>
-                    <div className="flex items-center gap-2 text-sm">
-                        {['Daily', 'Monthly', 'Yearly'].map(p => (
-                            <button key={p} onClick={() => setReturnPeriod(p)} className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs ${returnPeriod === p ? 'bg-zinc-700 text-white' : 'text-gray-400'}`}>{p}</button>
-                        ))}
-                    </div>
-                </div> 
-                <table className="w-full text-xs sm:text-sm"> 
-                    <thead className="text-left text-gray-500 text-xs">
-                        <tr><th className="p-2 font-normal">Date</th><th className="p-2 font-normal text-right">Equity</th><th className="p-2 font-normal text-right">P&L (vs Prev)</th></tr>
-                    </thead> 
-                    <tbody>
-                        {equityReturnData.map((item, index) => (
-                            <tr key={index} className="border-t border-white/10 hover:bg-white/5 transition-colors">
-                                <td className="p-2 text-white font-medium">{item.date}</td>
-                                <td className="p-2 text-white text-right tabular-nums whitespace-nowrap">{formatCurrencyShort(item.equity, false, displaySymbol, usdIdr)}</td>
-                                <td className={`p-2 text-right tabular-nums whitespace-nowrap ${item.pnl > 0 ? 'text-emerald-400' : (item.pnl < 0 ? 'text-red-400' : 'text-gray-400')}`}>
-                                    {item.pnl > 0 ? '+' : ''}{formatCurrencyShort(item.pnl, false, displaySymbol, usdIdr)} 
-                                    <br className="sm:hidden" />({item.pnl > 0 ? '+' : ''}{item.pnlPct.toFixed(2)}%)
-                                </td>
-                            </tr>
-                        ))}
-                        {equityReturnData.length === 0 && (
-                            <tr><td colSpan="3" className="text-center py-4 text-gray-500 italic">Tracking started today. Check back tomorrow!</td></tr>
-                        )}
-                    </tbody> 
-                </table> 
-            </div> 
-        </div> 
-    );
+        return Object.keys(periodData).map(key => {
+            const item = periodData[key]; const pnl = item.endEquity - item.startEquity; const pnlPct = item.startEquity > 0 ? (pnl / item.startEquity) * 100 : 0;
+            const date = new Date(item.endDate); let dateLabel = key;
+            if(returnPeriod === 'Monthly') dateLabel = date.toLocaleString('default', { month: 'short', year: 'numeric' });
+            else if(returnPeriod === 'Daily') dateLabel = date.toLocaleString('default', { month: 'short', day: 'numeric' });
+            return { date: dateLabel, equity: item.endEquity, pnl, pnlPct, rawDate: item.endDate }
+        }).sort((a,b) => b.rawDate - a.rawDate);
+    }, [equitySeries, returnPeriod]);
+    return ( <div className="p-1"> <div><p className="text-sm text-gray-400">Total Equity</p><p className="text-2xl sm:text-3xl font-bold text-white mb-1 truncate w-full">{formatCurrency(totalEquity, false, displaySymbol, usdIdr)}</p></div> <div className="mt-6"><AreaChart data={equitySeries} displaySymbol={displaySymbol} range={chartRange} setRange={setChartRange} /></div> <div className="mt-8 max-h-64 overflow-y-auto"> <div className="flex justify-between items-center mb-4 sticky top-0 bg-zinc-900/80 backdrop-blur-sm py-2"><h3 className="text-base font-semibold text-white">Total Equity Return</h3><div className="flex items-center gap-2 text-sm">{['Daily', 'Monthly', 'Yearly'].map(p => (<button key={p} onClick={() => setReturnPeriod(p)} className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs ${returnPeriod === p ? 'bg-zinc-700 text-white' : 'text-gray-400'}`}>{p}</button>))}</div></div> <table className="w-full text-xs sm:text-sm"> <thead className="text-left text-gray-500 text-xs"><tr><th className="p-2 font-normal">Date</th><th className="p-2 font-normal text-right">Equity</th><th className="p-2 font-normal text-right">P&L</th></tr></thead> <tbody>{equityReturnData.map((item, index) => (<tr key={index} className="border-t border-white/10"><td className="p-2 text-white">{item.date}</td><td className="p-2 text-white text-right tabular-nums whitespace-nowrap">{formatCurrencyShort(item.equity, false, displaySymbol, usdIdr)}</td><td className={`p-2 text-right tabular-nums whitespace-nowrap ${item.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{item.pnl >= 0 ? '+' : ''}{formatCurrencyShort(item.pnl, false, displaySymbol, usdIdr)} <br className="sm:hidden" />({item.pnlPct.toFixed(2)}%)</td></tr>))}</tbody> </table> </div> </div> );
 };
 
 const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr, assets }) => {
@@ -2153,3 +2052,5 @@ const AssetTableView = ({ rows, displaySymbol, usdIdr, onRowClick }) => {
         </div>
     );
 }
+
+
