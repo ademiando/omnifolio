@@ -9,7 +9,6 @@ const ArrowRightIconSimple = () => (<svg width="12" height="12" viewBox="0 0 24 
 const TrashIcon = ({className}) => (<svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path></svg>);
 const ArrowUpIcon = ({className}) => <svg className={className} width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor"><path fillRule="evenodd" d="M8 12a.5.5 0 0 0 .5-.5V5.707l2.146 2.147a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 1 0 .708.708L7.5 5.707V11.5a.5.5 0 0 0 .5.5z"/></svg>;
 const ArrowDownIcon = ({className}) => <svg className={className} width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor"><path fillRule="evenodd" d="M8 4a.5.5 0 0 1 .5.5v5.793l2.146-2.147a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 1 1 .708-.708L7.5 10.293V4.5A.5.5 0 0 1 8 4z"/></svg>;
-const InfoIcon = ({className}) => <svg className={className} width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>;
 const FullscreenIcon = ({className}) => (<svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>);
 const ExitFullscreenIcon = ({ className }) => (<svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 0-2-2h-3M3 16h3a2 2 0 0 0 2 2v3"/></svg>);
 const PencilIcon = (props) => (<svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>);
@@ -31,7 +30,6 @@ const COINGECKO_MARKETS = (ids) => `${COINGECKO_API}/coins/markets?vs_currency=u
 const isBrowser = typeof window !== "undefined";
 const toNum = (v) => { const n = Number(String(v).replace(/,/g, '').replace(/\s/g,'')); return isNaN(n) ? 0 : n; };
 
-// Fast fetcher
 const fetchWithTimeout = async (url, options = {}, timeout = 5000) => {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
@@ -86,31 +84,6 @@ function formatCurrencyShort(value, valueIsUSD, displaySymbol, usdIdr) {
   return formatCurrency(value, valueIsUSD, displaySymbol, usdIdr);
 }
 
-function formatCurrencyCompact(value, valueIsUSD, displaySymbol, usdIdr) {
-  if (value === null || typeof value === 'undefined' || isNaN(Number(value))) return displaySymbol === '$' ? '$0.00' : 'Rp 0';
-  let displayValue = valueIsUSD ? value : (displaySymbol === '$' ? value / usdIdr : value);
-  if (!valueIsUSD && displaySymbol !== '$') displayValue = value; 
-  if (valueIsUSD && displaySymbol !== '$') displayValue = value * usdIdr; 
-
-  const absNum = Math.abs(displayValue);
-  const isRupiah = displaySymbol !== '$';
-  const sign = displayValue < 0 ? '-' : '';
-  const prefix = isRupiah ? 'Rp ' : '$';
-
-  const formatNum = (num, divisor) => {
-      let str = (num / divisor).toFixed(2);
-      str = parseFloat(str).toString(); 
-      return isRupiah ? str.replace('.', ',') : str;
-  };
-
-  if (absNum >= 1e12) return `${sign}${prefix}${formatNum(absNum, 1e12)} T`;
-  if (absNum >= 1e9)  return `${sign}${prefix}${formatNum(absNum, 1e9)} B`;
-  if (absNum >= 1e6)  return `${sign}${prefix}${formatNum(absNum, 1e6)} M`;
-  if (absNum >= 1e3)  return `${sign}${prefix}${formatNum(absNum, 1e3)} K`;
-  
-  return formatCurrency(value, valueIsUSD, displaySymbol, usdIdr); 
-}
-
 function formatCurrencyCompactNoSymbol(value, valueIsUSD, displaySymbol, usdIdr) {
   if (value === null || typeof value === 'undefined' || isNaN(Number(value))) return '0';
   let displayValue = valueIsUSD ? value : (displaySymbol === '$' ? value / usdIdr : value);
@@ -135,6 +108,15 @@ function formatCurrencyCompactNoSymbol(value, valueIsUSD, displaySymbol, usdIdr)
   return new Intl.NumberFormat(isRupiah ? 'id-ID' : 'en-US', { style: 'decimal', minimumFractionDigits: isRupiah ? 0 : 2, maximumFractionDigits: isRupiah ? 0 : 2 }).format(displayValue);
 }
 
+function formatCurrencyCompact(value, valueIsUSD, displaySymbol, usdIdr) {
+    const noSym = formatCurrencyCompactNoSymbol(value, valueIsUSD, displaySymbol, usdIdr);
+    if (noSym === '0') return displaySymbol === '$' ? '$0' : 'Rp 0';
+    const isRupiah = displaySymbol !== '$';
+    const sign = noSym.startsWith('-') ? '-' : '';
+    const num = noSym.replace('-', '');
+    return `${sign}${isRupiah ? 'Rp ' : '$'}${num}`;
+}
+
 function formatQty(v) {
   const n = Number(v || 0);
   if (n === 0) return "0";
@@ -149,10 +131,15 @@ function ensureNumericAsset(a) {
 /* ===================== UI Helpers ===================== */
 const Modal = ({ children, isOpen, onClose, title, size = "2xl" }) => {
   useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+
     if (isOpen && isBrowser) {
       const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
       document.body.style.overflow = 'hidden';
       document.body.style.paddingRight = `${scrollBarWidth}px`;
+      document.addEventListener('keydown', handleKeyDown);
     } else if (isBrowser) {
       document.body.style.overflow = '';
       document.body.style.paddingRight = '';
@@ -161,21 +148,28 @@ const Modal = ({ children, isOpen, onClose, title, size = "2xl" }) => {
       if (isBrowser) {
         document.body.style.overflow = '';
         document.body.style.paddingRight = '';
+        document.removeEventListener('keydown', handleKeyDown);
       }
     };
-  }, [isOpen]);
+  }, [isOpen]); 
 
   if (!isOpen) return null;
   const sizeClasses = { 'lg': 'max-w-lg', '2xl': 'max-w-2xl', '3xl': 'max-w-3xl' };
   
   return (
-    <div className="fixed top-[72px] bottom-0 left-0 right-0 bg-black/75 flex items-center justify-center z-50 p-4 transition-opacity duration-300 opacity-100 overflow-y-auto" onClick={onClose}>
-      <div className={`glass-card w-full ${sizeClasses[size]} max-h-[85vh] flex flex-col transform transition-all duration-300 scale-100 my-auto shadow-2xl`} onClick={e => e.stopPropagation()}>
-        <div className="flex justify-between items-center p-4 border-b border-white/10 shrink-0 bg-black/20 rounded-t-xl">
+    <div 
+      className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4 transition-opacity duration-300 opacity-100 overflow-y-auto" 
+      // FIX 1: Diganti dari onPointerDown menjadi onClick untuk mencegah Ghost Click ke elemen di bawahnya
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className={`glass-card w-full ${sizeClasses[size]} max-h-[85vh] flex flex-col transform transition-all duration-300 scale-100 my-auto shadow-2xl relative`} onClick={e => e.stopPropagation()}>
+        <div className="flex justify-between items-center p-4 border-b border-white/10 shrink-0 bg-black/30 rounded-t-xl">
           <h2 className="text-lg font-semibold text-white">{title}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl px-2 py-1 leading-none rounded hover:bg-white/10 transition-colors">&times;</button>
+          <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl px-2 py-1 leading-none rounded hover:bg-white/10 transition-colors focus:outline-none">&times;</button>
         </div>
-        <div className="p-4 overflow-y-auto flex-1 scrollbar-thin">
+        <div className="p-4 overflow-y-auto flex-1 scrollbar-thin relative">
           {children}
         </div>
       </div>
@@ -184,13 +178,30 @@ const Modal = ({ children, isOpen, onClose, title, size = "2xl" }) => {
 };
 
 const BottomSheet = ({ isOpen, onClose, children }) => {
+  useEffect(() => {
+    const handleKeyDown = (e) => { if (e.key === 'Escape') onClose(); };
+    if (isOpen && isBrowser) document.addEventListener('keydown', handleKeyDown);
+    return () => { if (isBrowser) document.removeEventListener('keydown', handleKeyDown); };
+  }, [isOpen]);
+
   if (!isOpen) return null;
-  return (<div className="fixed inset-0 bg-black/60 z-40 transition-opacity" onClick={onClose}><div className={`fixed bottom-0 left-0 right-0 glass-card rounded-t-2xl shadow-lg transition-transform duration-300 ${isOpen ? 'translate-y-0' : 'translate-y-full'}`} onClick={e => e.stopPropagation()}><div className="w-10 h-1 bg-zinc-700 rounded-full mx-auto my-3"></div>{children}</div></div>);
+  return (
+    <div 
+        className="fixed inset-0 bg-black/70 z-[100] transition-opacity flex flex-col justify-end" 
+        // FIX 1: Diganti dari onPointerDown menjadi onClick
+        onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+        <div className={`w-full max-w-4xl mx-auto glass-card rounded-t-2xl shadow-lg transition-transform duration-300 ${isOpen ? 'translate-y-0' : 'translate-y-full'}`} onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-zinc-700 rounded-full mx-auto my-3"></div>
+            {children}
+        </div>
+    </div>
+  );
 };
 
 /* ===================== Main Component ===================== */
 export default function App() {
-  const STORAGE_VERSION = "v42"; 
+  const STORAGE_VERSION = "v47"; // Bump version untuk keamanan cache
   
   const [assets, setAssets] = useState(() => JSON.parse(safeGetStorage(`pf_assets_${STORAGE_VERSION}`, "[]")).map(ensureNumericAsset));
   const [transactions, setTransactions] = useState(() => JSON.parse(safeGetStorage(`pf_transactions_${STORAGE_VERSION}`, "[]")));
@@ -250,9 +261,34 @@ export default function App() {
   const importInputRef = useRef(null);
   const prevAssetsRef = useRef();
   
+  // FIX 2: Perbaikan logika saldo tunai (Cash Balance) agar tidak terpengaruh naik turun kurs USD saat ini
   const recalculateStateFromTransactions = (txs) => {
+    let needsPatch = false;
+    
+    // Auto-patch: Kunci nominal transaksi lama yang belum punya IDR ter-lock menggunakan rate saat ini
+    const patchedTxs = txs.map(tx => {
+        let newTx = { ...tx };
+        if (newTx.type === 'buy' && newTx.costIDR === undefined && newTx.cost !== undefined) {
+            newTx.costIDR = newTx.cost * usdIdr;
+            needsPatch = true;
+        }
+        if ((newTx.type === 'sell' || newTx.type === 'delete') && newTx.proceedsIDR === undefined && newTx.proceeds !== undefined) {
+            newTx.proceedsIDR = newTx.proceeds * usdIdr;
+            needsPatch = true;
+        }
+        return newTx;
+    });
+
+    if (needsPatch) {
+        // Jika ada data lama yang harus di-patch, simpan lalu update state untuk diproses ulang dengan aman
+        safeSetStorage(`pf_transactions_${STORAGE_VERSION}`, JSON.stringify(patchedTxs));
+        setTimeout(() => setTransactions(patchedTxs), 0);
+        return; 
+    }
+
     let newAssets = {}; let realizedUSD = 0; let tradingBalance = 0; let totalDeposits = 0; let totalWithdrawals = 0;
-    const sortedTxs = [...txs].sort((a, b) => a.date - b.date);
+    const sortedTxs = [...patchedTxs].sort((a, b) => a.date - b.date);
+    
     for (const tx of sortedTxs) {
       if (tx.type === 'deposit') { tradingBalance += tx.amount; totalDeposits += tx.amount; continue; }
       if (tx.type === 'withdraw') { tradingBalance -= tx.amount; totalWithdrawals += tx.amount; continue; }
@@ -269,10 +305,14 @@ export default function App() {
             asset.purchaseDate = tx.date;
         }
 
-        tradingBalance -= tx.cost * usdIdr; const totalInvested = asset.investedUSD + tx.cost; const totalShares = asset.shares + tx.qty;
+        // Mengurangi cash menggunakan costIDR yang sudah terkunci di masa lalu
+        tradingBalance -= tx.costIDR; 
+        const totalInvested = asset.investedUSD + tx.cost; const totalShares = asset.shares + tx.qty;
         asset.investedUSD = totalInvested; asset.shares = totalShares; asset.avgPrice = totalShares > 0 ? totalInvested / totalShares : 0;
       } else if (tx.type === 'sell' || tx.type === 'delete') {
-        tradingBalance += tx.proceeds * usdIdr; realizedUSD += tx.realized; const costOfSold = asset.avgPrice * tx.qty;
+        // Menambah cash menggunakan proceedsIDR yang sudah terkunci di masa lalu
+        tradingBalance += tx.proceedsIDR; 
+        realizedUSD += tx.realized; const costOfSold = asset.avgPrice * tx.qty;
         asset.investedUSD -= costOfSold; asset.shares -= tx.qty;
       }
     }
@@ -295,7 +335,6 @@ export default function App() {
   useEffect(() => { safeSetStorage(`pf_price_history_${STORAGE_VERSION}`, JSON.stringify(priceHistory)); }, [priceHistory]);
   useEffect(() => { safeSetStorage(`pf_asset_display_as_${STORAGE_VERSION}`, assetDisplayAs); }, [assetDisplayAs]);
 
-  // Realtime Polling Optimizations
   useEffect(() => {
     const pollPrices = async () => {
       try {
@@ -430,7 +469,20 @@ export default function App() {
     return () => clearInterval(id);
   }, [assets.length, usdIdr, watchedAssets]);
 
+  const getYahooSymbol = (symbol, exchange, country) => {
+      if (exchange === 'IDX' || country === 'ID') return `${symbol}.JK`;
+      if (exchange === 'NSE' || exchange === 'BSE') return `${symbol}.${exchange === 'NSE' ? 'NS' : 'BO'}`;
+      if (country === 'GB' && exchange === 'LSE') return `${symbol}.L`;
+      if (country === 'CA') return `${symbol}.TO`;
+      if (country === 'AU') return `${symbol}.AX`;
+      if (country === 'HK') return `${symbol}.HK`;
+      if (country === 'SG') return `${symbol}.SI`;
+      if (country === 'MY') return `${symbol}.KL`;
+      return symbol;
+  };
+
   const searchTimeoutRef = useRef(null);
+  
   useEffect(() => {
     if (!query || query.trim().length < 2) { setSuggestions([]); setIsSearching(false); return; }
     setIsSearching(true);
@@ -449,53 +501,65 @@ export default function App() {
           })));
         } else {
             let results = [];
-            const yahooSearchUrl = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=10&newsCount=0`;
             
+            const formatYahooData = (data) => {
+                if (!data || !data.quotes) return [];
+                return data.quotes
+                    .filter(it => ['EQUITY', 'ETF', 'MUTUALFUND', 'INDEX'].includes(it.quoteType))
+                    .map(it => {
+                        const isIndo = it.symbol.endsWith('.JK');
+                        const cleanSymbol = it.symbol.replace('.JK', '');
+                        const imgUrl = isIndo 
+                            ? `https://assets.stockbit.com/logos/companies/${cleanSymbol}.png` 
+                            : `https://assets.parqet.com/logos/symbol/${it.symbol}?format=png`;
+                        return { symbol: it.symbol, display: `${it.shortname || it.longname || it.symbol} (${it.symbol})`, exchange: it.exchDisp || it.exchange, id: it.symbol, source: "yahoo", type: "stock", image: imgUrl };
+                    });
+            };
+
+            const formatTVData = (data) => {
+                 if (!data || !data.length) return [];
+                 return data.map(it => {
+                    const ySym = getYahooSymbol(it.symbol, it.exchange, it.country);
+                    const isIndo = ySym.endsWith('.JK');
+                    const cleanSymbol = ySym.replace('.JK', '');
+                    const imgUrl = it.logoid 
+                        ? `https://s3-symbol-logo.tradingview.com/${it.logoid}--big.svg`
+                        : (isIndo ? `https://assets.stockbit.com/logos/companies/${cleanSymbol}.png` : `https://assets.parqet.com/logos/symbol/${ySym}?format=png`);
+                    return { symbol: ySym, display: `${it.description} (${ySym})`, exchange: it.exchange || it.country, id: ySym, source: "tradingview", type: "stock", image: imgUrl };
+                });
+            };
+
             try {
-                let data;
+                const resYahoo = await fetch(`https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=10`);
+                if (!resYahoo.ok) throw new Error("Yahoo Direct Failed");
+                const dataYahoo = await resYahoo.json();
+                results = formatYahooData(dataYahoo);
+            } catch (e1) {
                 try {
-                    const res = await fetchWithTimeout(yahooSearchUrl, {}, 2000);
-                    if (res.ok) data = await res.json();
-                    else throw new Error('Direct failed');
-                } catch(e0) {
+                    const resTV = await fetch(`https://symbol-search.tradingview.com/symbol_search/v3/?text=${encodeURIComponent(q)}&hl=1&exchange=&type=stock,fund,dr,index&lang=en`);
+                    if (!resTV.ok) throw new Error("TV Direct Failed");
+                    const dataTV = await resTV.json();
+                    results = formatTVData(dataTV);
+                } catch(e2) {
                     try {
-                        const res = await fetchWithTimeout(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(yahooSearchUrl)}`, {}, 3000);
-                        if (res.ok) data = await res.json();
-                        else throw new Error('Codetabs failed');
-                    } catch(e1) {
-                        const res = await fetchWithTimeout(`https://api.allorigins.win/raw?url=${encodeURIComponent(yahooSearchUrl)}`, {}, 4000);
-                        if (res.ok) data = await res.json();
+                        const resProxy = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=10`)}`);
+                        const dataProxy = await resProxy.json();
+                        results = formatYahooData(dataProxy);
+                    } catch(e3) {
+                        console.error("Semua server pencarian sedang sibuk atau diblokir.");
                     }
                 }
-
-                if (data && data.quotes) {
-                    results = data.quotes
-                        .filter(it => ['EQUITY', 'ETF', 'MUTUALFUND', 'INDEX'].includes(it.quoteType))
-                        .map(it => {
-                            const isIndo = it.symbol.endsWith('.JK');
-                            const cleanSymbol = it.symbol.replace('.JK', '');
-                            const imgUrl = isIndo 
-                                ? `https://assets.stockbit.com/logos/companies/${cleanSymbol}.png` 
-                                : `https://assets.parqet.com/logos/symbol/${it.symbol}?format=png`;
-                            return {
-                                symbol: it.symbol,
-                                display: `${it.shortname || it.longname || it.symbol} (${it.symbol})`,
-                                exchange: it.exchDisp || it.exchange,
-                                id: it.symbol,
-                                source: "yahoo",
-                                type: "stock",
-                                image: imgUrl
-                            };
-                        });
-                }
-            } catch (e) {
-                console.error("Stock search failed:", e);
             }
             
             setSuggestions(results.slice(0, 10));
         }
-      } catch (e) { console.error("Semua metode pencarian gagal:", e); setSuggestions([]); } finally { setIsSearching(false); }
+      } catch (e) { 
+          console.error("Pencarian error:", e); setSuggestions([]); 
+      } finally { 
+          setIsSearching(false); 
+      }
     }, 300); 
+    
     return () => clearTimeout(searchTimeoutRef.current);
   }, [query, searchMode]);
 
@@ -507,7 +571,6 @@ export default function App() {
     const costUSD = qty * priceUSD;
     
     if (costUSD * usdIdr > financialSummaries.tradingBalance) {
-        alert("Insufficient balance! Redirecting to Add Balance...");
         setAddAssetModalOpen(false);
         setAssetDetailModalOpen(false);
         setBalanceModalMode('Add');
@@ -517,8 +580,9 @@ export default function App() {
     
     const assetId = assetStub.id || `${assetStub.type}:${assetStub.symbol}`;
     const txDate = overrideDate || assetStub.purchaseDate || Date.now();
+    const costIDR = costUSD * usdIdr; // FIX 2: Kunci pengeluaran IDR saat pembelian terjadi
     
-    addTransaction({ id: `tx:${Date.now()}`, type: "buy", qty, pricePerUnit: priceUSD, cost: costUSD, date: txDate, symbol: assetStub.symbol, name: assetStub.name || assetStub.symbol, assetId, assetStub });
+    addTransaction({ id: `tx:${Date.now()}`, type: "buy", qty, pricePerUnit: priceUSD, cost: costUSD, costIDR, date: txDate, symbol: assetStub.symbol, name: assetStub.name || assetStub.symbol, assetId, assetStub });
     if (isAssetDetailModalOpen) setAssetDetailModalOpen(false); return true;
   };
 
@@ -526,15 +590,20 @@ export default function App() {
     qty = toNum(qty); priceUSD = toNum(priceUSD);
     if (!asset || qty <= 0 || priceUSD < 0) { alert("Quantity must be > 0 and price >= 0"); return false; }
     if (qty > asset.shares) { alert("Cannot sell more than you own."); return false; }
+    
     const proceedsUSD = qty * priceUSD; const costOfSold = qty * asset.avgPrice; const realized = proceedsUSD - costOfSold;
-    addTransaction({ id: `tx:${Date.now()}`, assetId: asset.id, type: "sell", qty, pricePerUnit: priceUSD, proceeds: proceedsUSD, costOfSold, realized, date: Date.now(), symbol: asset.symbol, name: asset.name, image: asset.image });
+    const proceedsIDR = proceedsUSD * usdIdr; // FIX 2: Kunci pendapatan IDR saat penjualan terjadi
+
+    addTransaction({ id: `tx:${Date.now()}`, assetId: asset.id, type: "sell", qty, pricePerUnit: priceUSD, proceeds: proceedsUSD, proceedsIDR, costOfSold, realized, date: Date.now(), symbol: asset.symbol, name: asset.name, image: asset.image });
     if (isAssetDetailModalOpen) setAssetDetailModalOpen(false); return true;
   };
 
   const handleDeleteAsset = (asset) => {
     if (!asset || !confirm(`Delete and liquidate ${asset.symbol} at market price?`)) return;
     const marketUSD = asset.shares * asset.lastPriceUSD; const realized = marketUSD - asset.investedUSD;
-    addTransaction({ id: `tx:${Date.now()}`, assetId: asset.id, type: "delete", qty: asset.shares, pricePerUnit: asset.lastPriceUSD, proceeds: marketUSD, costOfSold: asset.investedUSD, realized, date: Date.now(), symbol: asset.symbol, name: asset.name, image: asset.image, note: "liquidated" });
+    const proceedsIDR = marketUSD * usdIdr; // FIX 2: Kunci pendapatan IDR saat aset di-liquidasi
+
+    addTransaction({ id: `tx:${Date.now()}`, assetId: asset.id, type: "delete", qty: asset.shares, pricePerUnit: asset.lastPriceUSD, proceeds: marketUSD, proceedsIDR, costOfSold: asset.investedUSD, realized, date: Date.now(), symbol: asset.symbol, name: asset.name, image: asset.image, note: "liquidated" });
     setAssetDetailModalOpen(false);
   };
   
@@ -606,7 +675,7 @@ export default function App() {
         return stringData; 
     };
 
-    const headers = ['id', 'date', 'type', 'symbol', 'name', 'qty', 'pricePerUnit', 'cost', 'proceeds', 'realized', 'amount', 'assetId', 'note', 'assetStub_id', 'assetStub_type', 'assetStub_symbol', 'assetStub_name', 'assetStub_image', 'assetStub_coingeckoId', 'assetStub_incomeFrequency', 'assetStub_coupon', 'assetStub_purchaseDate', 'assetStub_nonLiquidYoy', 'assetStub_description'];
+    const headers = ['id', 'date', 'type', 'symbol', 'name', 'qty', 'pricePerUnit', 'cost', 'costIDR', 'proceeds', 'proceedsIDR', 'realized', 'amount', 'assetId', 'note', 'assetStub_id', 'assetStub_type', 'assetStub_symbol', 'assetStub_name', 'assetStub_image', 'assetStub_coingeckoId', 'assetStub_incomeFrequency', 'assetStub_coupon', 'assetStub_purchaseDate', 'assetStub_nonLiquidYoy', 'assetStub_description'];
     const headerRow = headers.join(',') + '\n';
     
     const rows = transactions.map(tx => { 
@@ -698,7 +767,7 @@ export default function App() {
                     if (key.startsWith('assetStub_')) delete tx[key];
                 });
 
-                const numericFields = ['qty', 'pricePerUnit', 'cost', 'proceeds', 'realized', 'amount'];
+                const numericFields = ['qty', 'pricePerUnit', 'cost', 'costIDR', 'proceeds', 'proceedsIDR', 'realized', 'amount'];
                 numericFields.forEach(field => {
                     if (tx[field] !== undefined) {
                         tx[field] = toNum(tx[field]);
@@ -830,7 +899,6 @@ export default function App() {
     const unrealizedPnlPct = investedUSD > 0 ? (unrealizedPnlUSD / investedUSD) * 100 : 0;
     const totalEquity = (marketValueUSD * usdIdr) + tradingBalance;
     
-    // Perbaikan Logika Win/Loss dengan lebih presisi
     const sells = transactions.filter(tx => tx.type === 'sell' || tx.type === 'delete');
     const wins = sells.filter(tx => tx.realized > 0); 
     const losses = sells.filter(tx => tx.realized < 0);
@@ -863,6 +931,7 @@ export default function App() {
     return assetsToSort;
   }, [derivedData.rows, assetSortBy]);
 
+  // FIX 2: Perbaiki kalkulasi garfik Equity (Total Growth) agar juga memakai IDR terkunci di masa lalu
   const equitySeries = useMemo(() => {
     const sortedTx = [...transactions].sort((a, b) => a.date - b.date);
     if (sortedTx.length === 0) return [{ t: Date.now() - 86400000, v: 0 }, { t: Date.now(), v: 0 }];
@@ -871,13 +940,14 @@ export default function App() {
         if (tx.type === 'deposit') currentCash += tx.amount;
         else if (tx.type === 'withdraw') currentCash -= tx.amount;
         else if (tx.type === 'buy') {
-            currentCash -= tx.cost * usdIdr;
+            // Gunakan costIDR jika ada (fix masa depan & data ter-patch), jika tidak jatuh ke current rate (fallback aman)
+            currentCash -= (tx.costIDR !== undefined ? tx.costIDR : (tx.cost * usdIdr));
             const asset = currentHoldings[tx.assetId] || { shares: 0, avgPrice: 0, invested: 0 };
             const newInvested = asset.invested + tx.cost; const newShares = asset.shares + tx.qty;
             asset.invested = newInvested; asset.shares = newShares; asset.avgPrice = newShares > 0 ? newInvested / newShares : 0;
             currentHoldings[tx.assetId] = asset;
         } else if (tx.type === 'sell' || tx.type === 'delete') {
-            currentCash += tx.proceeds * usdIdr;
+            currentCash += (tx.proceedsIDR !== undefined ? tx.proceedsIDR : (tx.proceeds * usdIdr));
             if (currentHoldings[tx.assetId]) {
                 const asset = currentHoldings[tx.assetId];
                 asset.invested -= asset.avgPrice * tx.qty; asset.shares -= tx.qty;
@@ -1149,13 +1219,12 @@ export default function App() {
         </Modal>
 
         <AssetDetailModal isOpen={isAssetDetailModalOpen} onClose={() => setAssetDetailModalOpen(false)} asset={selectedAssetForDetail} onBuy={handleBuy} onSell={handleSell} onDelete={handleDeleteAsset} usdIdr={usdIdr} displaySymbol={displaySymbol} />
-        <Modal title="Add New Asset" isOpen={isAddAssetModalOpen} onClose={() => setAddAssetModalOpen(false)} size="lg"><AddAssetForm {...{searchMode, setSearchMode, query, setQuery, suggestions, setSelectedSuggestion, isSearching, addAssetWithInitial, addNonLiquidAsset, nlName, setNlName, nlQty, setNlQty, nlPrice, setNlPrice, nlPriceCcy, setNlPriceCcy, nlPurchaseDate, setNlPurchaseDate, nlCoupon, setNlCoupon, nlYoy, setNlYoy, nlDesc, setNlDesc, nlIncomeFreq, setNlIncomeFreq, displaySymbol, handleSetWatchedAsset, watchedAssets}} /></Modal>
+        <Modal title="Add New Asset" isOpen={isAddAssetModalOpen} onClose={() => setAddAssetModalOpen(false)} size="lg"><AddAssetForm {...{searchMode, setSearchMode, query, setQuery, suggestions, setSuggestions, setSelectedSuggestion, isSearching, setIsSearching, addAssetWithInitial, addNonLiquidAsset, nlName, setNlName, nlQty, setNlQty, nlPrice, setNlPrice, nlPriceCcy, setNlPriceCcy, nlPurchaseDate, setNlPurchaseDate, nlCoupon, setNlCoupon, nlYoy, setNlYoy, nlDesc, setNlDesc, nlIncomeFreq, setNlIncomeFreq, displaySymbol, handleSetWatchedAsset, watchedAssets}} /></Modal>
         <Modal title={`${balanceModalMode} Balance`} isOpen={isBalanceModalOpen} onClose={() => setBalanceModalOpen(false)} size="lg"><BalanceManager onConfirm={balanceModalMode === 'Add' ? handleAddBalance : handleWithdraw} displaySymbol={displaySymbol} /></Modal>
         <Modal title="Portfolio Growth" isOpen={isEquityModalOpen} onClose={() => setIsEquityModalOpen(false)} size="3xl"><EquityGrowthView equitySeries={equitySeries} displaySymbol={displaySymbol} usdIdr={usdIdr} totalEquity={derivedData.totalEquity} /></Modal>
         <Modal title="Portfolio Allocation" isOpen={isAllocationModalOpen} onClose={() => setIsAllocationModalOpen(false)}><PortfolioAllocation data={derivedData.rows} tradingBalance={financialSummaries.tradingBalance} displaySymbol={displaySymbol} usdIdr={usdIdr}/></Modal>
         <Modal title="Transaction History" isOpen={isHistoryModalOpen} onClose={() => setIsHistoryModalOpen(false)}><HistoryView transactions={transactions} usdIdr={usdIdr} displaySymbol={displaySymbol} onDeleteTransaction={handleDeleteTransaction} /></Modal>
         
-        {/* Updated Trade Performance Modal - Data Driven logic */}
         <Modal title="Trade Performance" isOpen={isPerformanceModalOpen} onClose={() => setIsPerformanceModalOpen(false)} size="3xl">
             <div className="max-h-[80vh] overflow-y-auto">
                 <TradeStatsView stats={derivedData.tradeStats} transactions={transactions} displaySymbol={displaySymbol} usdIdr={usdIdr} assets={assets} />
@@ -1369,13 +1438,10 @@ const EquityGrowthView = ({ equitySeries, displaySymbol, usdIdr, totalEquity }) 
     return ( <div className="p-1"> <div><p className="text-sm text-gray-400">Total Equity</p><p className="text-2xl sm:text-3xl font-bold text-white mb-1 truncate w-full">{formatCurrency(totalEquity, false, displaySymbol, usdIdr)}</p></div> <div className="mt-6"><AreaChart data={equitySeries} displaySymbol={displaySymbol} range={chartRange} setRange={setChartRange} /></div> <div className="mt-8 max-h-64 overflow-y-auto"> <div className="flex justify-between items-center mb-4 sticky top-0 bg-zinc-900/80 backdrop-blur-sm py-2"><h3 className="text-base font-semibold text-white">Total Equity Return</h3><div className="flex items-center gap-2 text-sm">{['Daily', 'Monthly', 'Yearly'].map(p => (<button key={p} onClick={() => setReturnPeriod(p)} className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs ${returnPeriod === p ? 'bg-zinc-700 text-white' : 'text-gray-400'}`}>{p}</button>))}</div></div> <table className="w-full text-xs sm:text-sm"> <thead className="text-left text-gray-500 text-xs"><tr><th className="p-2 font-normal">Date</th><th className="p-2 font-normal text-right">Equity</th><th className="p-2 font-normal text-right">P&L</th></tr></thead> <tbody>{equityReturnData.map((item, index) => (<tr key={index} className="border-t border-white/10"><td className="p-2 text-white">{item.date}</td><td className="p-2 text-white text-right tabular-nums whitespace-nowrap">{formatCurrencyShort(item.equity, false, displaySymbol, usdIdr)}</td><td className={`p-2 text-right tabular-nums whitespace-nowrap ${item.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{item.pnl >= 0 ? '+' : ''}{formatCurrencyShort(item.pnl, false, displaySymbol, usdIdr)} <br className="sm:hidden" />({item.pnlPct.toFixed(2)}%)</td></tr>))}</tbody> </table> </div> </div> );
 };
 
-/* ================== UPDATED TRADE STATS VIEW ================== */
 const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr, assets }) => {
     const [chartRange, setChartRange] = useState("All");
-    
-    // Exact Win Rate Circle math
     const radius = 45;
-    const circumference = 2 * Math.PI * radius; // ~282.74
+    const circumference = 2 * Math.PI * radius;
     const dashOffset = circumference * (stats.winRate / 100);
 
     const { maxProfitPct, maxLossPct } = useMemo(() => { 
@@ -1422,12 +1488,9 @@ const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr, assets }) 
         <div className="p-2 sm:p-4 text-gray-300 space-y-6">
             <div className="flex flex-col md:flex-row gap-6 items-center border-b border-white/10 pb-6">
                 
-                {/* Donut Chart (Data Driven Presisi) */}
                 <div className="flex-shrink-0 relative w-32 h-32 flex items-center justify-center">
                     <svg className="w-full h-full transform -rotate-90">
-                        {/* Lingkaran Dasar (Losses) -> Merah */}
                         <circle cx="50%" cy="50%" r={`${radius}%`} stroke="#EF4444" strokeWidth="8" fill="transparent" />
-                        {/* Lingkaran Overlay (Wins) -> Hijau, Diukur dinamis */}
                         <circle cx="50%" cy="50%" r={`${radius}%`} stroke="#10B981" strokeWidth="8" fill="transparent" strokeDasharray={`${dashOffset} ${circumference}`} strokeLinecap="round"/>
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
@@ -1481,12 +1544,9 @@ const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr, assets }) 
                 </div>
             </div>
 
-            {/* Dibagi Menjadi Dua Kolom: Gainers dan Losers */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                  <div>
-                     <h3 className="text-sm text-gray-500 font-medium mb-3 flex items-center gap-2">
-                         Top Gainers
-                     </h3>
+                     <h3 className="text-sm text-gray-500 font-medium mb-3 flex items-center gap-2">Top Gainers</h3>
                      <div className="space-y-1">
                          {topGainers.map(g => {
                              const assetMatch = assets.find(a => a.symbol === g.symbol);
@@ -1513,9 +1573,7 @@ const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr, assets }) 
                  </div>
 
                  <div>
-                     <h3 className="text-sm text-gray-500 font-medium mb-3 flex items-center gap-2">
-                         Top Losers
-                     </h3>
+                     <h3 className="text-sm text-gray-500 font-medium mb-3 flex items-center gap-2">Top Losers</h3>
                      <div className="space-y-1">
                          {topLosers.map(g => {
                              const assetMatch = assets.find(a => a.symbol === g.symbol);
@@ -1568,15 +1626,26 @@ const BalanceManager = ({ onConfirm, displaySymbol }) => {
 
 const ManagePortfolioSheet = ({ onAddBalance, onWithdraw, onClearAll, onExport, onImport }) => ( <div className="p-4 text-white text-sm"> <h3 className="text-base font-semibold mb-4 px-2">Manage Portfolio</h3> <div className="space-y-1"> <button onClick={onAddBalance} className="w-full text-left p-2 rounded hover:bg-zinc-700/50 text-gray-300">Add Balance</button> <button onClick={onWithdraw} className="w-full text-left p-2 rounded hover:bg-zinc-700/50 text-gray-300">Withdraw</button> <div className="border-t border-zinc-700 my-2"></div> <button onClick={onExport} className="w-full text-left p-2 rounded hover:bg-zinc-700/50 text-gray-300">Export as CSV</button> <button onClick={onImport} className="w-full text-left p-2 rounded hover:bg-zinc-700/50 text-gray-300">Import from CSV/TSV</button> <div className="border-t border-zinc-700 my-2"></div> <button onClick={onClearAll} className="w-full text-left p-2 rounded hover:bg-red-700/20 text-red-400">Erase all data</button> </div> </div> );
 
-const AddAssetForm = ({ searchMode, setSearchMode, query, setQuery, suggestions, setSelectedSuggestion, isSearching, addAssetWithInitial, addNonLiquidAsset, nlName, setNlName, nlQty, setNlQty, nlPrice, setNlPrice, nlPriceCcy, setNlPriceCcy, nlPurchaseDate, setNlPurchaseDate, nlCoupon, setNlCoupon, nlYoy, setNlYoy, nlDesc, setNlDesc, nlIncomeFreq, setNlIncomeFreq, displaySymbol, handleSetWatchedAsset, watchedAssets }) => {
+const AddAssetForm = ({ searchMode, setSearchMode, query, setQuery, suggestions, setSuggestions, setSelectedSuggestion, isSearching, setIsSearching, addAssetWithInitial, addNonLiquidAsset, nlName, setNlName, nlQty, setNlQty, nlPrice, setNlPrice, nlPriceCcy, setNlPriceCcy, nlPurchaseDate, setNlPurchaseDate, nlCoupon, setNlCoupon, nlYoy, setNlYoy, nlDesc, setNlDesc, nlIncomeFreq, setNlIncomeFreq, displaySymbol, handleSetWatchedAsset, watchedAssets }) => {
     const [shares, setShares] = useState(''); const [price, setPrice] = useState(''); const [total, setTotal] = useState('');
     const handleInputChange = (field, value) => { if (field === 'shares') { setShares(value); const num = toNum(price) * toNum(value); setTotal(num >= 0 ? `${num}` : ''); } else if (field === 'price') { setPrice(value); const num = toNum(value) * toNum(shares); setTotal(num >= 0 ? `${num}` : ''); } else if (field === 'total') { setTotal(value); const nTotal = toNum(value), nShares = toNum(shares); if (nShares > 0 && nTotal >= 0) setPrice(String((nTotal / nShares).toFixed(8))); } };
-    return ( <div className="space-y-4"> <div className="flex border-b border-white/10">{[{ key: 'stock', label: 'Stock' }, { key:'crypto', label:'Crypto' }, { key:'nonliquid', label: 'Alternative Assets' }].map(item => (<button key={item.key} onClick={() => setSearchMode(item.key)} className={`px-3 py-2 text-sm font-medium ${searchMode === item.key ? 'text-white border-b-2 border-emerald-400' : 'text-gray-400'}`}>{item.label}</button>))}</div> {searchMode !== 'nonliquid' ? ( <div className="space-y-4"> <div className="relative">
-      <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search by code or name..." className="w-full rounded bg-zinc-800 px-3 py-2 text-sm outline-none border border-zinc-700 text-white pr-10" />
-      {isSearching && <div className="absolute right-3 top-2.5 w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>}
-      {suggestions.length > 0 && <div className="absolute z-50 mt-1 w-full glass-card max-h-56 overflow-auto">{suggestions.map((s, i) => (<div key={i} className="w-full px-3 py-2 text-left hover:bg-white/10 flex items-center gap-3"><button className="flex-1 flex items-center gap-3 text-left overflow-hidden" onClick={() => { setSelectedSuggestion(s); setQuery(s.display); setSuggestions([]); }}><img src={s.image} alt={s.symbol} className="w-5 h-5 rounded-full bg-zinc-700 object-cover shrink-0 border border-white/5" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${s.symbol}&background=random&color=fff&rounded=true&bold=true`; }} /><div className="flex-1 min-w-0"><div className="font-medium text-gray-100 truncate w-full">{s.display}</div><div className="text-xs text-gray-400">{s.exchange || s.source}</div></div></button>
-        <button onClick={() => handleSetWatchedAsset({ id: s.id, symbol: s.symbol, name: s.display, type: s.type, image: s.image })} className="text-yellow-500 hover:text-yellow-400 p-1 shrink-0"><StarIcon isFilled={watchedAssets.some(w => w.id === s.id)} /></button>
-    </div>))}</div>}</div> <div className="grid grid-cols-1 md:grid-cols-2 gap-3"><div><label className="text-xs text-gray-400">Qty</label><input value={shares} onChange={e => handleInputChange('shares', e.target.value)} className="w-full mt-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" type="text" /></div><div><label className="text-xs text-gray-400">Price ({displaySymbol})</label><input value={price} onChange={e => handleInputChange('price', e.target.value)} className="w-full mt-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" type="text" /></div></div> <div><label className="text-xs text-gray-400">Total Value ({displaySymbol})</label><input value={total} onChange={e => handleInputChange('total', e.target.value)} className="w-full mt-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" type="text" /></div> <div className="flex justify-end"><button onClick={() => addAssetWithInitial(shares, price)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 rounded font-semibold">Add Position</button></div> </div> ) : ( 
+    return ( <div className="space-y-4"> <div className="flex border-b border-white/10">{[{ key: 'stock', label: 'Stock' }, { key:'crypto', label:'Crypto' }, { key:'nonliquid', label: 'Alternative Assets' }].map(item => (<button key={item.key} onClick={() => setSearchMode(item.key)} className={`px-3 py-2 text-sm font-medium ${searchMode === item.key ? 'text-white border-b-2 border-emerald-400' : 'text-gray-400'}`}>{item.label}</button>))}</div> {searchMode !== 'nonliquid' ? ( <div className="space-y-4"> 
+        <div className="relative z-50">
+          <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search by code or name..." className="w-full rounded bg-zinc-800 px-3 py-2 text-sm outline-none border border-zinc-700 text-white pr-10" />
+          {isSearching && <div className="absolute right-3 top-2.5 w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>}
+          
+          {suggestions.length > 0 && (
+            <>
+                <div className="fixed inset-0 z-40" onPointerDown={(e) => { e.stopPropagation(); setSuggestions([]); setIsSearching(false); }}></div>
+                <div className="absolute z-50 mt-1 w-full glass-card max-h-56 overflow-auto relative shadow-xl border border-zinc-700">
+                    {suggestions.map((s, i) => (<div key={i} className="w-full px-3 py-2 text-left hover:bg-white/10 flex items-center gap-3"><button className="flex-1 flex items-center gap-3 text-left overflow-hidden" onClick={() => { setSelectedSuggestion(s); setQuery(s.display); setSuggestions([]); }}><img src={s.image} alt={s.symbol} className="w-5 h-5 rounded-full bg-zinc-700 object-cover shrink-0 border border-white/5" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${s.symbol}&background=random&color=fff&rounded=true&bold=true`; }} /><div className="flex-1 min-w-0"><div className="font-medium text-gray-100 truncate w-full">{s.display}</div><div className="text-xs text-gray-400">{s.exchange || s.source}</div></div></button>
+                    <button onClick={() => handleSetWatchedAsset({ id: s.id, symbol: s.symbol, name: s.display, type: s.type, image: s.image })} className="text-yellow-500 hover:text-yellow-400 p-1 shrink-0"><StarIcon isFilled={watchedAssets.some(w => w.id === s.id)} /></button>
+                </div>))}
+                </div>
+            </>
+          )}
+        </div> 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 relative z-10"><div><label className="text-xs text-gray-400">Qty</label><input value={shares} onChange={e => handleInputChange('shares', e.target.value)} className="w-full mt-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" type="text" /></div><div><label className="text-xs text-gray-400">Price ({displaySymbol})</label><input value={price} onChange={e => handleInputChange('price', e.target.value)} className="w-full mt-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" type="text" /></div></div> <div className="relative z-10"><label className="text-xs text-gray-400">Total Value ({displaySymbol})</label><input value={total} onChange={e => handleInputChange('total', e.target.value)} className="w-full mt-1 rounded bg-zinc-800 px-3 py-2 text-sm border border-zinc-700 text-white" type="text" /></div> <div className="flex justify-end relative z-10"><button onClick={() => addAssetWithInitial(shares, price)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 rounded font-semibold">Add Position</button></div> </div> ) : ( 
         <div className="space-y-4"> 
             <div className="space-y-3">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1728,7 +1797,7 @@ const AssetDetailModal = ({ isOpen, onClose, asset, onBuy, onSell, onDelete, usd
                     <TradingViewWidget asset={asset} />
                 )}
                 {asset.shares > 0 && (
-                    <div className="border-t border-white/10 pt-4 mt-4">
+                    <div className="border-t border-white/10 pt-4 mt-4 relative z-10">
                       <TradeForm asset={asset} onBuy={onBuy} onSell={onSell} onDelete={onDelete} usdIdr={usdIdr} displaySymbol={displaySymbol} />
                     </div>
                 )}
@@ -1809,35 +1878,36 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
     const [hoveredSegment, setHoveredSegment] = useState(null);
 
     const { equityData, sectorData } = useMemo(() => {
-        const tradingBalanceUSD = tradingBalance / usdIdr;
+        const tradingBalanceUSD = tradingBalance / (usdIdr || 16200);
         
-        // Define specific ordered gradient colors
         const greens = ["#6ee7b7", "#34d399", "#10b981", "#059669", "#047857", "#064e3b"]; 
         const blues = ["#93c5fd", "#60a5fa", "#3b82f6", "#2563eb", "#1d4ed8", "#1e40af"];
 
         const secDataMap = {
-            'Cash': { value: tradingBalanceUSD, color: '#1e40af', icon: <WalletIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" /> },
+            'Cash': { value: tradingBalanceUSD || 0, color: '#1e40af', icon: <WalletIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" /> },
             'Equity': { value: 0, color: '#059669', icon: <TrendingUpIcon className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" /> }, 
             'Crypto': { value: 0, color: '#3b82f6', icon: <CryptoIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-300" /> }, 
             'Alternative Assets': { value: 0, color: '#10b981', icon: <BuildingIcon className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-300" /> }
         }; 
-        fullAssetData.forEach(asset => { 
-            if (asset.type === 'stock') secDataMap['Equity'].value += asset.marketValueUSD; 
-            else if (asset.type === 'crypto') secDataMap['Crypto'].value += asset.marketValueUSD; 
-            else if (asset.type === 'nonliquid') secDataMap['Alternative Assets'].value += asset.marketValueUSD; 
+
+        (fullAssetData || []).forEach(asset => { 
+            if (asset.type === 'stock') secDataMap['Equity'].value += (asset.marketValueUSD || 0); 
+            else if (asset.type === 'crypto') secDataMap['Crypto'].value += (asset.marketValueUSD || 0); 
+            else if (asset.type === 'nonliquid') secDataMap['Alternative Assets'].value += (asset.marketValueUSD || 0); 
         }); 
-        const finalSectorData = Object.entries(secDataMap).map(([name, data]) => ({ name, ...data })).filter(d => d.value > 0.01);
+        
+        const finalSectorData = Object.entries(secDataMap).map(([name, data]) => ({ name, ...data })).filter(d => (d.value || 0) > 0.01);
 
         const allAssets = [
-            ...fullAssetData.map(d => ({ name: d.symbol, value: d.marketValueUSD, image: d.image, type: d.type })),
-            { name: 'Cash', value: tradingBalanceUSD, image: null, type: 'cash' }
-        ].filter(a => a.value > 0.01).sort((a, b) => b.value - a.value);
+            ...(fullAssetData || []).map(d => ({ name: d.symbol, value: d.marketValueUSD || 0, image: d.image, type: d.type })),
+            { name: 'Cash', value: tradingBalanceUSD || 0, image: null, type: 'cash' }
+        ].filter(a => (a.value || 0) > 0.01).sort((a, b) => b.value - a.value);
 
         let finalEquityData;
         if (allAssets.length > 12) {
             const top11 = allAssets.slice(0, 11);
             const others = allAssets.slice(11);
-            const othersValue = others.reduce((sum, item) => sum + item.value, 0);
+            const othersValue = others.reduce((sum, item) => sum + (item.value || 0), 0);
             finalEquityData = [ ...top11, { name: 'Others', value: othersValue, type: 'other' } ];
         } else {
             finalEquityData = allAssets;
@@ -1857,12 +1927,8 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
                 color = '#6b7280';
             } else {
                 icon = <img src={d.image || `https://ui-avatars.com/api/?name=${d.name}&background=random&color=fff&rounded=true`} alt={d.name} className="w-full h-full rounded-full object-cover border border-white/5" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${d.name}&background=random&color=fff&rounded=true&bold=true`; }} />;
-                
-                if (assetIndex < half) {
-                    color = greens[Math.min(assetIndex, greens.length - 1)];
-                } else {
-                    color = blues[Math.min(assetIndex - half, blues.length - 1)];
-                }
+                if (assetIndex < half) { color = greens[Math.min(assetIndex, greens.length - 1)]; } 
+                else { color = blues[Math.min(assetIndex - half, blues.length - 1)]; }
                 assetIndex++;
             }
             return { ...d, icon, color };
@@ -1872,11 +1938,14 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
     }, [fullAssetData, tradingBalance, usdIdr]);
 
     const data = activeTab === 'Asset' ? equityData : sectorData;
-    const totalValueUSD = useMemo(() => data.reduce((s, d) => s + d.value, 0), [data]);
+    const totalValueUSD = useMemo(() => data.reduce((s, d) => s + (d.value || 0), 0), [data]);
 
-    if (!totalValueUSD) return <div className="mt-8 text-center text-gray-500">No assets to show in allocation.</div>;
+    if (!totalValueUSD || totalValueUSD <= 0 || isNaN(totalValueUSD)) {
+        return <div className="mt-8 text-center text-gray-500">No assets to show in allocation.</div>;
+    }
+
     const totalValueDisplay = totalValueUSD * (displaySymbol === "Rp" ? usdIdr : 1); 
-    const size = 200, strokeWidth = 20, innerRadius = (size / 2) - strokeWidth; 
+    const size = 200, strokeWidth = 20, innerRadius = Math.max((size / 2) - strokeWidth, 1); 
     let accumulatedAngle = 0;
 
     return ( 
@@ -1889,6 +1958,7 @@ const PortfolioAllocation = ({ data: fullAssetData, tradingBalance, displaySymbo
                 <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90"> 
                     {data.map((d) => { 
                         const angle = totalValueUSD > 0 ? (d.value / totalValueUSD) * 360 : 0; 
+                        if (isNaN(angle)) return null;
                         const segment = (<circle key={d.name} cx={size/2} cy={size/2} r={innerRadius} fill="transparent" stroke={d.color} strokeWidth={strokeWidth + (hoveredSegment === d.name ? 4 : 0)} strokeDasharray={`${Math.max(0, (angle - 2)) * Math.PI * innerRadius / 180} ${360 * Math.PI * innerRadius / 180}`} strokeDashoffset={-accumulatedAngle * Math.PI * innerRadius / 180} className="transition-all duration-300" onMouseOver={() => setHoveredSegment(d.name)} onMouseOut={() => setHoveredSegment(null)}/>); 
                         accumulatedAngle += angle; 
                         return segment; 
@@ -1982,6 +2052,5 @@ const AssetTableView = ({ rows, displaySymbol, usdIdr, onRowClick }) => {
         </div>
     );
 }
-
 
 
