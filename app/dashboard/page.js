@@ -26,23 +26,7 @@ const CryptoIcon = ({className}) => (<svg className={className} viewBox="0 0 24 
 
 /* ===================== Config & Helpers ===================== */
 const COINGECKO_API = "https://api.coingecko.com/api/v3";
-const TV_SEARCH_API = (q) => `https://symbol-search.tradingview.com/symbol_search/v3/?text=${encodeURIComponent(q)}&hl=1&exchange=&type=stock,fund,dr,index&lang=en`;
 const COINGECKO_MARKETS = (ids) => `${COINGECKO_API}/coins/markets?vs_currency=usd&ids=${encodeURIComponent(ids)}&price_change_percentage=24h`;
-
-const getYahooSymbol = (symbol, exchange, country) => {
-    if (exchange === 'IDX' || country === 'ID') return `${symbol}.JK`;
-    if (exchange === 'NSE' || exchange === 'BSE') return `${symbol}.${exchange === 'NSE' ? 'NS' : 'BO'}`;
-    if (country === 'GB' && exchange === 'LSE') return `${symbol}.L`;
-    if (country === 'CA') return `${symbol}.TO`;
-    if (country === 'AU') return `${symbol}.AX`;
-    if (country === 'HK') return `${symbol}.HK`;
-    if (country === 'SG') return `${symbol}.SI`;
-    if (country === 'MY') return `${symbol}.KL`;
-    if (country === 'TH') return `${symbol}.BK`;
-    if (country === 'TW') return `${symbol}.TW`;
-    if (exchange === 'MOEX') return `${symbol}.ME`;
-    return symbol; 
-};
 
 const isBrowser = typeof window !== "undefined";
 const toNum = (v) => { const n = Number(String(v).replace(/,/g, '').replace(/\s/g,'')); return isNaN(n) ? 0 : n; };
@@ -465,69 +449,49 @@ export default function App() {
           })));
         } else {
             let results = [];
+            const yahooSearchUrl = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=10&newsCount=0`;
             
             try {
-                const tvUrl = TV_SEARCH_API(q);
-                const res = await fetchWithTimeout(tvUrl, {}, 3000);
-                if (!res.ok) throw new Error("TV direct fail");
-                const data = await res.json();
-                
-                if (data && data.length > 0) {
-                    results = data.map(it => {
-                        const yahooSymbol = getYahooSymbol(it.symbol, it.exchange, it.country);
-                        const isIndo = it.country === 'ID' || it.exchange === 'IDX';
-                        const cleanSymbol = it.symbol.replace('.JK', '');
-                        const imgUrl = it.logoid 
-                            ? `https://s3-symbol-logo.tradingview.com/${it.logoid}--big.svg`
-                            : (isIndo ? `https://assets.stockbit.com/logos/companies/${cleanSymbol}.png` : `https://assets.parqet.com/logos/symbol/${it.symbol}?format=png`);
-                        return { symbol: yahooSymbol, display: `${it.description} (${it.symbol})`, exchange: it.exchange || it.country, id: yahooSymbol, source: "tradingview", type: "stock", image: imgUrl };
-                    });
-                } else { throw new Error("Empty TV"); }
-            } catch (e1) {
+                let data;
                 try {
-                    const tvUrlProxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(TV_SEARCH_API(q))}`;
-                    const res = await fetchWithTimeout(tvUrlProxy, {}, 3000);
-                    const data = await res.json();
-                    
-                    if (data && data.length > 0) {
-                        results = data.map(it => {
-                            const yahooSymbol = getYahooSymbol(it.symbol, it.exchange, it.country);
-                            const isIndo = it.country === 'ID' || it.exchange === 'IDX';
-                            const cleanSymbol = it.symbol.replace('.JK', '');
-                            const imgUrl = it.logoid 
-                                ? `https://s3-symbol-logo.tradingview.com/${it.logoid}--big.svg`
-                                : (isIndo ? `https://assets.stockbit.com/logos/companies/${cleanSymbol}.png` : `https://assets.parqet.com/logos/symbol/${it.symbol}?format=png`);
-                            return { symbol: yahooSymbol, display: `${it.description} (${it.symbol})`, exchange: it.exchange || it.country, id: yahooSymbol, source: "tradingview", type: "stock", image: imgUrl };
-                        });
-                    } else { throw new Error("Empty Proxy TV"); }
-                } catch (e2) {
-                    const yahooUrl = `https://query2.finance.yahoo.com/v1/finance/search?q=${q}`;
+                    const res = await fetchWithTimeout(yahooSearchUrl, {}, 2000);
+                    if (res.ok) data = await res.json();
+                    else throw new Error('Direct failed');
+                } catch(e0) {
                     try {
-                        const res = await fetchWithTimeout(yahooUrl, {}, 3000);
-                        const data = await res.json();
-                        if (data && data.quotes) {
-                            results = data.quotes.filter(it => it.shortname || it.longname).map(it => {
-                                 const isIndo = it.symbol.endsWith('.JK');
-                                 const cleanSymbol = it.symbol.replace('.JK', '');
-                                 const imgUrl = isIndo ? `https://assets.stockbit.com/logos/companies/${cleanSymbol}.png` : `https://assets.parqet.com/logos/symbol/${it.symbol}?format=png`;
-                                 return { symbol: it.symbol.toUpperCase(), display: `${it.shortname || it.longname} (${it.symbol.toUpperCase()})`, exchange: it.exchange, id: it.symbol.toUpperCase(), source: "yahoo", type: "stock", image: imgUrl }
-                            });
-                        }
-                    } catch(e3) {
-                         const yahooProxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(yahooUrl)}`;
-                         const res = await fetchWithTimeout(yahooProxy, {}, 4000);
-                         const data = await res.json();
-                         if (data && data.quotes) {
-                              results = data.quotes.filter(it => it.shortname || it.longname).map(it => {
-                                 const isIndo = it.symbol.endsWith('.JK');
-                                 const cleanSymbol = it.symbol.replace('.JK', '');
-                                 const imgUrl = isIndo ? `https://assets.stockbit.com/logos/companies/${cleanSymbol}.png` : `https://assets.parqet.com/logos/symbol/${it.symbol}?format=png`;
-                                 return { symbol: it.symbol.toUpperCase(), display: `${it.shortname || it.longname} (${it.symbol.toUpperCase()})`, exchange: it.exchange, id: it.symbol.toUpperCase(), source: "yahoo", type: "stock", image: imgUrl }
-                              });
-                         }
+                        const res = await fetchWithTimeout(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(yahooSearchUrl)}`, {}, 3000);
+                        if (res.ok) data = await res.json();
+                        else throw new Error('Codetabs failed');
+                    } catch(e1) {
+                        const res = await fetchWithTimeout(`https://api.allorigins.win/raw?url=${encodeURIComponent(yahooSearchUrl)}`, {}, 4000);
+                        if (res.ok) data = await res.json();
                     }
                 }
+
+                if (data && data.quotes) {
+                    results = data.quotes
+                        .filter(it => ['EQUITY', 'ETF', 'MUTUALFUND', 'INDEX'].includes(it.quoteType))
+                        .map(it => {
+                            const isIndo = it.symbol.endsWith('.JK');
+                            const cleanSymbol = it.symbol.replace('.JK', '');
+                            const imgUrl = isIndo 
+                                ? `https://assets.stockbit.com/logos/companies/${cleanSymbol}.png` 
+                                : `https://assets.parqet.com/logos/symbol/${it.symbol}?format=png`;
+                            return {
+                                symbol: it.symbol,
+                                display: `${it.shortname || it.longname || it.symbol} (${it.symbol})`,
+                                exchange: it.exchDisp || it.exchange,
+                                id: it.symbol,
+                                source: "yahoo",
+                                type: "stock",
+                                image: imgUrl
+                            };
+                        });
+                }
+            } catch (e) {
+                console.error("Stock search failed:", e);
             }
+            
             setSuggestions(results.slice(0, 10));
         }
       } catch (e) { console.error("Semua metode pencarian gagal:", e); setSuggestions([]); } finally { setIsSearching(false); }
@@ -1480,23 +1444,23 @@ const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr, assets }) 
                 <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4 w-full">
                     <div className="flex flex-col justify-between glass-card p-3 min-w-0">
                         <span className="text-[10px] sm:text-xs text-gray-400 mb-1 flex items-center gap-1"><AvgProfitIcon className="w-3.5 h-3.5"/> Avg Profit</span>
-                        <span className="text-base sm:text-lg font-semibold text-emerald-400 truncate">+{formatCurrencyCompact(stats.avgProfit, true, displaySymbol, usdIdr)}</span>
+                        <span className="text-base sm:text-lg font-semibold text-emerald-400 truncate">+{formatCurrency(stats.avgProfit, true, displaySymbol, usdIdr)}</span>
                     </div>
                     <div className="flex flex-col justify-between glass-card p-3 min-w-0">
                         <span className="text-[10px] sm:text-xs text-gray-400 mb-1 flex items-center gap-1"><ArrowUpIcon className="text-emerald-400"/> Max Profit</span>
                         <div>
-                            <span className="text-base sm:text-lg font-semibold text-emerald-400 truncate block">+{formatCurrencyCompact(stats.maxProfit, true, displaySymbol, usdIdr)}</span>
+                            <span className="text-base sm:text-lg font-semibold text-emerald-400 truncate block">+{formatCurrency(stats.maxProfit, true, displaySymbol, usdIdr)}</span>
                             <span className="text-[9px] sm:text-[10px] text-emerald-400/80">+{maxProfitPct.toFixed(2)}%</span>
                         </div>
                     </div>
                     <div className="flex flex-col justify-between glass-card p-3 min-w-0">
                         <span className="text-[10px] sm:text-xs text-gray-400 mb-1 flex items-center gap-1"><AvgLossIcon className="w-3.5 h-3.5"/> Avg Loss</span>
-                        <span className="text-base sm:text-lg font-semibold text-red-400 truncate">{formatCurrencyCompact(stats.avgLoss, true, displaySymbol, usdIdr)}</span>
+                        <span className="text-base sm:text-lg font-semibold text-red-400 truncate">{formatCurrency(stats.avgLoss, true, displaySymbol, usdIdr)}</span>
                     </div>
                      <div className="flex flex-col justify-between glass-card p-3 min-w-0">
                         <span className="text-[10px] sm:text-xs text-gray-400 mb-1 flex items-center gap-1"><ArrowDownIcon className="text-red-400"/> Max Loss</span>
                         <div>
-                            <span className="text-base sm:text-lg font-semibold text-red-400 truncate block">{formatCurrencyCompact(stats.maxLoss, true, displaySymbol, usdIdr)}</span>
+                            <span className="text-base sm:text-lg font-semibold text-red-400 truncate block">{formatCurrency(stats.maxLoss, true, displaySymbol, usdIdr)}</span>
                             <span className="text-[9px] sm:text-[10px] text-red-400/80">{maxLossPct.toFixed(2)}%</span>
                         </div>
                     </div>
@@ -1521,7 +1485,7 @@ const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr, assets }) 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                  <div>
                      <h3 className="text-sm text-gray-500 font-medium mb-3 flex items-center gap-2">
-                         <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Top Gainers
+                         Top Gainers
                      </h3>
                      <div className="space-y-1">
                          {topGainers.map(g => {
@@ -1550,7 +1514,7 @@ const TradeStatsView = ({ stats, transactions, displaySymbol, usdIdr, assets }) 
 
                  <div>
                      <h3 className="text-sm text-gray-500 font-medium mb-3 flex items-center gap-2">
-                         <span className="w-2 h-2 rounded-full bg-red-500"></span> Top Losers
+                         Top Losers
                      </h3>
                      <div className="space-y-1">
                          {topLosers.map(g => {
@@ -2018,5 +1982,6 @@ const AssetTableView = ({ rows, displaySymbol, usdIdr, onRowClick }) => {
         </div>
     );
 }
+
 
 
