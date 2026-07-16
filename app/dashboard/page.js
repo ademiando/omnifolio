@@ -47,8 +47,8 @@ const getYahooSymbol = (symbol, exchange, country) => {
 const isBrowser = typeof window !== "undefined";
 const toNum = (v) => { const n = Number(String(v).replace(/,/g, '').replace(/\s/g,'')); return isNaN(n) ? 0 : n; };
 
-// Helper to fetch with timeout
-const fetchWithTimeout = async (url, options = {}, timeout = 4000) => {
+// Fast fetcher
+const fetchWithTimeout = async (url, options = {}, timeout = 5000) => {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
     const response = await fetch(url, { ...options, signal: controller.signal });
@@ -207,7 +207,7 @@ const BottomSheet = ({ isOpen, onClose, children }) => {
 
 /* ===================== Main Component ===================== */
 export default function App() {
-  const STORAGE_VERSION = "v40"; 
+  const STORAGE_VERSION = "v41"; // Bumped version for fresh state formatting if needed
   
   const [assets, setAssets] = useState(() => JSON.parse(safeGetStorage(`pf_assets_${STORAGE_VERSION}`, "[]")).map(ensureNumericAsset));
   const [transactions, setTransactions] = useState(() => JSON.parse(safeGetStorage(`pf_transactions_${STORAGE_VERSION}`, "[]")));
@@ -273,10 +273,21 @@ export default function App() {
     for (const tx of sortedTxs) {
       if (tx.type === 'deposit') { tradingBalance += tx.amount; totalDeposits += tx.amount; continue; }
       if (tx.type === 'withdraw') { tradingBalance -= tx.amount; totalWithdrawals += tx.amount; continue; }
+      
       const assetId = tx.assetId || `${tx.assetStub.type}:${tx.assetStub.symbol}`;
-      if (!newAssets[assetId]) { newAssets[assetId] = ensureNumericAsset({ ...tx.assetStub, shares: 0, investedUSD: 0, avgPrice: 0 }); }
+      if (!newAssets[assetId]) { 
+          newAssets[assetId] = ensureNumericAsset({ ...tx.assetStub, shares: 0, investedUSD: 0, avgPrice: 0 }); 
+          // Default purchaseDate ke transaksi buy pertama
+          newAssets[assetId].purchaseDate = tx.date;
+      }
+      
       const asset = newAssets[assetId];
       if (tx.type === 'buy') {
+        // Jika ada transaksi buy yang lebih lama, gunakan itu sebagai tanggal beli awal untuk hitungan Hold Period
+        if (tx.date < asset.purchaseDate) {
+            asset.purchaseDate = tx.date;
+        }
+
         tradingBalance -= tx.cost * usdIdr; const totalInvested = asset.investedUSD + tx.cost; const totalShares = asset.shares + tx.qty;
         asset.investedUSD = totalInvested; asset.shares = totalShares; asset.avgPrice = totalShares > 0 ? totalInvested / totalShares : 0;
       } else if (tx.type === 'sell' || tx.type === 'delete') {
@@ -332,7 +343,6 @@ export default function App() {
             const url = `https://query1.finance.yahoo.com/v7/finance/spark?symbols=${allStockSymbols.join(',')}`;
             let spark = [];
             
-            // Try fetching via fast proxy first, fallback to standard proxy
             try {
                 const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
                 if(!res.ok) throw new Error('Raw fail');
@@ -435,7 +445,6 @@ export default function App() {
     setIsSearching(true);
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     
-    // Sistem Pencarian Berlapis (Timeout Cerdas)
     searchTimeoutRef.current = setTimeout(async () => {
       try {
         const q = query.trim();
@@ -448,69 +457,81 @@ export default function App() {
               image: c.thumb, source: "coingecko", type: "crypto" 
           })));
         } else {
-          let j = null;
-          
-          try {
-             // Upaya 1: TradingView API Langsung (Sangat Cepat jika lolos CORS)
-             const res = await fetchWithTimeout(TV_SEARCH_API(q), {}, 2500);
-             if (res.ok) j = await res.json();
-             else throw new Error("Direct TV Failed");
-          } catch(err1) {
-             try {
-                 // Upaya 2: TradingView via Proxy (Aman dari CORS)
-                 const res = await fetchWithTimeout(`https://api.allorigins.win/raw?url=${encodeURIComponent(TV_SEARCH_API(q))}`, {}, 3500);
-                 if (res.ok) j = await res.json();
-                 else throw new Error("Proxy TV Failed");
-             } catch(err2) {
-                 // Upaya 3: Yahoo Finance Fallback (Sangat Handal)
-                 const res = await fetchWithTimeout(`https://api.allorigins.win/get?url=${encodeURIComponent(`https://query2.finance.yahoo.com/v1/finance/search?q=${q}`)}`, {}, 5000);
-                 const wrapper = await res.json();
-                 const yahooData = JSON.parse(wrapper.contents);
-                 
-                 if (yahooData && yahooData.quotes) {
-                     setSuggestions((yahooData.quotes || []).filter(it => it.shortname || it.longname).map(it => ({ 
-                         symbol: it.symbol.toUpperCase(), 
-                         display: `${it.shortname || it.longname} (${it.symbol.toUpperCase()})`, 
-                         exchange: it.exchange, 
-                         id: it.symbol.toUpperCase(), 
-                         source: "yahoo", 
-                         type: "stock", 
-                         image: `https://assets.parqet.com/logos/symbol/${it.symbol.toUpperCase()}?format=png`
-                     })).slice(0, 10));
-                     setIsSearching(false);
-                     return; 
-                 }
-             }
-          }
-
-          if (j) {
-              setSuggestions((j || []).filter(it => it.symbol).map(it => { 
-                  const yahooSymbol = getYahooSymbol(it.symbol, it.exchange, it.country);
-                  // Ekstrak High-Res SVG TradingView jika Logoid tersedia
-                  const imgUrl = it.logoid 
-                    ? `https://s3-symbol-logo.tradingview.com/${it.logoid}--big.svg`
-                    : `https://assets.parqet.com/logos/symbol/${it.symbol}?format=png`;
-
-                  return {
-                      symbol: yahooSymbol, 
-                      display: `${it.description} (${it.symbol})`, 
-                      exchange: it.exchange || it.country, 
-                      id: yahooSymbol, 
-                      source: "tradingview", 
-                      type: "stock", 
-                      image: imgUrl
-                  };
-              }).slice(0, 10));
-          }
+            // Pencarian Saham yang Super Cepat & Komprehensif
+            let results = [];
+            
+            try {
+                // Utamakan TradingView via proxy ultra cepat untuk mendapatkan Logoid asli
+                const tvUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(TV_SEARCH_API(q))}`;
+                const res = await fetchWithTimeout(tvUrl, {}, 3000);
+                if (!res.ok) throw new Error("TV fail");
+                const data = await res.json();
+                
+                if (data && data.length > 0) {
+                    results = data.map(it => {
+                        const yahooSymbol = getYahooSymbol(it.symbol, it.exchange, it.country);
+                        const isIndo = it.country === 'ID' || it.exchange === 'IDX';
+                        const cleanSymbol = it.symbol.replace('.JK', '');
+                        
+                        // Sistem Logo Cerdas: 
+                        // 1. TradingView Logoid (Global)
+                        // 2. Stockbit Database (Paling Lengkap & Jernih Khusus IDX/Indonesia)
+                        // 3. Parqet Database (Saham US)
+                        const imgUrl = it.logoid 
+                            ? `https://s3-symbol-logo.tradingview.com/${it.logoid}--big.svg`
+                            : (isIndo ? `https://assets.stockbit.com/logos/companies/${cleanSymbol}.png` : `https://assets.parqet.com/logos/symbol/${it.symbol}?format=png`);
+                        
+                        return {
+                            symbol: yahooSymbol, 
+                            display: `${it.description} (${it.symbol})`, 
+                            exchange: it.exchange || it.country, 
+                            id: yahooSymbol, 
+                            source: "tradingview", 
+                            type: "stock", 
+                            image: imgUrl
+                        };
+                    });
+                } else {
+                    throw new Error("Empty TV");
+                }
+            } catch (e1) {
+                // Fallback sangat tangguh menggunakan Yahoo Finance Search
+                const yahooUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://query2.finance.yahoo.com/v1/finance/search?q=${q}`)}`;
+                const res = await fetchWithTimeout(yahooUrl, {}, 4000);
+                const data = await res.json();
+                
+                if (data && data.quotes) {
+                    results = data.quotes.filter(it => it.shortname || it.longname).map(it => {
+                         const isIndo = it.symbol.endsWith('.JK');
+                         const cleanSymbol = it.symbol.replace('.JK', '');
+                         
+                         // Sama seperti di atas, sisipkan Stockbit untuk saham Indonesia
+                         const imgUrl = isIndo 
+                            ? `https://assets.stockbit.com/logos/companies/${cleanSymbol}.png` 
+                            : `https://assets.parqet.com/logos/symbol/${it.symbol}?format=png`;
+                            
+                         return {
+                             symbol: it.symbol.toUpperCase(), 
+                             display: `${it.shortname || it.longname} (${it.symbol.toUpperCase()})`, 
+                             exchange: it.exchange, 
+                             id: it.symbol.toUpperCase(), 
+                             source: "yahoo", 
+                             type: "stock", 
+                             image: imgUrl
+                         }
+                    });
+                }
+            }
+            setSuggestions(results.slice(0, 10));
         }
       } catch (e) { console.error("Semua metode pencarian gagal:", e); setSuggestions([]); } finally { setIsSearching(false); }
-    }, 500); 
+    }, 400); // Trigger lebih cepat
     return () => clearTimeout(searchTimeoutRef.current);
   }, [query, searchMode]);
 
   const addTransaction = (tx) => setTransactions(prev => [...prev, tx]);
   
-  const handleBuy = (assetStub, qty, priceUSD) => {
+  const handleBuy = (assetStub, qty, priceUSD, overrideDate) => {
     qty = toNum(qty); priceUSD = toNum(priceUSD);
     if (qty <= 0 || priceUSD < 0) { alert("Quantity must be greater than zero and price cannot be negative."); return false; }
     const costUSD = qty * priceUSD;
@@ -525,7 +546,10 @@ export default function App() {
     }
     
     const assetId = assetStub.id || `${assetStub.type}:${assetStub.symbol}`;
-    addTransaction({ id: `tx:${Date.now()}`, type: "buy", qty, pricePerUnit: priceUSD, cost: costUSD, date: assetStub.purchaseDate || Date.now(), symbol: assetStub.symbol, name: assetStub.name || assetStub.symbol, assetId, assetStub });
+    // Jika overrideDate ada (seperti saat input alternative asset), gunakan itu
+    const txDate = overrideDate || assetStub.purchaseDate || Date.now();
+    
+    addTransaction({ id: `tx:${Date.now()}`, type: "buy", qty, pricePerUnit: priceUSD, cost: costUSD, date: txDate, symbol: assetStub.symbol, name: assetStub.name || assetStub.symbol, assetId, assetStub });
     if (isAssetDetailModalOpen) setAssetDetailModalOpen(false); return true;
   };
 
@@ -568,20 +592,22 @@ export default function App() {
     const priceUSD = nlPriceCcy === 'IDR' ? priceIn / usdIdr : priceIn;
     const couponNominal = toNum(nlCoupon);
     const couponUSD = nlPriceCcy === 'IDR' ? couponNominal / usdIdr : couponNominal;
+    
+    const truePurchaseDate = nlPurchaseDate ? new Date(nlPurchaseDate).getTime() : Date.now();
 
     const newAssetStub = { 
         id: `nonliquid:${name.replace(/\s/g,'_')}`, 
         type: 'nonliquid', 
         symbol: name.slice(0,8).toUpperCase(), 
         name, 
-        purchaseDate: nlPurchaseDate ? new Date(nlPurchaseDate).getTime() : Date.now(), 
+        purchaseDate: truePurchaseDate, 
         nonLiquidYoy: toNum(nlYoy), 
         coupon: couponUSD, 
         incomeFrequency: nlIncomeFreq,
         description: nlDesc 
     };
     
-    if (handleBuy(newAssetStub, qty, priceUSD)) { 
+    if (handleBuy(newAssetStub, qty, priceUSD, truePurchaseDate)) { 
         setAddAssetModalOpen(false); setNlName(''); setNlQty(''); setNlPrice(''); setNlPurchaseDate(''); setNlCoupon(''); setNlYoy(''); setNlDesc(''); setNlIncomeFreq('None'); 
     }
   };
@@ -599,19 +625,50 @@ export default function App() {
     setBalanceModalOpen(false);
   };
   
+  // Format Ekspor CSV Diperbarui (Format Tanggal Aman)
   const handleExport = () => {
     if (transactions.length === 0) { alert("No transactions to export."); return; }
-    const formatCsvCell = (cellData) => { const stringData = String(cellData ?? ''); if (stringData.includes(',') || stringData.includes('"') || stringData.includes('\n')) { return `"${stringData.replace(/"/g, '""')}"`; } return stringData; };
+    
+    const formatCsvCell = (cellData) => { 
+        if (cellData === null || cellData === undefined) return '';
+        const stringData = String(cellData); 
+        if (stringData.includes(',') || stringData.includes('"') || stringData.includes('\n')) { 
+            return `"${stringData.replace(/"/g, '""')}"`; 
+        } 
+        return stringData; 
+    };
+
     const headers = ['id', 'date', 'type', 'symbol', 'name', 'qty', 'pricePerUnit', 'cost', 'proceeds', 'realized', 'amount', 'assetId', 'note', 'assetStub_id', 'assetStub_type', 'assetStub_symbol', 'assetStub_name', 'assetStub_image', 'assetStub_coingeckoId', 'assetStub_incomeFrequency', 'assetStub_coupon', 'assetStub_purchaseDate', 'assetStub_nonLiquidYoy', 'assetStub_description'];
     const headerRow = headers.join(',') + '\n';
-    const rows = transactions.map(tx => { const rowData = headers.map(header => { if (header.startsWith('assetStub_')) { const key = header.replace('assetStub_', ''); return tx.assetStub ? tx.assetStub[key] : ''; } return tx[header]; }); return rowData.map(formatCsvCell).join(','); }).join('\n');
+    
+    const rows = transactions.map(tx => { 
+        return headers.map(header => { 
+            let val;
+            if (header.startsWith('assetStub_')) { 
+                const key = header.replace('assetStub_', ''); 
+                val = tx.assetStub ? tx.assetStub[key] : ''; 
+            } else {
+                val = tx[header];
+            }
+
+            // Konversi Date ke ISO String agar aman dibuka di Excel
+            if (header === 'date' || header === 'assetStub_purchaseDate') {
+                if (val && typeof val === 'number') {
+                    val = new Date(val).toISOString();
+                }
+            }
+            return formatCsvCell(val);
+        }).join(','); 
+    }).join('\n');
+    
     const csvContent = headerRow + rows; const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a");
-    if (link.download !== undefined) { const url = URL.createObjectURL(blob); link.setAttribute("href", url); link.setAttribute("download", `transactions_${new Date().toISOString().split('T')[0]}.csv`); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
+    if (link.download !== undefined) { const url = URL.createObjectURL(blob); link.setAttribute("href", url); link.setAttribute("download", `portfolio_transactions_${new Date().toISOString().split('T')[0]}.csv`); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
     setManagePortfolioOpen(false);
   };
 
   const handleImportClick = () => { importInputRef.current.click(); };
 
+  // Format Impor CSV Diperbarui (Parsing ISO String Cerdas)
   const handleFileImport = (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -626,9 +683,7 @@ export default function App() {
             
             const firstLine = lines[0];
             let delimiter = ',';
-            if (firstLine.includes('\t')) {
-                delimiter = '\t';
-            }
+            if (firstLine.includes('\t')) delimiter = '\t';
 
             const headers = firstLine.split(delimiter).map(h => h.trim().replace(/^"|"$/g, ''));
             
@@ -642,8 +697,19 @@ export default function App() {
 
                 const tx = {};
                 headers.forEach((header, idx) => {
-                    if (values[idx] !== undefined) {
+                    if (values[idx] !== undefined && values[idx] !== '') {
                         tx[header] = values[idx];
+                    }
+                });
+
+                // Tangkap string ISO Date dan konversi kembali ke Timestamp
+                ['date', 'assetStub_purchaseDate'].forEach(dateField => {
+                    if (tx[dateField]) {
+                        if (typeof tx[dateField] === 'string' && tx[dateField].includes('T')) {
+                            tx[dateField] = new Date(tx[dateField]).getTime();
+                        } else {
+                            tx[dateField] = toNum(tx[dateField]); // Fallback versi lawas
+                        }
                     }
                 });
 
@@ -657,7 +723,7 @@ export default function App() {
                         coingeckoId: tx.assetStub_coingeckoId || undefined,
                         incomeFrequency: tx.assetStub_incomeFrequency || 'None',
                         coupon: toNum(tx.assetStub_coupon || 0),
-                        purchaseDate: tx.assetStub_purchaseDate ? Number(tx.assetStub_purchaseDate) : Date.now(),
+                        purchaseDate: tx.assetStub_purchaseDate || tx.date || Date.now(),
                         nonLiquidYoy: toNum(tx.assetStub_nonLiquidYoy || 0),
                         description: tx.assetStub_description || ''
                     };
@@ -667,7 +733,7 @@ export default function App() {
                     if (key.startsWith('assetStub_')) delete tx[key];
                 });
 
-                const numericFields = ['date', 'qty', 'pricePerUnit', 'cost', 'proceeds', 'realized', 'amount'];
+                const numericFields = ['qty', 'pricePerUnit', 'cost', 'proceeds', 'realized', 'amount'];
                 numericFields.forEach(field => {
                     if (tx[field] !== undefined) {
                         tx[field] = toNum(tx[field]);
